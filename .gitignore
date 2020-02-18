@@ -12,3 +12,7 @@
 /captures
 .externalNativeBuild
 .cxx
+# API Keys
+/gradle.properties
+/app/google-services.json
+
