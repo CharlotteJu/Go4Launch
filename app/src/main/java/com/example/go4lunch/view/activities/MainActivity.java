@@ -1,8 +1,10 @@
-package com.example.go4lunch;
+package com.example.go4lunch.view.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.example.go4lunch.R;
 
 public class MainActivity extends AppCompatActivity {
 
