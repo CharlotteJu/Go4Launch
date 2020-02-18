@@ -10,16 +10,16 @@ import android.view.ViewGroup;
 
 import com.example.go4lunch.R;
 
-public class ListColleaguesFragment extends Fragment {
+public class ListWorkmatesFragment extends Fragment {
 
 
-    public ListColleaguesFragment() {
+    public ListWorkmatesFragment() {
         // Required empty public constructor
     }
 
 
-    public static ListColleaguesFragment newInstance() {
-        ListColleaguesFragment fragment = new ListColleaguesFragment();
+    public static ListWorkmatesFragment newInstance() {
+        ListWorkmatesFragment fragment = new ListWorkmatesFragment();
         return fragment;
     }
 
@@ -32,7 +32,7 @@ public class ListColleaguesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list_colleagues, container, false);
+        return inflater.inflate(R.layout.fragment_list_workmates, container, false);
     }
 
 }
