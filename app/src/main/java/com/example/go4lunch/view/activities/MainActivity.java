@@ -28,16 +28,18 @@ public class MainActivity extends AppCompatActivity {
     ListRestaurantsFragment listRestaurantsFragment;
     ListWorkmatesFragment listWorkmatesFragment;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        displayFragment(displayMapViewFragment());
         configureBottomView();
     }
 
 
-    //CONFIGURE
+    //CONFIGURE VIEW
     private void displayFragment(Fragment fragment)
     {
         if (!fragment.isVisible())
@@ -97,11 +99,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
-
 
 
 }

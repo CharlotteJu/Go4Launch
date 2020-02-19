@@ -1,8 +1,20 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Go4Lunch</string>
 
     <!-- BOTTOM NAVIGATION VIEW -->
     <string name="bottom_navigation_menu_mapview">Map View</string>
     <string name="bottom_navigation_menu_listview">List View</string>
     <string name="bottom_navigation_menu_workmates">Workmates</string>
+
+    <!-- RESPONSE SIGN IN -->
+    <string name="response_sign_in_success">Connection success</string>
+    <string name="response_sign_in_error">Connection error</string>
+
+
+    <!-- FACEBOOK PURPOSE -->
+    <string name="facebook_application_id" translatable="false">233929610966007</string>
+    <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">fb233929610966007</string>
+
+
+
 </resources>
