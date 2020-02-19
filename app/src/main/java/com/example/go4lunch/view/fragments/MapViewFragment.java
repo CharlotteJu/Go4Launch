@@ -28,7 +28,7 @@ public class MapViewFragment extends Fragment {
      * @return A new instance of fragment MapViewFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapViewFragment newInstance(String param1, String param2) {
+    public static MapViewFragment newInstance() {
         MapViewFragment fragment = new MapViewFragment();
         return fragment;
     }
