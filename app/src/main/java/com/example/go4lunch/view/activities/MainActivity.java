@@ -42,10 +42,7 @@ public class MainActivity extends AppCompatActivity {
     //CONFIGURE VIEW
     private void displayFragment(Fragment fragment)
     {
-        if (!fragment.isVisible())
-        {
-            getSupportFragmentManager().beginTransaction().replace(R.id.activity_main_frame_layout, fragment).commit();
-        }
+        getSupportFragmentManager().beginTransaction().replace(R.id.activity_main_frame_layout, fragment).commit();
     }
 
     private MapViewFragment displayMapViewFragment()

@@ -40,20 +40,39 @@ public class AuthActivity extends AppCompatActivity {
     @OnClick(R.id.auth_activity_connection_button)
     void onClickGoogleButton()
     {
-        this.startSignInActivity();
+        this.startSignInWithGoogle();
     }
+
+    @OnClick(R.id.auth_activity_connection_button)
+    void onClickFacebookButton()
+    {
+        this.startSignInWithFacebook();
+    }
+
 
 
     //UI
 
-    private void startSignInActivity()
+    private void startSignInWithGoogle()
     {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(
                                 Arrays.asList(
-                                        new AuthUI.IdpConfig.GoogleBuilder().build(),
+                                        new AuthUI.IdpConfig.GoogleBuilder().build()))
+                        .setIsSmartLockEnabled(false, true)
+
+                        .build(),FIREBASE_UI);
+    }
+
+    private void startSignInWithFacebook()
+    {
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(
+                                Arrays.asList(
                                         new AuthUI.IdpConfig.FacebookBuilder().build()))
                         .setIsSmartLockEnabled(false, true)
 
