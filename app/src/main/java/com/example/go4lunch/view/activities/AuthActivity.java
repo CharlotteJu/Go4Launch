@@ -37,13 +37,13 @@ public class AuthActivity extends AppCompatActivity {
     }
 
 
-    @OnClick(R.id.auth_activity_connection_button)
+    @OnClick(R.id.auth_activity_google_button)
     void onClickGoogleButton()
     {
         this.startSignInWithGoogle();
     }
 
-    @OnClick(R.id.auth_activity_connection_button)
+    @OnClick(R.id.auth_activity_facebook_button)
     void onClickFacebookButton()
     {
         this.startSignInWithFacebook();
