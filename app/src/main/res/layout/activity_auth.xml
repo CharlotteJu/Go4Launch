@@ -24,49 +24,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/app_name"
+        android:gravity="center"
         android:layout_above="@id/auth_activity_text_description"
-        style="@style/auth_activity_title"
-        android:layout_centerInParent="true"/>
+        style="@style/auth_activity_title" />
 
     <TextView
         android:id="@+id/auth_activity_text_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/auth_activity_subtitle"
-        style="@style/auth_activity_subtitle"
-        android:layout_centerInParent="true"/>
+        android:gravity="center"
+        style="@style/auth_activity_subtitle" />
 
     <Button
         android:id="@+id/auth_activity_facebook_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/auth_activity_google_button"
-        android:background="@drawable/button_facebook"
-        android:padding="10dp"
-        android:layout_marginHorizontal="30dp"
-        android:layout_marginBottom="30dp"
-        android:text="Sign in with Facebook"
-        android:textAllCaps="false"
-        android:drawableStart="@drawable/ic_facebook"
-        android:textColor="@color/colorAccentWhite"
-        android:textSize="18sp" />
+        style="@style/FacebookButtonStyle"
+        android:layout_marginBottom="30dp"/>
 
     <Button
         android:id="@+id/auth_activity_google_button"
-
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        style="@style/GoogleButtonStyle"
         android:layout_alignParentBottom="true"
-        android:layout_centerVertical="true"
-        android:background="@drawable/button_google"
-        android:drawableStart="@drawable/ic_google"
-        android:padding="10dp"
-        android:layout_marginBottom="100dp"
-        android:layout_marginHorizontal="30dp"
-        android:text="Sign in with Google"
-        android:textAllCaps="false"
-        android:textColor="@color/colorAccentWhite"
-        android:textSize="18sp" />
+        android:layout_marginBottom="100dp" />
 
 
 </RelativeLayout>

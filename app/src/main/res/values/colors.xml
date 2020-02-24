@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#FCFCFC</color>
+    <color name="colorPrimary">#FF5721</color>
+    <color name="colorPrimaryDark">#C41D00</color>
+    <color name="colorAccent">#FFFF</color>
 
-    <color name="colorAccentOrange">#F35F0F</color>
+    <color name="ic_launcher_appli">#FF5721</color>
+
+
     <color name="colorAccentDark">#000000</color>
-    <color name="colorAccentWhite">#FFFF</color>
 
     <color name="colorFacebook">#507CBF</color>
     <color name="colorGoogle">#DF4931</color>
+
+    <color name="colorOrangeNav">#FE8B50</color>
 </resources>

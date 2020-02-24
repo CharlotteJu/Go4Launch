@@ -2,10 +2,12 @@ package com.example.go4lunch.view.activities;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+
 
 import com.example.go4lunch.R;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
@@ -14,6 +16,7 @@ import com.example.go4lunch.view.fragments.MapViewFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import butterknife.BindView;
+import butterknife.BindViews;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     //FOR DESIGN
     @BindView(R.id.activity_main_bottom_navigation)
     BottomNavigationView bottomNavigationView;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
 
     //FOR DATA
@@ -36,8 +41,15 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         displayFragment(displayMapViewFragment());
         configureBottomView();
+        configureToolbar();
     }
 
+
+    //CONFIGURE TOOLBAR
+    private void configureToolbar()
+    {
+        setSupportActionBar(toolbar);
+    }
 
     //CONFIGURE VIEW
     private void displayFragment(Fragment fragment)

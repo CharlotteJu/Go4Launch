@@ -2,7 +2,10 @@
     <string name="app_name">Go4Lunch</string>
 
     <!-- AUTH ACTIVITY -->
+    <string name="auth_activity_title">Go4Lunch</string>
     <string name="auth_activity_subtitle">Find a nice restaurant and invite your co-workers for lunch!</string>
+    <string name="auth_activity_button_facebook">Sign in with Facebook</string>
+    <string name="auth_activity_button_google">Sign in with Google</string>
 
     <!-- BOTTOM NAVIGATION VIEW -->
     <string name="bottom_navigation_menu_mapview">Map View</string>
@@ -17,6 +20,12 @@
     <!-- FACEBOOK PURPOSE -->
     <string name="facebook_application_id" translatable="false">233929610966007</string>
     <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">fb233929610966007</string>
+
+
+    <!-- NAVIGATION DRAWER MENU -->
+    <string name="navigation_drawer_your_lunch">YOUR LUNCH</string>
+    <string name="navigation_drawer_settings">SETTINGS</string>
+    <string name="navigation_drawer_logout">LOGOUT</string>
 
 
 

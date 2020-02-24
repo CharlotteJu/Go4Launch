@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_header"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/nav_drawer_size_header"
+    android:background="@drawable/background_3"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/nav_header_title_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/nav_drawer_title"
+        android:text="@string/app_name"
+        android:gravity="center"
+        android:layout_alignParentTop="true"/>
+
+    <ImageView
+        android:id="@+id/nav_header_image_view"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:src="@drawable/ic_person_white_24dp"
+        android:layout_below="@id/nav_header_title_txt"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/nav_header_title_txt"
+        android:layout_toEndOf="@id/nav_header_image_view">
+
+
+        <TextView
+            android:id="@+id/nav_header_name_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/nav_drawer_name"
+            android:textAllCaps="false"
+            android:text="Name"/>
+
+        <TextView
+            android:id="@+id/nav_header_email_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/nav_drawer_email"
+            android:textAllCaps="false"
+            android:text="Email"/>
+
+    </LinearLayout>
+
+
+</RelativeLayout>
