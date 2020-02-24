@@ -8,9 +8,48 @@
     android:orientation="vertical"
     tools:context=".view.activities.MainActivity">
 
-    <include
-        layout="@layout/toolbar"
-        />
+
+    <androidx.drawerlayout.widget.DrawerLayout
+
+        android:id="@+id/navigation_drawer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        tools:openDrawer="start">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <include
+                layout="@layout/toolbar"/>
+
+            <FrameLayout
+                android:id="@+id/navigation_drawer_frame_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navigation_drawer_nav_view"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="@color/colorOrangeNav"
+            android:fitsSystemWindows="true"
+            app:headerLayout="@layout/navigation_header"
+            app:menu="@menu/navigation_drawer_menu"/>
+
+
+        <!-- <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_logo_go4lunch"/> -->
+
+
+    </androidx.drawerlayout.widget.DrawerLayout>
 
     <FrameLayout
         android:id="@+id/activity_main_frame_layout"
@@ -28,11 +67,6 @@
         app:itemIconTint="@drawable/bottom_navigation_colors"
         app:itemTextColor="@drawable/bottom_navigation_colors"
         app:menu="@menu/bottom_navigation_menu"
-        android:layout_alignParentBottom="true"
-
-        />
-
-
-
+        android:layout_alignParentBottom="true" />
 
 </RelativeLayout>
