@@ -2,11 +2,12 @@
 <resources>
     <color name="colorPrimary">#FF5721</color>
     <color name="colorPrimaryDark">#C41D00</color>
-    <color name="colorAccent">#FFFF</color>
+    <color name="colorAccent">#383434</color>
+
 
     <color name="ic_launcher_appli">#FF5721</color>
 
-
+    <color name="colorAccentWhite">#FFFF</color>
     <color name="colorAccentDark">#000000</color>
 
     <color name="colorFacebook">#507CBF</color>

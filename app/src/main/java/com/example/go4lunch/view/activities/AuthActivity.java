@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.example.go4lunch.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
@@ -30,10 +31,11 @@ public class AuthActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        this.userConnected();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
-
         ButterKnife.bind(this);
+
     }
 
 
@@ -49,7 +51,14 @@ public class AuthActivity extends AppCompatActivity {
         this.startSignInWithFacebook();
     }
 
-
+    private void userConnected()
+    {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null)
+        {
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+        }
+    }
 
     //UI
 

@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -25,6 +26,7 @@ import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 import butterknife.BindView;
 
@@ -33,7 +35,7 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
     //FOR DESIGN
-    @BindView(R.id.activity_main_bottom_navigation)
+    @BindView(R.id.bottom_navigation)
     BottomNavigationView bottomNavigationView;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //CONFIGURE VIEW
     private void displayFragment(Fragment fragment)
     {
-        getSupportFragmentManager().beginTransaction().replace(R.id.activity_main_frame_layout, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).commit();
     }
 
     private MapViewFragment displayMapViewFragment()
@@ -175,14 +177,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void createAndShowPopUpLogOut()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("TITRE");
         builder.setMessage("Êtes-vous sûr de vouloir vous déconnecter ?");
-        builder.setPositiveButton("YES", null);
-        /*builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         logOut();
                     }
-                });*/
+                });
         builder.setNegativeButton("Non", null);
 
         AlertDialog alertDialog = builder.create();
@@ -194,11 +196,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         AuthUI.getInstance().signOut(this).addOnSuccessListener(this, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getApplicationContext(),"Déconnexion réussie",Toast.LENGTH_SHORT).show();
+                if (FirebaseAuth.getInstance().getCurrentUser() == null)
+                {
+                    Toast.makeText(getApplicationContext(), "Déconnexion réussie", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(MainActivity.this, AuthActivity.class);
+                    startActivity(intent);
+                }
             }
         });
 
-        Intent intent = new Intent(this, AuthActivity.class);
-        startActivity(intent);
+
     }
 }
