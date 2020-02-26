@@ -14,6 +14,8 @@
 
     </style>
 
+    <!-- _______________________AUTH ACTIVITY_______________________ -->
+
     <!-- Auth activity txt -->
     <style name="auth_activity_txt">
         <item name="android:textColor">@color/colorAccentWhite</item>
@@ -59,6 +61,7 @@
         <item name="android:text">@string/auth_activity_button_google</item>
     </style>
 
+    <!-- _______________________NAVIGATION DRAWER_______________________ -->
 
     <!-- Nav Drawer Txt -->
     <style name="nav_drawer_txt">
@@ -84,6 +87,94 @@
         <item name="android:textSize">@dimen/nav_drawer_size_email</item>
     </style>
 
+    <!-- _______________________ITEM LIST RESTAURANT_______________________ -->
 
+    <!-- Item Restaurant List Name Txt -->
+    <style name="item_list_restaurant_name_txt">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/colorAccentDark</item>
+        <item name="android:textSize">@dimen/item_list_restaurant_size_name</item>
+    </style>
+
+    <!-- Item Restaurant List Description Base Txt -->
+    <style name="item_list_restaurant_description_base_txt">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/colorAccentGrey</item>
+        <item name="android:textSize">@dimen/item_list_restaurant_size_description</item>
+    </style>
+
+    <!-- Item Restaurant List Type Txt -->
+    <style name="item_list_restaurant_type_txt" parent="item_list_restaurant_description_base_txt">
+        <item name="android:layout_marginTop">@dimen/item_list_restaurant_margin_default</item>
+    </style>
+
+    <!-- Item Restaurant List Address Txt -->
+    <style name="item_list_restaurant_address_txt" parent="item_list_restaurant_description_base_txt">
+        <item name="android:layout_marginStart">@dimen/item_list_restaurant_margin_start_address</item>
+    </style>
+
+    <!-- Item Restaurant List Hours Txt -->
+    <style name="item_list_restaurant_hours_txt" parent="item_list_restaurant_description_base_txt">
+        <item name="android:textStyle">italic</item>
+        <item name="android:layout_marginTop">@dimen/item_list_restaurant_margin_default</item>
+    </style>
+
+    <!-- Item Restaurant List Distance Txt -->
+    <style name="item_list_restaurant_distance_txt">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/colorLightGrey</item>
+        <item name="android:textSize">@dimen/item_list_restaurant_size_distance</item>
+        <item name="android:layout_marginEnd">@dimen/item_list_restaurant_margin_end_distance</item>
+    </style>
+
+    <!-- Item Restaurant List Number Rating Txt -->
+    <style name="item_list_restaurant_number_rating_txt">
+        <item name="android:textColor">@color/colorAccentDark</item>
+        <item name="android:layout_marginBottom">@dimen/item_list_restaurant_margin_bottom_number_rating</item>
+        <item name="android:textSize">@dimen/item_list_restaurant_size_description</item>
+    </style>
+
+    <!-- Item Restaurant List Stars 2 and 3 Image -->
+    <style name="item_list_restaurant_stars_2_3_image">
+        <item name="android:src">@drawable/ic_star_2</item>
+        <item name="android:layout_marginEnd">@dimen/item_list_restaurant_margin_end_stars</item>
+    </style>
+
+    <!-- Item Restaurant List People Rating Image -->
+    <style name="item_list_restaurant_people_rating_image">
+        <item name="android:src">@drawable/ic_person_outline_black_24dp</item>
+        <item name="android:layout_marginEnd">@dimen/item_list_restaurant_margin_end_people_rating</item>
+    </style>
+
+    <!-- Item Restaurant List Illustration Image -->
+    <style name="item_list_restaurant_illustration_image">
+        <item name="android:src">@drawable/image_restaurant</item>
+        <item name="android:layout_marginEnd">@dimen/item_list_restaurant_margin_end_illustration</item>
+    </style>
+
+    <!-- _______________________ITEM LIST WORKMATES_______________________ -->
+
+    <!-- Item Restaurant Workmates Image -->
+    <style name="item_list_workmates_image">
+        <item name="android:src">@drawable/ic_person_outline_black_24dp</item>
+        <item name="android:layout_margin">@dimen/item_list_workmates_margin_image</item>
+    </style>
+
+    <!-- Item Restaurant Workmates Choose Txt -->
+    <style name="item_list_workmates_choose_txt">
+        <item name="android:layout_marginStart">@dimen/item_list_workmates_margin_start_txt</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/colorAccentDark</item>
+        <item name="android:textSize">@dimen/item_list_workmates_size_txt</item>
+    </style>
+
+    <!-- Item Restaurant Workmates No Choose Txt -->
+    <style name="item_list_workmates_no_choose_txt">
+        <item name="android:layout_marginStart">@dimen/item_list_workmates_margin_start_txt</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/colorLightGrey</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textSize">@dimen/item_list_workmates_size_txt</item>
+    </style>
 
 </resources>

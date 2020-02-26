@@ -5,56 +5,117 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- TEXT VIEW -->
+
     <TextView
-        android:id="@+id/txt_1"
+        android:id="@+id/item_list_restaurant_name_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="RESTAURANT"
+        android:text="Restaurant"
+        style="@style/item_list_restaurant_name_txt"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="10dp" />
 
     <TextView
-        android:id="@+id/txt_2"
+        android:id="@+id/item_list_restaurant_type_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/txt_1"
-        android:text="ADRESSE"
-        app:layout_constraintTop_toBottomOf="@id/txt_1"
-        app:layout_constraintStart_toStartOf="@id/txt_1"
-        android:layout_marginTop="10dp"/>
+        android:text="Type"
+        style="@style/item_list_restaurant_type_txt"
+        app:layout_constraintTop_toBottomOf="@id/item_list_restaurant_name_txt"
+        app:layout_constraintStart_toStartOf="@id/item_list_restaurant_name_txt"/>
 
     <TextView
-        android:id="@+id/txt_3"
+        android:id="@+id/item_list_restaurant_adress_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/txt_2"
-        android:text="HORAIRES"
-        app:layout_constraintTop_toBottomOf="@id/txt_2"
-        app:layout_constraintStart_toStartOf="@id/txt_2"
-        android:layout_marginTop="10dp" />
+        android:text="Adresse"
+        style="@style/item_list_restaurant_address_txt"
+        app:layout_constraintStart_toEndOf="@id/item_list_restaurant_type_txt"
+        app:layout_constraintTop_toTopOf="@id/item_list_restaurant_type_txt" />
 
     <TextView
-        android:id="@+id/txt_4"
+        android:id="@+id/item_list_restaurant_hours_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/txt_1"
+        android:text="Horaires"
+        style="@style/item_list_restaurant_hours_txt"
+        app:layout_constraintTop_toBottomOf="@id/item_list_restaurant_type_txt"
+        app:layout_constraintStart_toStartOf="@id/item_list_restaurant_type_txt"
+        android:layout_marginBottom="30dp"/>
+
+    <TextView
+        android:id="@+id/item_list_restaurant_distance_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Distance"
-        app:layout_constraintTop_toTopOf="@id/txt_1"
-        app:layout_constraintStart_toEndOf="@id/txt_1"
-        android:layout_marginStart="150dp"
-         />
+        style="@style/item_list_restaurant_distance_txt"
+        app:layout_constraintTop_toTopOf="@id/item_list_restaurant_name_txt"
+        app:layout_constraintEnd_toStartOf="@id/item_list_restaurant_illustration_image" />
+
+    <TextView
+        android:id="@+id/item_list_restaurant_number_rating_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="(5)"
+        style="@style/item_list_restaurant_number_rating_txt"
+        app:layout_constraintStart_toEndOf="@id/item_list_restaurant_people_rating_image"
+        app:layout_constraintBottom_toBottomOf="@id/item_list_restaurant_people_rating_image" />
+
+
+    <!-- IMAGE VIEW -->
 
     <ImageView
-        android:id="@+id/photo_1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/txt_4"
-        android:layout_alignEnd="@id/txt_4"
-        android:src="@drawable/ic_people_black_24dp"
-        app:layout_constraintTop_toTopOf="@id/txt_2"
-        app:layout_constraintStart_toEndOf="@id/txt_1"
-        android:layout_marginStart="170dp"/>
+        android:id="@+id/item_list_restaurant_people_rating_image"
+        android:layout_width="@dimen/item_list_restaurant_width_image"
+        android:layout_height="@dimen/item_list_restaurant_height_people_rating"
+        app:layout_constraintDimensionRatio="1:1"
+        style="@style/item_list_restaurant_people_rating_image"
+        app:layout_constraintTop_toTopOf="@id/item_list_restaurant_adress_txt"
+        app:layout_constraintEnd_toStartOf="@id/item_list_restaurant_illustration_image"
+        android:contentDescription="@null"/>
+
+    <ImageView
+        android:id="@+id/item_list_restaurant_star_1_image"
+        android:layout_width="@dimen/item_list_restaurant_width_image"
+        android:layout_height="@dimen/item_list_restaurant_height_star"
+        app:layout_constraintDimensionRatio="1:1"
+        android:src="@drawable/ic_star_2"
+        app:layout_constraintBottom_toBottomOf="@id/item_list_restaurant_hours_txt"
+        app:layout_constraintEnd_toEndOf="@id/item_list_restaurant_number_rating_txt"
+        android:contentDescription="@null"/>
+
+    <ImageView
+        android:id="@+id/item_list_restaurant_star_2_image"
+        android:layout_width="@dimen/item_list_restaurant_width_image"
+        android:layout_height="@dimen/item_list_restaurant_height_star"
+        app:layout_constraintDimensionRatio="1:1"
+        style="@style/item_list_restaurant_stars_2_3_image"
+        app:layout_constraintTop_toTopOf="@id/item_list_restaurant_star_1_image"
+        app:layout_constraintRight_toLeftOf="@id/item_list_restaurant_star_1_image"
+        android:contentDescription="@null"/>
+
+    <ImageView
+        android:id="@+id/item_list_restaurant_star_3_image"
+        android:layout_width="@dimen/item_list_restaurant_width_image"
+        android:layout_height="@dimen/item_list_restaurant_height_star"
+        app:layout_constraintDimensionRatio="1:1"
+        style="@style/item_list_restaurant_stars_2_3_image"
+        app:layout_constraintTop_toTopOf="@id/item_list_restaurant_star_1_image"
+        app:layout_constraintRight_toLeftOf="@id/item_list_restaurant_star_2_image"
+        android:contentDescription="@null"/>
+
+    <ImageView
+        android:id="@+id/item_list_restaurant_illustration_image"
+        android:layout_width="@dimen/item_list_restaurant_width_image"
+        android:layout_height="@dimen/item_list_restaurant_width_image"
+        style="@style/item_list_restaurant_illustration_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/item_list_restaurant_name_txt"
+        app:layout_constraintBottom_toBottomOf="@id/item_list_restaurant_hours_txt"
+        app:layout_constraintDimensionRatio="1:1"
+        android:contentDescription="@null"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

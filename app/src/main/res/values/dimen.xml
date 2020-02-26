@@ -17,5 +17,28 @@
     <dimen name="nav_drawer_marginTop_title">50dp</dimen>
 
 
+    <!-- ITEM LIST RESTAURANT -->
+    <dimen name="item_list_restaurant_size_name">17sp</dimen>
+    <dimen name="item_list_restaurant_size_description">15sp</dimen>
+    <dimen name="item_list_restaurant_size_distance">18sp</dimen>
+    <dimen name="item_list_restaurant_margin_default">10dp</dimen>
+    <dimen name="item_list_restaurant_margin_start_address">10dp</dimen>
+    <dimen name="item_list_restaurant_margin_end_stars">5dp</dimen>
+    <dimen name="item_list_restaurant_margin_end_distance">20dp</dimen>
+    <dimen name="item_list_restaurant_margin_end_people_rating">25dp</dimen>
+    <dimen name="item_list_restaurant_margin_end_illustration">10dp</dimen>
+    <dimen name="item_list_restaurant_margin_bottom_number_rating">5dp</dimen>
+    <dimen name="item_list_restaurant_width_image">0dp</dimen>
+    <dimen name="item_list_restaurant_height_star">15dp</dimen>
+    <dimen name="item_list_restaurant_height_people_rating">30dp</dimen>
+
+
+    <!-- ITEM LIST RESTAURANT -->
+    <dimen name="item_list_workmates_size_txt">17sp</dimen>
+    <dimen name="item_list_workmates_height_image">90dp</dimen>
+    <dimen name="item_list_workmates_margin_image">10dp</dimen>
+    <dimen name="item_list_workmates_margin_start_txt">20dp</dimen>
+
+
 
 </resources>
