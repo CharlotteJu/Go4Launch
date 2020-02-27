@@ -30,12 +30,17 @@ public class AuthActivity extends AppCompatActivity {
     private final static int FIREBASE_UI = 100;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onStart() {
+        super.onStart();
         this.userConnected();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
-
     }
 
 

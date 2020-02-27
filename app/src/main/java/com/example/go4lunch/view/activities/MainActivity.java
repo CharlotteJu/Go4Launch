@@ -63,13 +63,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         configureNavigationView();
     }
 
+    ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
 
-    //CONFIGURE TOOLBAR
+    /**
+     * Configure the Toolbar {@link Toolbar}
+     */
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
     }
 
+    /**
+     * Configure the DrawerLayout {@link DrawerLayout}
+     */
     private void configureDrawerLayout()
     {
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar,
@@ -78,45 +84,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
     }
 
+    /**
+     * Configure the NavigationView {@link NavigationView}
+     */
     private void configureNavigationView()
     {
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    //CONFIGURE VIEW
-    private void displayFragment(Fragment fragment)
-    {
-        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).commit();
-    }
-
-    private MapViewFragment displayMapViewFragment()
-    {
-        if (this.mapViewFragment == null)
-        {
-            this.mapViewFragment = MapViewFragment.newInstance();
-        }
-        return this.mapViewFragment;
-    }
-
-    private ListRestaurantsFragment displayListRestaurantsFragment()
-    {
-        if (this.listRestaurantsFragment == null)
-        {
-            this.listRestaurantsFragment = ListRestaurantsFragment.newInstance();
-        }
-        return this.listRestaurantsFragment;
-    }
-
-    private ListWorkmatesFragment displayListWorkmatesFragment()
-    {
-        if (this.listWorkmatesFragment == null)
-        {
-            this.listWorkmatesFragment = ListWorkmatesFragment.newInstance();
-        }
-        return listWorkmatesFragment;
-    }
-
-
+    /**
+     * Configure the BottomView {@link BottomNavigationView}
+     */
     private void configureBottomView()
     {
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -141,6 +119,52 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    /**
+     * Display a fragment
+     * @param fragment
+     */
+    private void displayFragment(Fragment fragment)
+    {
+        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).commit();
+    }
+
+    /**
+     * Display the MapViewFragment {@link MapViewFragment}
+     */
+    private MapViewFragment displayMapViewFragment()
+    {
+        if (this.mapViewFragment == null)
+        {
+            this.mapViewFragment = MapViewFragment.newInstance();
+        }
+        return this.mapViewFragment;
+    }
+
+    /**
+     * Display the ListRestaurantsFragment {@link ListRestaurantsFragment}
+     */
+    private ListRestaurantsFragment displayListRestaurantsFragment()
+    {
+        if (this.listRestaurantsFragment == null)
+        {
+            this.listRestaurantsFragment = ListRestaurantsFragment.newInstance();
+        }
+        return this.listRestaurantsFragment;
+    }
+
+    /**
+     * Display the ListWorkmatesFragment {@link ListWorkmatesFragment}
+     */
+    private ListWorkmatesFragment displayListWorkmatesFragment()
+    {
+        if (this.listWorkmatesFragment == null)
+        {
+            this.listWorkmatesFragment = ListWorkmatesFragment.newInstance();
+        }
+        return listWorkmatesFragment;
+    }
+
+    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
 
     @Override
     public void onBackPressed() {
@@ -174,6 +198,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    ///////////////////////////////////LOG OUT METHODS///////////////////////////////////
+
+    /**
+     * Create and show an AlertDialog to logOut() {@link AlertDialog}
+     */
     private void createAndShowPopUpLogOut()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -181,7 +210,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setMessage("Êtes-vous sûr de vouloir vous déconnecter ?");
         builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                    public void onClick(DialogInterface dialogInterface, int i)
+                    {
                         logOut();
                     }
                 });
@@ -191,6 +221,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alertDialog.show();
     }
 
+    /**
+     * Log Out from Firebase {@link AuthUI}
+     */
     private void logOut()
     {
         AuthUI.getInstance().signOut(this).addOnSuccessListener(this, new OnSuccessListener<Void>() {

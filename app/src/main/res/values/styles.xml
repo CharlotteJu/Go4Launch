@@ -72,7 +72,6 @@
     <style name="nav_drawer_title" parent="nav_drawer_txt">
         <item name="android:textSize">@dimen/nav_drawer_size_title</item>
         <item name="android:textStyle">bold</item>
-        <item name="android:layout_marginTop">@dimen/nav_drawer_marginTop_title</item>
     </style>
 
     <!-- Nav Drawer Name -->
