@@ -5,11 +5,10 @@
     android:layout_height="match_parent"
     tools:context=".view.fragments.ListWorkmatesFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/fragment_list_workmates_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="LIST COLLEAGUES FRAGMENT" />
+        tools:listitem="@layout/item_list_workmates"/>
 
 </FrameLayout>
