@@ -17,6 +17,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 

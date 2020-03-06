@@ -7,12 +7,6 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <!-- Toolbar -->
-    <style name="toolbar">
-        <item name="android:textColor">@color/colorAccentWhite</item>
-        <item name="android:textSize">@dimen/auth_activity_size_title</item>
-
-    </style>
 
     <!-- _______________________AUTH ACTIVITY_______________________ -->
 
