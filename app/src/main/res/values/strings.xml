@@ -1,6 +1,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Go4Lunch</string>
 
+    <string name="failure">An unknown error has occurred</string>
+
     <!-- AUTH ACTIVITY -->
     <string name="auth_activity_title">Go4Lunch</string>
     <string name="auth_activity_subtitle">Find a nice restaurant and invite your co-workers for lunch!</string>
@@ -32,8 +34,6 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

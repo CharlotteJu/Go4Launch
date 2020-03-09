@@ -15,7 +15,7 @@ public class User
     //////// CONSTRUCTOR ////////
 
 
-    public User(String name, String email, String illustration) {
+    public User(String email, String name,  String illustration) {
         this.name = name;
         this.email = email;
         this.illustration = illustration;

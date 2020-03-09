@@ -1,8 +1,10 @@
 package com.example.go4lunch.view.fragments;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -32,6 +34,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private FusedLocationProviderClient fusedLocationProviderClient;
     private static final int REQUEST_CODE = 101;
     private SupportMapFragment supportMapFragment;
+    LocationManager locationManager;
 
 
     private GoogleMap googleMap;
@@ -53,6 +56,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         fetchLocation();
+
+       //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
@@ -63,6 +68,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         this.supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         fetchLocation();
         return v;
+    }
+
+    private void haveLocation()
+    {
+
     }
 
     private void fetchLocation() {
