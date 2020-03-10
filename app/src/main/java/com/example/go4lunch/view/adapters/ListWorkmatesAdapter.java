@@ -17,6 +17,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
@@ -24,17 +26,32 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdapter.ListWorkmatesViewHolder>
+public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWorkmatesAdapter.ListWorkmatesViewHolder>
 {
-    private List<User> users;
+    public interface Listener
+    {
+        void onDataChanged();
+    }
+
+   //private List<User> users;
     private RequestManager glide;
     private Context context;
+    private Listener callback;
+    private String emailCurrentUser;
 
-    public ListWorkmatesAdapter(List<User> users, RequestManager glide)
+    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Listener callback, String emailCurrentUser)
+    {
+        super(options);
+        this.glide = glide;
+        this.callback = callback;
+        this.emailCurrentUser = emailCurrentUser;
+    }
+
+    /*public ListWorkmatesAdapter(List<User> users, RequestManager glide)
     {
         this.users = users;
         this.glide = glide;
-    }
+    }*/
 
     @NonNull
     @Override
@@ -47,14 +64,26 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
     }
 
     @Override
+    protected void onBindViewHolder(@NonNull ListWorkmatesViewHolder viewHolder, int i, @NonNull User user)
+    {
+        viewHolder.updateUI(user, glide, context);
+    }
+
+   /* @Override
     public void onBindViewHolder(@NonNull ListWorkmatesAdapter.ListWorkmatesViewHolder holder, int position)
     {
         holder.updateUI(users.get(position), glide, context);
-    }
+    }*/
 
-    @Override
+   /* @Override
     public int getItemCount() {
         return this.users.size();
+    }*/
+
+    @Override
+    public void onDataChanged() {
+        super.onDataChanged();
+        this.callback.onDataChanged();
     }
 
     static class ListWorkmatesViewHolder extends RecyclerView.ViewHolder

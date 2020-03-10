@@ -3,8 +3,11 @@ package com.example.go4lunch.view.fragments;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.RestaurantPOJO;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -26,6 +30,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
@@ -51,13 +58,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Places.initialize(getContext(), getString(R.string.google_api_key));
-        //PlacesClient placesClient = Places.createClient(getContext());
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         fetchLocation();
 
-       //locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
     }
 
     @Override
@@ -70,10 +75,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return v;
     }
 
-    private void haveLocation()
-    {
-
-    }
 
     private void fetchLocation() {
         if (ActivityCompat.checkSelfPermission(

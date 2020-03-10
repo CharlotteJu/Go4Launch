@@ -15,18 +15,25 @@ import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.GenerateTests;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.RestaurantPOJO;
+import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
 
 public class ListRestaurantsFragment extends Fragment {
 
     private List<Restaurant> restaurants;
     private ListRestaurantsAdapter adapter;
+
+    private Disposable disposable;
 
     @BindView(R.id.fragment_list_restaurants_recycler_view)
     RecyclerView recyclerView;
@@ -64,5 +71,72 @@ public class ListRestaurantsFragment extends Fragment {
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
     }
+
+    ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
+
+    private Observable<String> getObservable ()
+    {
+        return Observable.just("Observable");
+    }
+
+    private DisposableObserver<String> getSubsriber()
+    {
+        return new DisposableObserver<String>() {
+            @Override
+            public void onNext(String s) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        };
+    }
+
+    private void stream(double lat, double lng, int radius)
+    {
+        this.disposable = RestaurantStreams.streamFetchRestaurant(lat, lng, radius).subscribeWith(new DisposableObserver<List<RestaurantPOJO>>() {
+            @Override
+            public void onNext(List<RestaurantPOJO> restaurantPOJOS) {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        });
+    }
+
+    private void unsubscribe()
+    {
+        if (this.disposable != null && !this.disposable.isDisposed())
+        {
+            this.disposable.dispose();
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        this.unsubscribe();
+    }
+
 
 }
