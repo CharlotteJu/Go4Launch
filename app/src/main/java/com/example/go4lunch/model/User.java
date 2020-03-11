@@ -8,7 +8,7 @@ public class User
     private String name;
     private String email;
     private String illustration;
-    private boolean isChooseRestaurant;
+    private boolean isChooseRestaurant = false;
     private Restaurant restaurantChoose;
     private List<Restaurant> restaurantListFavorites;
 
@@ -22,6 +22,11 @@ public class User
 
         this.isChooseRestaurant = false;
         this.restaurantListFavorites = new ArrayList<>();
+    }
+
+    public User()
+    {
+
     }
 
     //////// GETTERS ////////

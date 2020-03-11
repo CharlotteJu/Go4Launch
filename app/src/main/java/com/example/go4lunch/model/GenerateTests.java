@@ -7,8 +7,8 @@ public abstract class GenerateTests
 {
     private static List<Restaurant> restaurants;
 
-    private static Restaurant restaurant1 = new Restaurant("restaurant1", "français", "12 rue de Ménilmontant", 15, "https://maps.gstatic.com/mapfiles/place_api/icons/bar-71.png");
-    private static Restaurant restaurant2 = new Restaurant("restaurant2", "asiatique", "12 rue de Bellevue", 13, "https://maps.gstatic.com/mapfiles/place_api/icons/bar-71.png");
+    private static Restaurant restaurant1 = new Restaurant("restaurant1", "français", "12 rue de Ménilmontant", "https://maps.gstatic.com/mapfiles/place_api/icons/bar-71.png");
+    private static Restaurant restaurant2 = new Restaurant("restaurant2", "asiatique", "12 rue de Bellevue", "https://maps.gstatic.com/mapfiles/place_api/icons/bar-71.png");
 
     public static List<Restaurant> getRestaurants ()
     {

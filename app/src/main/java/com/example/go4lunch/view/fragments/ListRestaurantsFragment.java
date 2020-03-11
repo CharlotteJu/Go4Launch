@@ -1,8 +1,12 @@
 package com.example.go4lunch.view.fragments;
 
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +22,12 @@ import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -30,7 +39,7 @@ import io.reactivex.observers.DisposableObserver;
 
 public class ListRestaurantsFragment extends Fragment {
 
-    private List<Restaurant> restaurants;
+    private List<Restaurant> restaurants = new ArrayList<>();
     private ListRestaurantsAdapter adapter;
 
     private Disposable disposable;
@@ -66,10 +75,43 @@ public class ListRestaurantsFragment extends Fragment {
     private void configRecyclerView()
     {
         this.restaurants = GenerateTests.getRestaurants();
+        //configListRestaurants();
         this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this));
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+    }
+
+    private static final int REQUEST_CODE = 12;
+    private Location currentLocation;
+
+    private void configListRestaurants()
+    {
+        if (ActivityCompat.checkSelfPermission(
+                getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        Task<Location> task = fusedLocationProviderClient.getLastLocation();
+        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    currentLocation = location;
+                }
+            }
+        });
+
+        if(currentLocation != null)
+        {
+            this.stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+        }
+        else
+        {
+            this.restaurants = new ArrayList<>();
+        }
     }
 
     ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
@@ -103,8 +145,18 @@ public class ListRestaurantsFragment extends Fragment {
     {
         this.disposable = RestaurantStreams.streamFetchRestaurant(lat, lng, radius).subscribeWith(new DisposableObserver<List<RestaurantPOJO>>() {
             @Override
-            public void onNext(List<RestaurantPOJO> restaurantPOJOS) {
+            public void onNext(List<RestaurantPOJO> restaurantPOJOS)
+            {
+                for (int i = 0; i < restaurantPOJOS.size(); i ++)
+                {
+                    String name = restaurantPOJOS.get(i).getResults().get(0).getName();
+                    String type = restaurantPOJOS.get(i).getResults().get(0).getTypes().get(0);
+                    String address = restaurantPOJOS.get(i).getResults().get(0).getVicinity();
+                    String illustration = restaurantPOJOS.get(i).getResults().get(0).getIcon();
 
+                    Restaurant restaurant = new Restaurant(name, type, address, illustration);
+                    restaurants.add(restaurant);
+                }
             }
 
             @Override

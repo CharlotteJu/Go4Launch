@@ -32,7 +32,7 @@ public class UserRepository
 
     public void createUser(String email, String username, String urlPicture)
     {
-        UserHelper.createUser(email, username, urlPicture);
+        //UserHelper.createUser(email, username, urlPicture);
     }
 
     public void updateUserIsChooseRestaurant(String email, Boolean isRestaurantChoose)

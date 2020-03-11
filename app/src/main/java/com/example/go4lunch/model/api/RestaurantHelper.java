@@ -13,11 +13,11 @@ public class RestaurantHelper
         return FirebaseFirestore.getInstance().collection("restaurant");
     }
 
-    public static Task<Void> createRestaurant(String name, String type, String address, int hours, String urlPicture)
+   /* public static Task<Void> createRestaurant(String name, String type, String address, int hours, String urlPicture)
     {
         Restaurant toCreate = new Restaurant(name, type, address, hours, urlPicture);
         return RestaurantHelper.getCollectionRestaurant().document(name).set(toCreate);
-    }
+    }*/
 
     public static Task<DocumentSnapshot> getRestaurant(String name)
     {

@@ -1,5 +1,6 @@
 package com.example.go4lunch.view.activities;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -10,8 +11,11 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.User;
+import com.example.go4lunch.model.api.UserHelper;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.lang.reflect.Array;
@@ -60,6 +64,16 @@ public class AuthActivity extends AppCompatActivity {
     {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
         {
+            String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+            String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+            String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            UserHelper.createUser(uid, email, name, urlPicture).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getApplicationContext(), "Création échouée", Toast.LENGTH_SHORT).show();
+                }
+            });
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }
@@ -101,7 +115,8 @@ public class AuthActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK)
             {
                 Toast.makeText(getApplicationContext(), R.string.response_sign_in_success,Toast.LENGTH_SHORT ).show();
-                Intent intent = new Intent(this, MainActivity.class);
+                this.userConnected();
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }
             else

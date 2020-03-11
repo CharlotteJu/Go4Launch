@@ -3,6 +3,7 @@ package com.example.go4lunch.view.adapters;
 import android.content.Context;
 import android.media.Image;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -104,7 +105,11 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
 
             if (user.isChooseRestaurant())
             {
-                textView.setText(user.getName() + " is eating " + user.getRestaurantChoose().getType() + " (" + user.getRestaurantChoose().getName() + ") ");
+                Log.d("DEBUG_APP", "isChoose : " + user.isChooseRestaurant());
+                Log.d("DEBUG_APP", "user" + user.getName());
+                textView.setText(user.getName() + " is eating " + " (" + user.getRestaurantChoose().getName() + ") ");
+
+                //user.getRestaurantChoose().getType() +
 
                 if(Build.VERSION.SDK_INT < 23)
                 {

@@ -12,11 +12,11 @@ public class Restaurant
 
     //////// CONSTRUCTOR ////////
 
-    public Restaurant(String name, String type, String address, int hours, String illustration) {
+    public Restaurant(String name, String type, String address, String illustration) {
         this.name = name;
         this.type = type;
         this.address = address;
-        this.hours = hours;
+        //this.hours = hours;
         this.illustration = illustration;
 
         this.rating = 0;

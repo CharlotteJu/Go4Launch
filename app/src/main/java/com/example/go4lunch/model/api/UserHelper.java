@@ -16,7 +16,7 @@ public class UserHelper
 {
     public static CollectionReference getCollectionUser ()
     {
-        return FirebaseFirestore.getInstance().collection("user");
+        return FirebaseFirestore.getInstance().collection("users");
     }
 
     public static Query getListUsers()
@@ -24,10 +24,10 @@ public class UserHelper
         return UserHelper.getCollectionUser().orderBy("name");
     }
 
-    public static Task<Void> createUser(String email, String username, String urlPicture)
+    public static Task<Void> createUser(String uid, String email, String username, String urlPicture)
     {
         User toCreate = new User(email, username, urlPicture);
-        return UserHelper.getCollectionUser().document(email).set(toCreate);
+        return UserHelper.getCollectionUser().document(uid).set(toCreate);
     }
 
     public static Task<DocumentSnapshot> getUser(String email)
