@@ -67,17 +67,13 @@ public class ListRestaurantsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
         restaurants = configListRestaurants();
-        configRecyclerView();
+        //configRecyclerView();
         return v;
 
     }
 
     private void configRecyclerView()
     {
-        //this.restaurants = GenerateTests.getRestaurants();
-
-        restaurants = configListRestaurants();
-        int size = restaurants.size();
         this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this));
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -112,41 +108,6 @@ public class ListRestaurantsFragment extends Fragment {
 
     ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
 
-    private DisposableObserver<RestaurantPOJO> getSubscriber()
-    {
-        return new DisposableObserver<RestaurantPOJO>() {
-            @Override
-            public void onNext(RestaurantPOJO restaurantPOJOS)
-            {
-                List<RestaurantPOJO.Result> res = restaurantPOJOS.getResults();
-
-                for (int i = 0; i < res.size(); i ++)
-                {
-
-                    String name = res.get(i).getName();
-                    String type = res.get(i).getTypes().get(0);
-                    String address = res.get(i).getVicinity();
-                    String illustration = res.get(i).getIcon();
-
-                    Restaurant restaurant = new Restaurant(name, type, address, illustration);
-                    restaurants.add(restaurant);
-                }
-
-                restaurants.size();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        };
-    }
-
     private List<Restaurant> stream(double lat, double lng, int radius)
     {
         String key = getResources().getString(R.string.google_maps_key);
@@ -164,12 +125,14 @@ public class ListRestaurantsFragment extends Fragment {
                     String type = res.get(i).getTypes().get(0);
                     String address = res.get(i).getVicinity();
                     String illustration = res.get(i).getIcon();
+                    String illus = res.get(i).getPhotos().get(0).getHtmlAttributions().get(0);
+                    String photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
 
-                    Restaurant restaurant = new Restaurant(name, type, address, illustration);
+                    Restaurant restaurant = new Restaurant(name, type, address, photo);
                     restaurants.add(restaurant);
                 }
 
-
+                configRecyclerView();
             }
 
             @Override
@@ -185,6 +148,12 @@ public class ListRestaurantsFragment extends Fragment {
         });
 
         return restaurants;
+    }
+
+    public String getPhoto(String photoReference, int maxWidth, String key)
+    {
+        return "https://maps.googleapis.com/maps/api/place/photo?" + "photoreference=" + photoReference
+                + "&maxwidth=" + maxWidth + "&key=" + key;
     }
 
     private void unsubscribe()

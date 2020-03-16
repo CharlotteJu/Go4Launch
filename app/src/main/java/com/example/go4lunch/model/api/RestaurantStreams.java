@@ -28,4 +28,10 @@ public class RestaurantStreams {
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10, TimeUnit.SECONDS);
     }
+
+    public String getPhoto(String photoReference, int maxWidth, String key)
+    {
+        return "https://maps.googleapis.com/maps/api/place/photo?" + "photoreference=" + photoReference
+                + "&maxwidth=" + maxWidth + "&key=" + key;
+    }
 }
