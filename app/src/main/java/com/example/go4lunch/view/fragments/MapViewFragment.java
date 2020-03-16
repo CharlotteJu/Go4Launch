@@ -101,16 +101,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
 
-        //LatLng paris = new LatLng(48, 2.3488);
-        //this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(paris));
-        //this.googleMap.setMyLocationEnabled(true)
-        // https://www.tutorialspoint.com/how-to-show-current-location-on-a-google-map-on-android*/
-
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        //this.googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-        //this.googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 5));
         this.googleMap.addMarker(markerOptions);
     }
 

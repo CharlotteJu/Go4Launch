@@ -32,7 +32,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -67,6 +66,7 @@ public class ListRestaurantsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
+        restaurants = configListRestaurants();
         configRecyclerView();
         return v;
 
@@ -74,8 +74,10 @@ public class ListRestaurantsFragment extends Fragment {
 
     private void configRecyclerView()
     {
-        this.restaurants = GenerateTests.getRestaurants();
-        //configListRestaurants();
+        //this.restaurants = GenerateTests.getRestaurants();
+
+        restaurants = configListRestaurants();
+        int size = restaurants.size();
         this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this));
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -85,13 +87,13 @@ public class ListRestaurantsFragment extends Fragment {
     private static final int REQUEST_CODE = 12;
     private Location currentLocation;
 
-    private void configListRestaurants()
+    private List<Restaurant> configListRestaurants()
     {
         if (ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return;
+            return new ArrayList<>();
         }
         FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
@@ -100,33 +102,37 @@ public class ListRestaurantsFragment extends Fragment {
             public void onSuccess(Location location) {
                 if (location != null) {
                     currentLocation = location;
+                    restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
                 }
             }
         });
+        return restaurants;
 
-        if(currentLocation != null)
-        {
-            this.stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-        }
-        else
-        {
-            this.restaurants = new ArrayList<>();
-        }
     }
 
     ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
 
-    private Observable<String> getObservable ()
+    private DisposableObserver<RestaurantPOJO> getSubscriber()
     {
-        return Observable.just("Observable");
-    }
-
-    private DisposableObserver<String> getSubsriber()
-    {
-        return new DisposableObserver<String>() {
+        return new DisposableObserver<RestaurantPOJO>() {
             @Override
-            public void onNext(String s) {
+            public void onNext(RestaurantPOJO restaurantPOJOS)
+            {
+                List<RestaurantPOJO.Result> res = restaurantPOJOS.getResults();
 
+                for (int i = 0; i < res.size(); i ++)
+                {
+
+                    String name = res.get(i).getName();
+                    String type = res.get(i).getTypes().get(0);
+                    String address = res.get(i).getVicinity();
+                    String illustration = res.get(i).getIcon();
+
+                    Restaurant restaurant = new Restaurant(name, type, address, illustration);
+                    restaurants.add(restaurant);
+                }
+
+                restaurants.size();
             }
 
             @Override
@@ -141,22 +147,29 @@ public class ListRestaurantsFragment extends Fragment {
         };
     }
 
-    private void stream(double lat, double lng, int radius)
+    private List<Restaurant> stream(double lat, double lng, int radius)
     {
-        this.disposable = RestaurantStreams.streamFetchRestaurant(lat, lng, radius).subscribeWith(new DisposableObserver<List<RestaurantPOJO>>() {
+        String key = getResources().getString(R.string.google_maps_key);
+
+        this.disposable = RestaurantStreams.streamFetchRestaurant(lat, lng, radius, key).subscribeWith(new DisposableObserver<RestaurantPOJO>() {
             @Override
-            public void onNext(List<RestaurantPOJO> restaurantPOJOS)
-            {
-                for (int i = 0; i < restaurantPOJOS.size(); i ++)
+            public void onNext(RestaurantPOJO restaurantPOJOS) {
+
+                List<RestaurantPOJO.Result> res = restaurantPOJOS.getResults();
+
+                for (int i = 0; i < res.size(); i ++)
                 {
-                    String name = restaurantPOJOS.get(i).getResults().get(0).getName();
-                    String type = restaurantPOJOS.get(i).getResults().get(0).getTypes().get(0);
-                    String address = restaurantPOJOS.get(i).getResults().get(0).getVicinity();
-                    String illustration = restaurantPOJOS.get(i).getResults().get(0).getIcon();
+
+                    String name = res.get(i).getName();
+                    String type = res.get(i).getTypes().get(0);
+                    String address = res.get(i).getVicinity();
+                    String illustration = res.get(i).getIcon();
 
                     Restaurant restaurant = new Restaurant(name, type, address, illustration);
                     restaurants.add(restaurant);
                 }
+
+
             }
 
             @Override
@@ -168,7 +181,10 @@ public class ListRestaurantsFragment extends Fragment {
             public void onComplete() {
 
             }
+
         });
+
+        return restaurants;
     }
 
     private void unsubscribe()
@@ -189,6 +205,5 @@ public class ListRestaurantsFragment extends Fragment {
         super.onDestroy();
         this.unsubscribe();
     }
-
 
 }

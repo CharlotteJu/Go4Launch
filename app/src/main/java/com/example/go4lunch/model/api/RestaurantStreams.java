@@ -2,6 +2,8 @@ package com.example.go4lunch.model.api;
 
 
 
+import android.app.Instrumentation;
+
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.RestaurantPOJO;
 
@@ -14,12 +16,14 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RestaurantStreams {
 
-    private static String keyGOOGLE = String.valueOf(R.string.google_api_key);
+    private static String type = "restaurant";
 
-    public static Observable<List<RestaurantPOJO>> streamFetchRestaurant (double lat, double lng, int radius)
+    public static Observable<RestaurantPOJO> streamFetchRestaurant (double lat, double lng, int radius, String key)
     {
         RestaurantPlacesApi restaurantPlacesApi = RestaurantPlacesApi.retrofit.create(RestaurantPlacesApi.class);
-        return restaurantPlacesApi.getNearbyRestaurants(lat, lng, radius, keyGOOGLE)
+        String location = lat + "," + lng;
+
+        return restaurantPlacesApi.getNearbyRestaurants(location, radius, type, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10, TimeUnit.SECONDS);

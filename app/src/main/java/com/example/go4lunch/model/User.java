@@ -8,7 +8,7 @@ public class User
     private String name;
     private String email;
     private String illustration;
-    private boolean isChooseRestaurant = false;
+    private boolean chooseRestaurant = false;
     private Restaurant restaurantChoose;
     private List<Restaurant> restaurantListFavorites;
 
@@ -20,7 +20,7 @@ public class User
         this.email = email;
         this.illustration = illustration;
 
-        this.isChooseRestaurant = false;
+        this.chooseRestaurant = false;
         this.restaurantListFavorites = new ArrayList<>();
     }
 
@@ -44,7 +44,7 @@ public class User
     }
 
     public boolean isChooseRestaurant() {
-        return isChooseRestaurant;
+        return chooseRestaurant;
     }
 
     public List<Restaurant> getRestaurantListFavorites() {
@@ -76,6 +76,6 @@ public class User
 
     public void setRestaurantChoose(Restaurant restaurantChoose) {
         this.restaurantChoose = restaurantChoose;
-        this.isChooseRestaurant = true;
+        this.chooseRestaurant = true;
     }
 }

@@ -24,6 +24,7 @@ public class UserHelper
         return UserHelper.getCollectionUser().orderBy("name");
     }
 
+
     public static Task<Void> createUser(String uid, String email, String username, String urlPicture)
     {
         User toCreate = new User(email, username, urlPicture);

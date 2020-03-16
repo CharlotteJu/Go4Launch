@@ -68,6 +68,13 @@ public class ListWorkmatesFragment extends Fragment implements ListWorkmatesAdap
 
     }
 
+    private void initUserList()
+    {
+        //SINGLE LISTENER
+        //final DocumentSnapshot docRef = UserHelper.getCollectionUser().document()
+
+    }
+
     private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
     {
         return new FirestoreRecyclerOptions.Builder<User>()
