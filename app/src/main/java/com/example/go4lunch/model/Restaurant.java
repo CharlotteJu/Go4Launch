@@ -1,5 +1,7 @@
 package com.example.go4lunch.model;
 
+import java.util.List;
+
 public class Restaurant
 {
     private String name;
@@ -9,15 +11,20 @@ public class Restaurant
     private int numberRating;
     private int rating;
     private String illustration;
+    private String placeId;
+
+    private List<DetailPOJO.Period> periodList;
+
+    private DetailPOJO.OpeningHours openingHours;
 
     //////// CONSTRUCTOR ////////
 
-    public Restaurant(String name, String type, String address, String illustration) {
+    public Restaurant(String name, String type, String address, String illustration, String placeId) {
         this.name = name;
         this.type = type;
         this.address = address;
-        //this.hours = hours;
         this.illustration = illustration;
+        this.placeId = placeId;
 
         this.rating = 0;
         this.numberRating = 0;
@@ -54,6 +61,18 @@ public class Restaurant
         return illustration;
     }
 
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public List<DetailPOJO.Period> getPeriodList() {
+        return periodList;
+    }
+
+    public DetailPOJO.OpeningHours getOpeningHours() {
+        return openingHours;
+    }
+
     //////// SETTERS ////////
 
 
@@ -83,5 +102,17 @@ public class Restaurant
 
     public void setIllustration(String illustration) {
         this.illustration = illustration;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
+    }
+
+    public void setPeriodList(List<DetailPOJO.Period> periodList) {
+        this.periodList = periodList;
+    }
+
+    public void setOpeningHours(DetailPOJO.OpeningHours openingHours) {
+        this.openingHours = openingHours;
     }
 }

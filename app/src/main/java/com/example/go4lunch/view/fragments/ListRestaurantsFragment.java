@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.GenerateTests;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
@@ -32,11 +33,12 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
 
-public class ListRestaurantsFragment extends Fragment {
+public class ListRestaurantsFragment extends Fragment{
 
     private List<Restaurant> restaurants = new ArrayList<>();
     private ListRestaurantsAdapter adapter;
@@ -66,7 +68,7 @@ public class ListRestaurantsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
-        restaurants = configListRestaurants();
+        configListRestaurants();
         //configRecyclerView();
         return v;
 
@@ -83,13 +85,13 @@ public class ListRestaurantsFragment extends Fragment {
     private static final int REQUEST_CODE = 12;
     private Location currentLocation;
 
-    private List<Restaurant> configListRestaurants()
+    private void configListRestaurants()
     {
         if (ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return new ArrayList<>();
+
         }
         FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
@@ -102,7 +104,7 @@ public class ListRestaurantsFragment extends Fragment {
                 }
             }
         });
-        return restaurants;
+
 
     }
 
@@ -124,14 +126,12 @@ public class ListRestaurantsFragment extends Fragment {
                     String name = res.get(i).getName();
                     String type = res.get(i).getTypes().get(0);
                     String address = res.get(i).getVicinity();
-                    String illustration = res.get(i).getIcon();
-                    String illus = res.get(i).getPhotos().get(0).getHtmlAttributions().get(0);
                     String photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
+                    String placeId = res.get(i).getPlaceId();
 
-                    Restaurant restaurant = new Restaurant(name, type, address, photo);
+                    Restaurant restaurant = new Restaurant(name, type, address, photo, placeId);
                     restaurants.add(restaurant);
                 }
-
                 configRecyclerView();
             }
 
@@ -147,6 +147,83 @@ public class ListRestaurantsFragment extends Fragment {
 
         });
 
+
+
+
+
+
+
+        /*this.disposable = RestaurantStreams.test1(lat, lng, radius, key).subscribeWith(new Observer<Restaurant>() {
+            @Override
+            public void onSubscribe(Disposable d) { }
+
+            @Override
+            public void onNext(Restaurant restaurant) { }
+
+            @Override
+            public void onError(Throwable e) { }
+
+            @Override
+            public void onComplete() { }
+        });*/
+
+       /* for (int i = 0; i < restaurants.size(); i ++)
+        {
+            Restaurant restaurant = restaurants.get(i);
+            this.disposable = RestaurantStreams.streamDetailRestaurant(restaurants.get(i).getPlaceId(), key).subscribeWith(new DisposableObserver<DetailPOJO>() {
+                @Override
+                public void onNext(DetailPOJO detailPOJO)
+                {
+                    DetailPOJO.OpeningHours openingHours = detailPOJO.getResult().getOpeningHours();
+                    restaurant.setOpeningHours(openingHours);
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onComplete() {
+
+                }
+            });
+        }*/
+
+        return restaurants;
+    }
+
+
+    private List<Restaurant> streamDetail (String placeId)
+    {
+        String key = getResources().getString(R.string.google_maps_key);
+        List<Restaurant> toPush = new ArrayList<>();
+
+
+        for (int i = 0; i < restaurants.size(); i ++)
+        {
+            this.disposable = RestaurantStreams.streamDetailRestaurant(placeId, key).subscribeWith(new DisposableObserver<DetailPOJO>() {
+                @Override
+                public void onNext(DetailPOJO detailPOJO)
+                {
+                    String website = detailPOJO.getResult().getWebsite();
+                    String phone_number = detailPOJO.getResult().getInternationalPhoneNumber();
+                }
+
+                @Override
+                public void onError(Throwable e) {
+
+                }
+
+                @Override
+                public void onComplete() {
+
+                }
+            });
+        }
+
+
+
         return restaurants;
     }
 
@@ -155,6 +232,7 @@ public class ListRestaurantsFragment extends Fragment {
         return "https://maps.googleapis.com/maps/api/place/photo?" + "photoreference=" + photoReference
                 + "&maxwidth=" + maxWidth + "&key=" + key;
     }
+
 
     private void unsubscribe()
     {

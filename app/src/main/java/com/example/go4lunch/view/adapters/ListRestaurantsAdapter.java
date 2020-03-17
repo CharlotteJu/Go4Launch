@@ -23,6 +23,7 @@ import butterknife.ButterKnife;
 public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurantsAdapter.ListRestaurantsViewHolder>
 {
 
+
     private List<Restaurant> restaurants;
     private RequestManager glide;
 
