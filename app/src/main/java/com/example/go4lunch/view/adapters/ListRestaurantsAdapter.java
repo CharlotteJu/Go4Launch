@@ -13,8 +13,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
+import com.google.gson.internal.$Gson$Preconditions;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -96,8 +100,38 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
             this.updateRating(restaurant);
 
+            List<DetailPOJO.Period> periodList = restaurant.getOpeningHours().getPeriods();
+            hours(periodList);
+
+
             //TODO : Distance, heure de fermeture
         }
+
+        private void hours (List<DetailPOJO.Period> periods)
+        {
+            int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) -1 ;
+
+            String hourClose = periods.get(day).getClose().getTime();
+            int closeInt = Integer.parseInt(hourClose);
+
+            String time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) + "" + Calendar.getInstance().get(Calendar.MINUTE);
+            int timeInt = Integer.parseInt(time);
+
+            hours.setText("Open until " + closeInt);
+
+            /*if (closeInt - timeInt < 60)
+            {
+                hours.setText("Closing soon");
+            }
+            else
+            {
+                hours.setText("Open until " + closeInt);
+            }*/
+
+
+        }
+
+
 
         private void updateRating(Restaurant restaurant)
         {

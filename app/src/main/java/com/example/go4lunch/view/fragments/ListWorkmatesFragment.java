@@ -1,7 +1,5 @@
 package com.example.go4lunch.view.fragments;
 
-import android.app.DownloadManager;
-import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -14,20 +12,13 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.GenerateTests;
-import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.model.api.UserHelper;
-import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.example.go4lunch.view.adapters.ListWorkmatesAdapter;
-import com.example.go4lunch.view_model.UserRepository;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;

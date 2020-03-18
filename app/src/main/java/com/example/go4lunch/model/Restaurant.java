@@ -30,6 +30,10 @@ public class Restaurant
         this.numberRating = 0;
     }
 
+    public Restaurant(String placeId) {
+        this.placeId = placeId;
+    }
+
     //////// GETTERS ////////
 
 

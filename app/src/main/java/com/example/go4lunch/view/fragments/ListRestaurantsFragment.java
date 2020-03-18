@@ -17,10 +17,7 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.DetailPOJO;
-import com.example.go4lunch.model.GenerateTests;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -33,7 +30,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -42,6 +38,8 @@ public class ListRestaurantsFragment extends Fragment{
 
     private List<Restaurant> restaurants = new ArrayList<>();
     private ListRestaurantsAdapter adapter;
+    private static final int REQUEST_CODE = 12;
+    private Location currentLocation;
 
     private Disposable disposable;
 
@@ -69,22 +67,27 @@ public class ListRestaurantsFragment extends Fragment{
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
         configListRestaurants();
-        //configRecyclerView();
         return v;
 
     }
 
+    ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
+
+
+    /**
+     * Configure the RecyclerView
+     */
     private void configRecyclerView()
     {
         this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this));
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
     }
 
-    private static final int REQUEST_CODE = 12;
-    private Location currentLocation;
 
+    /**
+     * Configure the List<Restaurant> while checking the Access Permission
+     */
     private void configListRestaurants()
     {
         if (ActivityCompat.checkSelfPermission(
@@ -110,29 +113,40 @@ public class ListRestaurantsFragment extends Fragment{
 
     ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
 
+    /**
+     * Recover the List<Restaurant> with the HTTP Request
+     * @param lat double with latitude of the current User
+     * @param lng double with longitude of the current User
+     * @param radius double to define the distance around the current User
+     * @return a List<Restaurant>
+     */
     private List<Restaurant> stream(double lat, double lng, int radius)
     {
         String key = getResources().getString(R.string.google_maps_key);
 
-        this.disposable = RestaurantStreams.streamFetchRestaurant(lat, lng, radius, key).subscribeWith(new DisposableObserver<RestaurantPOJO>() {
+        /*this.disposable = RestaurantStreams.test1(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
+
             @Override
-            public void onNext(RestaurantPOJO restaurantPOJOS) {
-
-                List<RestaurantPOJO.Result> res = restaurantPOJOS.getResults();
-
-                for (int i = 0; i < res.size(); i ++)
-                {
-
-                    String name = res.get(i).getName();
-                    String type = res.get(i).getTypes().get(0);
-                    String address = res.get(i).getVicinity();
-                    String photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
-                    String placeId = res.get(i).getPlaceId();
-
-                    Restaurant restaurant = new Restaurant(name, type, address, photo, placeId);
-                    restaurants.add(restaurant);
-                }
+            public void onNext(List<Restaurant> restaurantList)
+            {
+                restaurants = restaurantList;
                 configRecyclerView();
+            }
+
+
+            @Override
+            public void onError(Throwable e) { }
+
+            @Override
+            public void onComplete() { }
+        });*/
+
+       this.disposable = RestaurantStreams.streamRestaurantListFinal(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
+           @Override
+            public void onNext(List<Restaurant> restaurantList) {
+
+               restaurants = restaurantList;
+               configRecyclerView();
             }
 
             @Override
@@ -144,96 +158,14 @@ public class ListRestaurantsFragment extends Fragment{
             public void onComplete() {
 
             }
-
         });
 
-
-
-
-
-
-
-        /*this.disposable = RestaurantStreams.test1(lat, lng, radius, key).subscribeWith(new Observer<Restaurant>() {
-            @Override
-            public void onSubscribe(Disposable d) { }
-
-            @Override
-            public void onNext(Restaurant restaurant) { }
-
-            @Override
-            public void onError(Throwable e) { }
-
-            @Override
-            public void onComplete() { }
-        });*/
-
-       /* for (int i = 0; i < restaurants.size(); i ++)
-        {
-            Restaurant restaurant = restaurants.get(i);
-            this.disposable = RestaurantStreams.streamDetailRestaurant(restaurants.get(i).getPlaceId(), key).subscribeWith(new DisposableObserver<DetailPOJO>() {
-                @Override
-                public void onNext(DetailPOJO detailPOJO)
-                {
-                    DetailPOJO.OpeningHours openingHours = detailPOJO.getResult().getOpeningHours();
-                    restaurant.setOpeningHours(openingHours);
-                }
-
-                @Override
-                public void onError(Throwable e) {
-
-                }
-
-                @Override
-                public void onComplete() {
-
-                }
-            });
-        }*/
-
         return restaurants;
     }
 
-
-    private List<Restaurant> streamDetail (String placeId)
-    {
-        String key = getResources().getString(R.string.google_maps_key);
-        List<Restaurant> toPush = new ArrayList<>();
-
-
-        for (int i = 0; i < restaurants.size(); i ++)
-        {
-            this.disposable = RestaurantStreams.streamDetailRestaurant(placeId, key).subscribeWith(new DisposableObserver<DetailPOJO>() {
-                @Override
-                public void onNext(DetailPOJO detailPOJO)
-                {
-                    String website = detailPOJO.getResult().getWebsite();
-                    String phone_number = detailPOJO.getResult().getInternationalPhoneNumber();
-                }
-
-                @Override
-                public void onError(Throwable e) {
-
-                }
-
-                @Override
-                public void onComplete() {
-
-                }
-            });
-        }
-
-
-
-        return restaurants;
-    }
-
-    public String getPhoto(String photoReference, int maxWidth, String key)
-    {
-        return "https://maps.googleapis.com/maps/api/place/photo?" + "photoreference=" + photoReference
-                + "&maxwidth=" + maxWidth + "&key=" + key;
-    }
-
-
+    /**
+     * Unsubscribe of the HTTP Request
+     */
     private void unsubscribe()
     {
         if (this.disposable != null && !this.disposable.isDisposed())
