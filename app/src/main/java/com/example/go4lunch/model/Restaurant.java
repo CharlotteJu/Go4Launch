@@ -9,24 +9,22 @@ public class Restaurant
     private String address;
     private int hours;
     private int numberRating;
-    private int rating;
+    private double rating;
     private String illustration;
     private String placeId;
-
-    private List<DetailPOJO.Period> periodList;
-
     private DetailPOJO.OpeningHours openingHours;
 
     //////// CONSTRUCTOR ////////
 
-    public Restaurant(String name, String type, String address, String illustration, String placeId) {
+    public Restaurant(String name, String type, String address, String illustration, String placeId, double rating, DetailPOJO.OpeningHours openingHours) {
         this.name = name;
         this.type = type;
         this.address = address;
         this.illustration = illustration;
         this.placeId = placeId;
+        this.rating = rating;
+        this.openingHours = openingHours;
 
-        this.rating = 0;
         this.numberRating = 0;
     }
 
@@ -57,7 +55,7 @@ public class Restaurant
         return numberRating;
     }
 
-    public int getRating() {
+    public double getRating() {
         return rating;
     }
 
@@ -67,10 +65,6 @@ public class Restaurant
 
     public String getPlaceId() {
         return placeId;
-    }
-
-    public List<DetailPOJO.Period> getPeriodList() {
-        return periodList;
     }
 
     public DetailPOJO.OpeningHours getOpeningHours() {
@@ -100,7 +94,7 @@ public class Restaurant
         this.numberRating = numberRating;
     }
 
-    public void setRating(int rating) {
+    public void setRating(double rating) {
         this.rating = rating;
     }
 
@@ -112,11 +106,8 @@ public class Restaurant
         this.placeId = placeId;
     }
 
-    public void setPeriodList(List<DetailPOJO.Period> periodList) {
-        this.periodList = periodList;
-    }
-
     public void setOpeningHours(DetailPOJO.OpeningHours openingHours) {
         this.openingHours = openingHours;
     }
+
 }

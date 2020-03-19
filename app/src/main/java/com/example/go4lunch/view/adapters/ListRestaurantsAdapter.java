@@ -15,10 +15,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
-import com.google.gson.internal.$Gson$Preconditions;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -87,9 +85,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         public ListRestaurantsViewHolder(@NonNull View itemView) {
             super(itemView);
             ButterKnife.bind(this,itemView);
-            star1.setVisibility(View.INVISIBLE);
-            star2.setVisibility(View.INVISIBLE);
-            star3.setVisibility(View.INVISIBLE);
+
         }
 
         private void updateUI(Restaurant restaurant, RequestManager glide)
@@ -100,14 +96,16 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
             this.updateRating(restaurant);
 
-            List<DetailPOJO.Period> periodList = restaurant.getOpeningHours().getPeriods();
-            hours(periodList);
+            if (restaurant.getOpeningHours() != null)
+            {
+                List<DetailPOJO.Period> periodList = restaurant.getOpeningHours().getPeriods();
+                updateHours(periodList);
+            }
 
-
-            //TODO : Distance, heure de fermeture
+            //TODO : Distance
         }
 
-        private void hours (List<DetailPOJO.Period> periods)
+        private void updateHours(List<DetailPOJO.Period> periods)
         {
             int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) -1 ;
 
@@ -117,46 +115,48 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             String time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) + "" + Calendar.getInstance().get(Calendar.MINUTE);
             int timeInt = Integer.parseInt(time);
 
-            hours.setText("Open until " + closeInt);
-
-            /*if (closeInt - timeInt < 60)
+            if (closeInt - timeInt < 60)
             {
                 hours.setText("Closing soon");
             }
             else
             {
                 hours.setText("Open until " + closeInt);
-            }*/
-
+            }
 
         }
 
-
-
         private void updateRating(Restaurant restaurant)
         {
-            if (restaurant.getNumberRating() != 0)
-            {
-                numberRating.setText(restaurant.getNumberRating());
+            double rating = restaurant.getRating();
 
-                switch (restaurant.getRating())
-                {
-                    case 1 :
-                        star1.setVisibility(View.VISIBLE);
-                        break;
-                    case 2 :
-                        star1.setVisibility(View.VISIBLE);
-                        star2.setVisibility(View.VISIBLE);
-                        break;
-                    case 3 :
-                        star1.setVisibility(View.VISIBLE);
-                        star2.setVisibility(View.VISIBLE);
-                        star3.setVisibility(View.VISIBLE);
-                        break;
-                    default:
-                        break;
-                }
+            if (rating > 3.75)
+            {
+                star1.setVisibility(View.VISIBLE);
+                star2.setVisibility(View.VISIBLE);
+                star3.setVisibility(View.VISIBLE);
+
             }
+            else if (rating > 2.5)
+            {
+                star1.setVisibility(View.VISIBLE);
+                star2.setVisibility(View.VISIBLE);
+                star3.setVisibility(View.INVISIBLE);
+
+            }
+            else if (rating > 1.25)
+            {
+                star1.setVisibility(View.VISIBLE);
+                star2.setVisibility(View.INVISIBLE);
+                star3.setVisibility(View.INVISIBLE);
+            }
+            else
+            {
+                star1.setVisibility(View.INVISIBLE);
+                star2.setVisibility(View.INVISIBLE);
+                star3.setVisibility(View.INVISIBLE);
+            }
+
         }
     }
 }

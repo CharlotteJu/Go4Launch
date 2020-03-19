@@ -18,6 +18,7 @@ import io.reactivex.schedulers.Schedulers;
 public class RestaurantStreams {
 
     private static String type = "restaurant";
+    private static Boolean openingHoursBoolean = true;
     private static List<Restaurant> restaurants = new ArrayList<>();
 
     /**
@@ -33,7 +34,7 @@ public class RestaurantStreams {
         RestaurantPlacesApi restaurantPlacesApi = RestaurantPlacesApi.retrofit.create(RestaurantPlacesApi.class);
         String location = lat + "," + lng;
 
-        return restaurantPlacesApi.getNearbyRestaurants(location, radius, type, key)
+        return restaurantPlacesApi.getNearbyRestaurants(location, radius, type, openingHoursBoolean, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10, TimeUnit.SECONDS);
@@ -110,10 +111,11 @@ public class RestaurantStreams {
                             String address = detailPOJOS.get(i).getResult().getVicinity();
                             String photo = getPhoto(detailPOJOS.get(i).getResult().getPhotos().get(0).getPhotoReference(), 400, key);
                             String placeId = detailPOJOS.get(i).getResult().getPlaceId();
+                            double rating = detailPOJOS.get(i).getResult().getRating();
+                            int ratingFinal = configureRating(rating);
                             DetailPOJO.OpeningHours openingHours = detailPOJOS.get(i).getResult().getOpeningHours();
 
-                            Restaurant restaurant = new Restaurant(name, type, address, photo, placeId);
-                            restaurant.setOpeningHours(openingHours);
+                            Restaurant restaurant = new Restaurant(name, type, address, photo, placeId, ratingFinal, openingHours);
                             restaurants.add(restaurant);
                         }
                         return restaurants;
@@ -134,5 +136,26 @@ public class RestaurantStreams {
     {
         return "https://maps.googleapis.com/maps/api/place/photo?" + "photoreference=" + photoReference
                 + "&maxwidth=" + maxWidth + "&key=" + key;
+    }
+
+
+    private static int configureRating(double rating)
+    {
+        if (rating < 1.25)
+        {
+            return 0;
+        }
+        else if (rating < 2.5)
+        {
+            return 1;
+        }
+        else if (rating < 3.75)
+        {
+            return 2;
+        }
+        else
+        {
+            return 3;
+        }
     }
 }

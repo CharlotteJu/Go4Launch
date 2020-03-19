@@ -123,23 +123,7 @@ public class ListRestaurantsFragment extends Fragment{
     private List<Restaurant> stream(double lat, double lng, int radius)
     {
         String key = getResources().getString(R.string.google_maps_key);
-
-        /*this.disposable = RestaurantStreams.test1(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
-
-            @Override
-            public void onNext(List<Restaurant> restaurantList)
-            {
-                restaurants = restaurantList;
-                configRecyclerView();
-            }
-
-
-            @Override
-            public void onError(Throwable e) { }
-
-            @Override
-            public void onComplete() { }
-        });*/
+        this.restaurants.clear();
 
        this.disposable = RestaurantStreams.streamRestaurantListFinal(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
            @Override
