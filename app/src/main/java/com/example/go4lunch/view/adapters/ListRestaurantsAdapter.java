@@ -15,24 +15,27 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.view.fragments.OnClickListener;
 
 import java.util.Calendar;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurantsAdapter.ListRestaurantsViewHolder>
 {
 
-
+    private OnClickListener onClickListener;
     private List<Restaurant> restaurants;
     private RequestManager glide;
 
-    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide)
+    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide, OnClickListener onClickListener)
     {
         this.restaurants = restaurants;
         this.glide = glide;
+        this.onClickListener = onClickListener;
     }
 
     @NonNull
@@ -42,7 +45,9 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         Context context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
-        return new ListRestaurantsViewHolder(v);
+
+
+        return new ListRestaurantsViewHolder(v, this.onClickListener);
     }
 
     @Override
@@ -57,13 +62,11 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         return this.restaurants.size();
     }
 
-    static class ListRestaurantsViewHolder extends RecyclerView.ViewHolder
+    static class ListRestaurantsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
         @BindView(R.id.item_list_restaurant_name_txt)
         TextView name;
-        @BindView(R.id.item_list_restaurant_type_txt)
-        TextView type;
-        @BindView(R.id.item_list_restaurant_adress_txt)
+        @BindView(R.id.item_list_restaurant_address_txt)
         TextView address;
         @BindView(R.id.item_list_restaurant_hours_txt)
         TextView hours;
@@ -82,16 +85,19 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         @BindView(R.id.item_list_restaurant_illustration_image)
         ImageView illustration;
 
-        public ListRestaurantsViewHolder(@NonNull View itemView) {
+        OnClickListener onClickListener;
+
+
+        public ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener) {
             super(itemView);
             ButterKnife.bind(this,itemView);
-
+            this.onClickListener = onClickListener;
         }
+
 
         private void updateUI(Restaurant restaurant, RequestManager glide)
         {
             name.setText(restaurant.getName());
-            type.setText(restaurant.getType() + " - ");
             address.setText(restaurant.getAddress());
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
             this.updateRating(restaurant);
@@ -157,6 +163,18 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
                 star3.setVisibility(View.INVISIBLE);
             }
 
+        }
+
+
+        @OnClick(R.id.item_list_restaurant_illustration_image)
+        void test(View v)
+        {
+            onClickListener.onClickListener(getAdapterPosition());
+        }
+        @Override
+        public void onClick(View view)
+        {
+            onClickListener.onClickListener(getAdapterPosition());
         }
     }
 }

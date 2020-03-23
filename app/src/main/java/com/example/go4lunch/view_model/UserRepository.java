@@ -18,9 +18,9 @@ public class UserRepository
         this.userHelper = userHelper;
     }
 
-    public User getUser(String email)
+    public User getUser(String uid)
     {
-        UserHelper.getUser(email).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        UserHelper.getUser(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot)
             {
@@ -30,29 +30,29 @@ public class UserRepository
         return currentUser;
     }
 
-    public void createUser(String email, String username, String urlPicture)
+    public void createUser(String uid, String username, String urlPicture)
     {
-        //UserHelper.createUser(email, username, urlPicture);
+        //UserHelper.createUser(uid, username, urlPicture);
     }
 
-    public void updateUserIsChooseRestaurant(String email, Boolean isRestaurantChoose)
+    public void updateUserIsChooseRestaurant(String uid, Boolean isRestaurantChoose)
     {
-        UserHelper.updateUserIsChooseRestaurant(email, isRestaurantChoose);
+        UserHelper.updateUserIsChooseRestaurant(uid, isRestaurantChoose);
     }
 
-    public void updateUserRestaurant(String email, Restaurant restaurant)
+    public void updateUserRestaurant(String uid, Restaurant restaurant)
     {
-        UserHelper.updateUserRestaurant(email, restaurant);
+        UserHelper.updateUserRestaurant(uid, restaurant);
     }
 
-    public void updateUserRestaurantListFavorites(String email, List<Restaurant> restaurantListFavorites)
+    public void updateUserRestaurantListFavorites(String uid, List<Restaurant> restaurantListFavorites)
     {
-        UserHelper.updateUserRestaurantListFavorites(email, restaurantListFavorites);
+        UserHelper.updateUserRestaurantListFavorites(uid, restaurantListFavorites);
     }
 
-    public void deleteUser (String email)
+    public void deleteUser (String uid)
     {
-        UserHelper.deleteUser(email);
+        UserHelper.deleteUser(uid);
     }
 
 

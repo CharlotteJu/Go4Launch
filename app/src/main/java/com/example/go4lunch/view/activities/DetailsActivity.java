@@ -1,16 +1,67 @@
 package com.example.go4lunch.view.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.view.fragments.DetailsFragment;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import io.reactivex.disposables.Disposable;
 
 public class DetailsActivity extends AppCompatActivity {
+
+    public static String placeId;
+
+    DetailsFragment detailsFragment;
+
+   /* @BindView(R.id.toolbar)
+    Toolbar toolbar;*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+        ButterKnife.bind(this);
+        //configureToolbar();
+        displayFragment(displayDetailsFragment());
+        Intent intent = getIntent();
+        placeId = intent.getStringExtra("placeId");
     }
+
+    /**
+     * Configure the Toolbar {@link Toolbar}
+     */
+    /*private void configureToolbar()
+    {
+        setSupportActionBar(toolbar);
+    }*/
+
+    /**
+     * Display a fragment
+     * @param fragment
+     */
+    private void displayFragment(Fragment fragment)
+    {
+        getSupportFragmentManager().beginTransaction().replace(R.id.details_activity_frame_layout, fragment).commit();
+    }
+
+    /**
+     * Display the MapViewFragment {@link DetailsFragment}
+     */
+    private DetailsFragment displayDetailsFragment()
+    {
+        if (this.detailsFragment == null)
+        {
+            this.detailsFragment = DetailsFragment.newInstance(placeId);
+        }
+        return this.detailsFragment;
+    }
+
 }

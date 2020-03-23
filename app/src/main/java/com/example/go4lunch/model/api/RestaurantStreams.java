@@ -17,8 +17,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class RestaurantStreams {
 
-    private static String type = "restaurant";
-    private static Boolean openingHoursBoolean = true;
+    private static final String type = "restaurant";
+    private static final Boolean openingHoursBoolean = true;
     private static List<Restaurant> restaurants = new ArrayList<>();
 
     /**
@@ -54,6 +54,27 @@ public class RestaurantStreams {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .timeout(10,TimeUnit.SECONDS);
+    }
+
+    public static Observable<Restaurant> streamDetailRestaurantToRestaurant(String placeId, String key)
+    {
+        return streamDetailRestaurant(placeId, key)
+                .map(new Function<DetailPOJO, Restaurant>() {
+                    @Override
+                    public Restaurant apply(DetailPOJO detailPOJO) throws Exception {
+                        String name = detailPOJO.getResult().getName();
+                        String address = detailPOJO.getResult().getVicinity();
+                        String photo = getPhoto(detailPOJO.getResult().getPhotos().get(0).getPhotoReference(), 400, key);
+                        String placeId = detailPOJO.getResult().getPlaceId();
+                        double rating = detailPOJO.getResult().getRating();
+                        DetailPOJO.OpeningHours openingHours = detailPOJO.getResult().getOpeningHours();
+                        String phoneNumber = detailPOJO.getResult().getInternationalPhoneNumber();
+                        String website = detailPOJO.getResult().getWebsite();
+
+                        Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openingHours, phoneNumber, website);
+                        return restaurant;
+                    }
+                });
     }
 
     /**
@@ -107,15 +128,15 @@ public class RestaurantStreams {
                         for (int i = 0; i < detailPOJOS.size(); i ++)
                         {
                             String name = detailPOJOS.get(i).getResult().getName();
-                            String type = detailPOJOS.get(i).getResult().getTypes().get(0);
                             String address = detailPOJOS.get(i).getResult().getVicinity();
                             String photo = getPhoto(detailPOJOS.get(i).getResult().getPhotos().get(0).getPhotoReference(), 400, key);
                             String placeId = detailPOJOS.get(i).getResult().getPlaceId();
                             double rating = detailPOJOS.get(i).getResult().getRating();
-                            int ratingFinal = configureRating(rating);
                             DetailPOJO.OpeningHours openingHours = detailPOJOS.get(i).getResult().getOpeningHours();
+                            String phoneNumber = detailPOJOS.get(i).getResult().getInternationalPhoneNumber();
+                            String website = detailPOJOS.get(i).getResult().getWebsite();
 
-                            Restaurant restaurant = new Restaurant(name, type, address, photo, placeId, ratingFinal, openingHours);
+                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openingHours, phoneNumber, website);
                             restaurants.add(restaurant);
                         }
                         return restaurants;
@@ -139,23 +160,4 @@ public class RestaurantStreams {
     }
 
 
-    private static int configureRating(double rating)
-    {
-        if (rating < 1.25)
-        {
-            return 0;
-        }
-        else if (rating < 2.5)
-        {
-            return 1;
-        }
-        else if (rating < 3.75)
-        {
-            return 2;
-        }
-        else
-        {
-            return 3;
-        }
-    }
 }

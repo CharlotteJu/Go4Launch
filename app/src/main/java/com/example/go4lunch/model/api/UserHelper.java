@@ -31,24 +31,24 @@ public class UserHelper
         return UserHelper.getCollectionUser().document(uid).set(toCreate);
     }
 
-    public static Task<DocumentSnapshot> getUser(String email)
+    public static Task<DocumentSnapshot> getUser(String uid)
     {
-        return UserHelper.getCollectionUser().document(email).get();
+        return UserHelper.getCollectionUser().document(uid).get();
     }
 
-    public static Task<Void> updateUserIsChooseRestaurant(String email, Boolean isChooseRestaurant)
+    public static Task<Void> updateUserIsChooseRestaurant(String uid, Boolean isChooseRestaurant)
     {
-        return UserHelper.getCollectionUser().document(email).update("isChooseRestaurant", isChooseRestaurant);
+        return UserHelper.getCollectionUser().document(uid).update("isChooseRestaurant", isChooseRestaurant);
     }
 
-    public static Task<Void> updateUserRestaurant(String email, Restaurant restaurantChoose)
+    public static Task<Void> updateUserRestaurant(String uid, Restaurant restaurantChoose)
     {
-        return UserHelper.getCollectionUser().document(email).update("restaurantChoose", restaurantChoose);
+        return UserHelper.getCollectionUser().document(uid).update("restaurantChoose", restaurantChoose);
     }
 
-    public static Task<Void> updateUserRestaurantListFavorites(String email, List<Restaurant> restaurantListFavorites)
+    public static Task<Void> updateUserRestaurantListFavorites(String uid, List<Restaurant> restaurantListFavorites)
     {
-        return UserHelper.getCollectionUser().document(email).update("restaurantListFavorites", restaurantListFavorites);
+        return UserHelper.getCollectionUser().document(uid).update("restaurantListFavorites", restaurantListFavorites);
     }
 
     public static Task<Void> deleteUser(String email)

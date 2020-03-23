@@ -68,12 +68,17 @@ public class AuthActivity extends AppCompatActivity {
             String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
             String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            UserHelper.createUser(uid, email, name, urlPicture).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(getApplicationContext(), "Création échouée", Toast.LENGTH_SHORT).show();
-                }
-            });
+
+            if (UserHelper.getUser(uid) == null)
+            {
+                UserHelper.createUser(uid, email, name, urlPicture).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getApplicationContext(), "Création échouée", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }

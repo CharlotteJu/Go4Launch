@@ -5,31 +5,45 @@ import java.util.List;
 public class Restaurant
 {
     private String name;
-    private String type;
     private String address;
-    private int hours;
-    private int numberRating;
+    private int numberReservation;
     private double rating;
     private String illustration;
     private String placeId;
-    private DetailPOJO.OpeningHours openingHours;
+    private static DetailPOJO.OpeningHours openingHours;
+    private List<User> userList;
+    private String phoneNumber;
+    private String website;
 
     //////// CONSTRUCTOR ////////
 
-    public Restaurant(String name, String type, String address, String illustration, String placeId, double rating, DetailPOJO.OpeningHours openingHours) {
+    public Restaurant(String name, String address, String illustration, String placeId, double rating,
+                      DetailPOJO.OpeningHours openingHours, String phoneNumber, String website) {
+
         this.name = name;
-        this.type = type;
         this.address = address;
         this.illustration = illustration;
         this.placeId = placeId;
         this.rating = rating;
         this.openingHours = openingHours;
+        this.phoneNumber = phoneNumber;
+        this.website = website;
 
-        this.numberRating = 0;
+    }
+
+    public Restaurant ()
+    {
+        this.openingHours = new DetailPOJO.OpeningHours();
     }
 
     public Restaurant(String placeId) {
         this.placeId = placeId;
+    }
+
+    public Restaurant (String placeId, List<User> userList)
+    {
+        this.placeId = placeId;
+        this.userList = userList;
     }
 
     //////// GETTERS ////////
@@ -39,20 +53,12 @@ public class Restaurant
         return name;
     }
 
-    public String getType() {
-        return type;
-    }
-
     public String getAddress() {
         return address;
     }
 
-    public int getHours() {
-        return hours;
-    }
-
-    public int getNumberRating() {
-        return numberRating;
+    public int getNumberReservation() {
+        return numberReservation;
     }
 
     public double getRating() {
@@ -71,6 +77,18 @@ public class Restaurant
         return openingHours;
     }
 
+    public List<User> getUserList() {
+        return userList;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
     //////// SETTERS ////////
 
 
@@ -78,20 +96,12 @@ public class Restaurant
         this.name = name;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public void setAdress(String address) {
         this.address = address;
     }
 
-    public void setHours(int hours) {
-        this.hours = hours;
-    }
-
-    public void setNumberRating(int numberRating) {
-        this.numberRating = numberRating;
+    public void setNumberReservation(int numberRating) {
+        this.numberReservation = numberRating;
     }
 
     public void setRating(double rating) {
@@ -110,4 +120,19 @@ public class Restaurant
         this.openingHours = openingHours;
     }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setUserList(List<User> userList) {
+        this.userList = userList;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
 }

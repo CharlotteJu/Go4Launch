@@ -16,6 +16,7 @@ public class DetailPOJO {
     @Expose
     private String status;
 
+    public DetailPOJO(){}
     public List<Object> getHtmlAttributions() {
         return htmlAttributions;
     }
@@ -80,7 +81,7 @@ public class DetailPOJO {
     }
 
 
-    public class Close {
+    public static class Close {
 
         @SerializedName("day")
         @Expose
@@ -88,6 +89,7 @@ public class DetailPOJO {
         @SerializedName("time")
         @Expose
         private String time;
+        public Close(){}
 
         public Integer getDay() {
             return day;
@@ -189,7 +191,7 @@ public class DetailPOJO {
 
     }
 
-    public class Open {
+    public static class Open {
 
         @SerializedName("day")
         @Expose
@@ -197,6 +199,7 @@ public class DetailPOJO {
         @SerializedName("time")
         @Expose
         private String time;
+        public Open(){}
 
         public Integer getDay() {
             return day;
@@ -216,7 +219,7 @@ public class DetailPOJO {
 
     }
 
-    public class OpeningHours {
+    public static class OpeningHours {
 
         @SerializedName("open_now")
         @Expose
@@ -227,6 +230,8 @@ public class DetailPOJO {
         @SerializedName("weekday_text")
         @Expose
         private List<String> weekdayText = null;
+
+        public OpeningHours(){}
 
         public Boolean getOpenNow() {
             return openNow;
@@ -254,7 +259,7 @@ public class DetailPOJO {
 
     }
 
-    public class Period {
+    public static class Period {
 
         @SerializedName("close")
         @Expose
@@ -262,6 +267,7 @@ public class DetailPOJO {
         @SerializedName("open")
         @Expose
         private Open open;
+        public Period(){}
 
         public Close getClose() {
             return close;

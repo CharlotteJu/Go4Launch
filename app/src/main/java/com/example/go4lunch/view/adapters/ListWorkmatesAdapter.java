@@ -70,17 +70,6 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         viewHolder.updateUI(user, glide, context);
     }
 
-   /* @Override
-    public void onBindViewHolder(@NonNull ListWorkmatesAdapter.ListWorkmatesViewHolder holder, int position)
-    {
-        holder.updateUI(users.get(position), glide, context);
-    }*/
-
-   /* @Override
-    public int getItemCount() {
-        return this.users.size();
-    }*/
-
     @Override
     public void onDataChanged() {
         super.onDataChanged();
@@ -105,11 +94,7 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
 
             if (user.isChooseRestaurant())
             {
-                Log.d("DEBUG_APP", "isChoose : " + user.isChooseRestaurant());
-                Log.d("DEBUG_APP", "user" + user.getName());
                 textView.setText(user.getName() + " is eating " + " (" + user.getRestaurantChoose().getName() + ") ");
-
-                //user.getRestaurantChoose().getType() +
 
                 if(Build.VERSION.SDK_INT < 23)
                 {

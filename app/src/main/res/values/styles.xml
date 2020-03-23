@@ -91,14 +91,9 @@
         <item name="android:textSize">@dimen/item_list_restaurant_size_description</item>
     </style>
 
-    <!-- Item Restaurant List Type Txt -->
-    <style name="item_list_restaurant_type_txt" parent="item_list_restaurant_description_base_txt">
-        <item name="android:layout_marginTop">@dimen/item_list_restaurant_margin_default</item>
-    </style>
-
     <!-- Item Restaurant List Address Txt -->
     <style name="item_list_restaurant_address_txt" parent="item_list_restaurant_description_base_txt">
-        <item name="android:layout_marginStart">@dimen/item_list_restaurant_margin_start_address</item>
+        <item name="android:layout_marginTop">@dimen/item_list_restaurant_margin_default</item>
     </style>
 
     <!-- Item Restaurant List Hours Txt -->
