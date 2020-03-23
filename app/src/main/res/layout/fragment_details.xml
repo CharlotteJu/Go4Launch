@@ -168,6 +168,7 @@
             app:layout_constraintEnd_toEndOf="@id/details_fragment_website_button" />
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/details_fragment_workmates_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="@id/details_fragment_guideline_3"

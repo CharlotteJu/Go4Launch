@@ -128,10 +128,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
      */
     private List<Restaurant> stream(double lat, double lng, int radius)
     {
-       String key = Objects.requireNonNull(getActivity()).getResources().getString(R.string.google_maps_key);
+       String key = getActivity().getResources().getString(R.string.google_maps_key);
        this.restaurants.clear();
 
-       this.disposable = RestaurantStreams.streamRestaurantListFinal(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
+       this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
            @Override
             public void onNext(List<Restaurant> restaurantList) {
 
@@ -141,6 +141,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
             @Override
             public void onError(Throwable e) {
+
 
             }
 

@@ -3,32 +3,37 @@ package com.example.go4lunch.view.fragments;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
+import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.view.activities.DetailsActivity;
+import com.example.go4lunch.view.adapters.ListWorkmatesAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,13 +44,15 @@ import io.reactivex.observers.DisposableObserver;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetailsFragment extends Fragment {
+public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Listener {
 
     private String placeId;
     private Restaurant restaurantFinal;
     private Disposable disposable;
     private User currentUser;
-    private String uid;
+    private String uidUser;
+    private Boolean exitsRestaurantFirestore;
+    private ListWorkmatesAdapter adapter;
 
     @BindView(R.id.details_fragment_name_restaurant_txt)
     TextView name;
@@ -59,10 +66,10 @@ public class DetailsFragment extends Fragment {
     ImageView star2;
     @BindView(R.id.details_fragment_star_3_image)
     ImageView star3;
-    @BindView(R.id.details_fragment_choose_button)
-    FloatingActionButton chooseFAB;
     @BindView(R.id.details_fragment_call_txt)
     TextView testCall;
+    @BindView(R.id.details_fragment_workmates_recycler_view)
+    RecyclerView workmatesRecyclerView;
 
 
     @OnClick(R.id.details_fragment_call_button)
@@ -84,16 +91,32 @@ public class DetailsFragment extends Fragment {
             restaurantList = currentUser.getRestaurantListFavorites();
         }
 
-        restaurantList.add(restaurantFinal);
-        UserHelper.updateUserRestaurantListFavorites(uid, restaurantList);
-
-
+        if (!currentUser.getRestaurantListFavorites().contains(restaurantFinal))
+        {
+            restaurantList.add(restaurantFinal);
+            UserHelper.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(getContext(), "Restaurant ajouté aux favoris", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        else
+        {
+            restaurantList.remove(restaurantFinal);
+            UserHelper.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(getContext(), "Restaurant retiré des favoris", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     private void getCurrentUser()
     {
-        uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        UserHelper.getUser(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        uidUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        UserHelper.getUser(uidUser).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot)
             {
@@ -106,6 +129,14 @@ public class DetailsFragment extends Fragment {
     void onClickWebsiteButton()
     {
 
+    }
+
+    @OnClick(R.id.details_fragment_choose_button)
+    void onClickChooseButton()
+    {
+        this.currentUser.setRestaurantChoose(this.restaurantFinal);
+        UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
+        UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
     }
 
     public DetailsFragment() {
@@ -129,6 +160,7 @@ public class DetailsFragment extends Fragment {
         placeId = DetailsActivity.placeId;
         this.restaurantFinal = stream(placeId);
         this.getCurrentUser();
+
         return v;
     }
 
@@ -142,6 +174,9 @@ public class DetailsFragment extends Fragment {
             {
                 restaurantFinal = restaurant;
                 updateRestaurant(restaurantFinal);
+
+                //TODO voir la RCV
+                //configRecyclerView();
             }
 
             @Override
@@ -200,6 +235,40 @@ public class DetailsFragment extends Fragment {
 
     }
 
+    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
+    {
+        return new FirestoreRecyclerOptions.Builder<User>()
+                .setQuery(query, User.class)
+                .setLifecycleOwner(this)
+                .build();
+    }
+    
+
+    /*private void configRecyclerView()
+    {
+        this.test();
+        this.adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(RestaurantHelper.getListWorkmates(restaurantFinal.getPlaceId())),
+                    Glide.with(this), this);
+        this.workmatesRecyclerView.setAdapter(adapter);
+        this.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+    }
+
+    private void test ()
+    {
+        RestaurantHelper.getRestaurant(restaurantFinal.getPlaceId()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+            }
+        })
+        .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                RestaurantHelper.createRestaurant(restaurantFinal.getPlaceId(), restaurantFinal.getPlaceId(), new ArrayList<User>());
+            }
+        });
+    }*/
+
     /**
      * Unsubscribe of the HTTP Request
      */
@@ -217,4 +286,9 @@ public class DetailsFragment extends Fragment {
         this.unsubscribe();
     }
 
+    @Override
+    public void onDataChanged()
+    {
+
+    }
 }

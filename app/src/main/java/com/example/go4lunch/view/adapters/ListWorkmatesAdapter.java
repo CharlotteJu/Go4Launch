@@ -18,6 +18,8 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
+import com.example.go4lunch.view.fragments.DetailsFragment;
+import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,25 +36,18 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         void onDataChanged();
     }
 
-   //private List<User> users;
     private RequestManager glide;
     private Context context;
     private Listener callback;
-    private String emailCurrentUser;
 
-    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Listener callback, String emailCurrentUser)
+
+    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Listener callback )
     {
         super(options);
         this.glide = glide;
         this.callback = callback;
-        this.emailCurrentUser = emailCurrentUser;
     }
 
-    /*public ListWorkmatesAdapter(List<User> users, RequestManager glide)
-    {
-        this.users = users;
-        this.glide = glide;
-    }*/
 
     @NonNull
     @Override
@@ -61,7 +56,7 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         this.context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_workmates, parent, false);
-        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v);
+        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, callback);
     }
 
     @Override
@@ -83,40 +78,43 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         @BindView(R.id.item_list_workmates_txt)
         TextView textView;
 
-        public ListWorkmatesViewHolder(@NonNull View itemView) {
+        Listener callback;
+
+        public ListWorkmatesViewHolder(@NonNull View itemView, Listener callback) {
             super(itemView);
             ButterKnife.bind(this,itemView);
+            this.callback = callback;
         }
 
         private void updateUI(User user, RequestManager glide, Context context)
         {
             glide.load(user.getIllustration()).apply(RequestOptions.centerCropTransform()).into(imageView);
 
-            if (user.isChooseRestaurant())
-            {
-                textView.setText(user.getName() + " is eating " + " (" + user.getRestaurantChoose().getName() + ") ");
 
-                if(Build.VERSION.SDK_INT < 23)
-                {
-                    textView.setTextAppearance(context, R.style.item_list_workmates_choose_txt);
-                }
-                else
-                {
-                    textView.setTextAppearance(R.style.item_list_workmates_choose_txt);
+
+            if (callback instanceof ListWorkmatesFragment) {
+
+                if (user.isChooseRestaurant()) {
+                    textView.setText(user.getName() + " is eating " + " (" + user.getRestaurantChoose().getName() + ") ");
+
+                    if (Build.VERSION.SDK_INT < 23) {
+                        textView.setTextAppearance(context, R.style.item_list_workmates_choose_txt);
+                    } else {
+                        textView.setTextAppearance(R.style.item_list_workmates_choose_txt);
+                    }
+                } else {
+                    textView.setText(user.getName() + " hasn't decided yet");
+
+                    if (Build.VERSION.SDK_INT < 23) {
+                        textView.setTextAppearance(context, R.style.item_list_workmates_no_choose_txt);
+                    } else {
+                        textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
+                    }
                 }
             }
-            else
+            else if (callback instanceof DetailsFragment)
             {
-                textView.setText(user.getName() + " hasn't decided yet");
-
-                if(Build.VERSION.SDK_INT < 23)
-                {
-                    textView.setTextAppearance(context, R.style.item_list_workmates_no_choose_txt);
-                }
-                else
-                {
-                    textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
-                }
+                textView.setText(user.getName() + "is joining!");
             }
         }
     }

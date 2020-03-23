@@ -42,7 +42,7 @@ public class DetailPOJO {
     }
 
 
-    public class AddressComponent {
+    public static class AddressComponent {
 
         @SerializedName("long_name")
         @Expose
@@ -110,7 +110,7 @@ public class DetailPOJO {
     }
 
 
-    public class Geometry {
+    public static class Geometry {
 
         @SerializedName("location")
         @Expose
@@ -137,7 +137,7 @@ public class DetailPOJO {
 
     }
 
-    public class Location {
+    public static class Location {
 
         @SerializedName("lat")
         @Expose
@@ -164,7 +164,7 @@ public class DetailPOJO {
 
     }
 
-    public class Northeast {
+    public static class Northeast {
 
         @SerializedName("lat")
         @Expose
@@ -287,7 +287,7 @@ public class DetailPOJO {
 
     }
 
-    public class Photo {
+    public static class Photo {
 
         @SerializedName("height")
         @Expose
@@ -336,7 +336,7 @@ public class DetailPOJO {
 
     }
 
-    public class PlusCode {
+    public static class PlusCode {
 
         @SerializedName("compound_code")
         @Expose
@@ -363,7 +363,7 @@ public class DetailPOJO {
 
     }
 
-    public class Result {
+    public static class Result {
 
         @SerializedName("address_components")
         @Expose
@@ -621,7 +621,7 @@ public class DetailPOJO {
 
     }
 
-    public class Review {
+    public static class Review {
 
         @SerializedName("author_name")
         @Expose
@@ -714,7 +714,7 @@ public class DetailPOJO {
 
     }
 
-    public class Southwest {
+    public static class Southwest {
 
         @SerializedName("lat")
         @Expose
@@ -741,7 +741,7 @@ public class DetailPOJO {
 
     }
 
-    public class Viewport {
+    public static class Viewport {
 
         @SerializedName("northeast")
         @Expose

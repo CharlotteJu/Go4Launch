@@ -29,7 +29,6 @@ public class ListWorkmatesFragment extends Fragment implements ListWorkmatesAdap
 
     private List<User> users;
     private ListWorkmatesAdapter adapter;
-    private User currentUser;
 
     @BindView(R.id.fragment_list_workmates_recycler_view)
     RecyclerView recyclerView;
@@ -59,13 +58,6 @@ public class ListWorkmatesFragment extends Fragment implements ListWorkmatesAdap
 
     }
 
-    private void initUserList()
-    {
-        //SINGLE LISTENER
-        //final DocumentSnapshot docRef = UserHelper.getCollectionUser().document()
-
-    }
-
     private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
     {
         return new FirestoreRecyclerOptions.Builder<User>()
@@ -76,19 +68,9 @@ public class ListWorkmatesFragment extends Fragment implements ListWorkmatesAdap
 
     private void configRecyclerView()
     {
-        /*UserHelper.getUser(FirebaseAuth.getInstance().getCurrentUser().getEmail()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot)
-            {
-                currentUser = documentSnapshot.toObject(User.class);
-            }
-        });*/
         this.adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(UserHelper.getListUsers()), Glide.with(this),
-                this, FirebaseAuth.getInstance().getCurrentUser().getEmail());
+                this);
 
-
-        //this.users = GenerateTests.getUsers();
-        //this.adapter = new ListWorkmatesAdapter(users, Glide.with(this));
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 

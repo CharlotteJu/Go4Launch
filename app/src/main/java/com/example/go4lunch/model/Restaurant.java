@@ -10,10 +10,11 @@ public class Restaurant
     private double rating;
     private String illustration;
     private String placeId;
-    private static DetailPOJO.OpeningHours openingHours;
+    private DetailPOJO.OpeningHours openingHours;
     private List<User> userList;
     private String phoneNumber;
     private String website;
+    private Boolean openNow;
 
     //////// CONSTRUCTOR ////////
 
@@ -36,8 +37,13 @@ public class Restaurant
         this.openingHours = new DetailPOJO.OpeningHours();
     }
 
-    public Restaurant(String placeId) {
+    public Restaurant(String name, String address, String illustration, String placeId, double rating, Boolean openNow) {
+        this.name = name;
+        this.address = address;
+        this.illustration = illustration;
         this.placeId = placeId;
+        this.rating = rating;
+        this.openNow = openNow;
     }
 
     public Restaurant (String placeId, List<User> userList)
@@ -89,6 +95,10 @@ public class Restaurant
         return website;
     }
 
+    public Boolean getOpenNow() {
+        return openNow;
+    }
+
     //////// SETTERS ////////
 
 
@@ -134,5 +144,9 @@ public class Restaurant
 
     public void setWebsite(String website) {
         this.website = website;
+    }
+
+    public void setOpenNow(Boolean openNow) {
+        this.openNow = openNow;
     }
 }

@@ -6,6 +6,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.List;
 
@@ -27,9 +28,9 @@ public class RestaurantHelper
         return RestaurantHelper.getCollectionRestaurant().document(uid).get();
     }
 
-    public static Task<Void> updateRestaurantHours(String uid, int hours)
+    public static Query getListWorkmates(String uid)
     {
-        return RestaurantHelper.getCollectionRestaurant().document(uid).update("hours", hours);
+        return getCollectionRestaurant().document(uid).collection("userList");
     }
 
     public static Task<Void> updateRestaurantUserList(String uid, List<User> userList)

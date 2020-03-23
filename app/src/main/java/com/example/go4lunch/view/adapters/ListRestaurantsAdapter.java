@@ -101,19 +101,30 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             address.setText(restaurant.getAddress());
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
             this.updateRating(restaurant);
+            this.updateHours(restaurant);
 
-            if (restaurant.getOpeningHours() != null)
+            /*if (restaurant.getOpeningHours() != null)
             {
                 List<DetailPOJO.Period> periodList = restaurant.getOpeningHours().getPeriods();
                 updateHours(periodList);
-            }
+            }*/
 
             //TODO : Distance
         }
 
-        private void updateHours(List<DetailPOJO.Period> periods)
+        private void updateHours(Restaurant restaurant)
         {
-            int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) -1 ;
+           if (restaurant.getOpenNow())
+           {
+               hours.setText("Open now");
+           }
+           else
+           {
+               hours.setText("Close now");
+           }
+
+
+            /*int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) -1 ;
 
             String hourClose = periods.get(day).getClose().getTime();
             int closeInt = Integer.parseInt(hourClose);
@@ -128,7 +139,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             else
             {
                 hours.setText("Open until " + closeInt);
-            }
+            }*/
 
         }
 

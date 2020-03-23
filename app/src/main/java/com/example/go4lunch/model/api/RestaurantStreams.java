@@ -96,8 +96,24 @@ public class RestaurantStreams {
 
                         for (int i = 0; i < res.size(); i ++)
                         {
+                            String name = res.get(i).getName();
+                            String address = res.get(i).getVicinity();
+                            String photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
                             String placeId = res.get(i).getPlaceId();
-                            Restaurant restaurant = new Restaurant(placeId);
+                            double rating = res.get(i).getRating();
+                            Boolean openNow;
+
+                            if (res.get(i).getOpeningHours() != null)
+                            {
+                                openNow = res.get(i).getOpeningHours().getOpenNow();
+                            }
+                            else
+                            {
+                                openNow = false;
+                            }
+
+
+                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow);
                             restaurants.add(restaurant);
                         }
 

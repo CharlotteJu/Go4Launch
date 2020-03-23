@@ -77,7 +77,7 @@ public class RestaurantPOJO {
     }
 
 
-    public class Geometry {
+    public static class Geometry {
 
         @SerializedName("location")
         @Expose
@@ -131,7 +131,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class Location {
+    public static class Location {
 
         @SerializedName("lat")
         @Expose
@@ -186,7 +186,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class Northeast {
+    public static class Northeast {
 
         @SerializedName("lat")
         @Expose
@@ -241,7 +241,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class OpeningHours {
+    public static class OpeningHours {
 
         @SerializedName("open_now")
         @Expose
@@ -279,7 +279,7 @@ public class RestaurantPOJO {
     }
 
 
-    public class Photo {
+    public static class Photo {
 
         @SerializedName("height")
         @Expose
@@ -370,7 +370,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class PlusCode {
+    public static class PlusCode {
 
         @SerializedName("compound_code")
         @Expose
@@ -425,7 +425,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class Result {
+    public static class Result {
 
         @SerializedName("geometry")
         @Expose
@@ -714,7 +714,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class Southwest {
+    public static class Southwest {
 
         @SerializedName("lat")
         @Expose
@@ -769,7 +769,7 @@ public class RestaurantPOJO {
 
     }
 
-    public class Viewport {
+    public static class Viewport {
 
         @SerializedName("northeast")
         @Expose
