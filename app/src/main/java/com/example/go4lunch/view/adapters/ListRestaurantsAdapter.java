@@ -1,5 +1,6 @@
 package com.example.go4lunch.view.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,12 +31,14 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
     private OnClickListener onClickListener;
     private List<Restaurant> restaurants;
     private RequestManager glide;
+    private Activity activity;
 
-    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide, OnClickListener onClickListener)
+    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide, OnClickListener onClickListener, Activity activity)
     {
         this.restaurants = restaurants;
         this.glide = glide;
         this.onClickListener = onClickListener;
+        this.activity = activity;
     }
 
     @NonNull
@@ -47,7 +50,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
 
 
-        return new ListRestaurantsViewHolder(v, this.onClickListener);
+        return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity);
     }
 
     @Override
@@ -85,13 +88,15 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         @BindView(R.id.item_list_restaurant_illustration_image)
         ImageView illustration;
 
-        OnClickListener onClickListener;
+        private OnClickListener onClickListener;
+        private Activity activity;
 
 
-        public ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener) {
+        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity) {
             super(itemView);
             ButterKnife.bind(this,itemView);
             this.onClickListener = onClickListener;
+            this.activity = activity;
         }
 
 
@@ -116,11 +121,11 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         {
            if (restaurant.getOpenNow())
            {
-               hours.setText("Open now");
+               hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_open_now));
            }
            else
            {
-               hours.setText("Close now");
+               hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_close_now));
            }
 
 
@@ -182,6 +187,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         {
             onClickListener.onClickListener(getAdapterPosition());
         }
+
         @Override
         public void onClick(View view)
         {

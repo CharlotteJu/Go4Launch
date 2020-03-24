@@ -85,7 +85,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
      */
     private void configRecyclerView()
     {
-        this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this), this::onClickListener);
+        this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this), this::onClickListener, getActivity());
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }

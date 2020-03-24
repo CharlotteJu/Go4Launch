@@ -1,5 +1,6 @@
 package com.example.go4lunch.view.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.media.Image;
 import android.os.Build;
@@ -39,13 +40,15 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
     private RequestManager glide;
     private Context context;
     private Listener callback;
+    private Activity activity;
 
 
-    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Listener callback )
+    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Listener callback, Activity activity )
     {
         super(options);
         this.glide = glide;
         this.callback = callback;
+        this.activity = activity;
     }
 
 
@@ -56,7 +59,7 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         this.context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_workmates, parent, false);
-        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, callback);
+        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, callback, activity);
     }
 
     @Override
@@ -78,24 +81,33 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         @BindView(R.id.item_list_workmates_txt)
         TextView textView;
 
-        Listener callback;
+        private Listener callback;
+        private Activity activity;
 
-        public ListWorkmatesViewHolder(@NonNull View itemView, Listener callback) {
+        private ListWorkmatesViewHolder(@NonNull View itemView, Listener callback, Activity activity) {
             super(itemView);
             ButterKnife.bind(this,itemView);
             this.callback = callback;
+            this.activity = activity;
         }
 
         private void updateUI(User user, RequestManager glide, Context context)
         {
             glide.load(user.getIllustration()).apply(RequestOptions.centerCropTransform()).into(imageView);
 
-
+            String textString;
+            String finalText;
 
             if (callback instanceof ListWorkmatesFragment) {
 
                 if (user.isChooseRestaurant()) {
-                    textView.setText(user.getName() + " is eating " + " (" + user.getRestaurantChoose().getName() + ") ");
+
+                    textString = activity.getResources().getString(R.string.list_workmates_adapter_is_eating);
+                    String textStringEnd = activity.getResources().getString(R.string.list_workmates_adapter_parenthesis);
+
+                    finalText = user.getName() + textString + user.getRestaurantChoose() + textStringEnd;
+
+                    textView.setText(finalText);
 
                     if (Build.VERSION.SDK_INT < 23) {
                         textView.setTextAppearance(context, R.style.item_list_workmates_choose_txt);
@@ -103,7 +115,11 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
                         textView.setTextAppearance(R.style.item_list_workmates_choose_txt);
                     }
                 } else {
-                    textView.setText(user.getName() + " hasn't decided yet");
+
+                    textString = activity.getResources().getString(R.string.list_workmates_adapter_hasnt_decided_yed);
+                    finalText = user.getName() + textString;
+
+                    textView.setText(finalText);
 
                     if (Build.VERSION.SDK_INT < 23) {
                         textView.setTextAppearance(context, R.style.item_list_workmates_no_choose_txt);
@@ -114,7 +130,9 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
             }
             else if (callback instanceof DetailsFragment)
             {
-                textView.setText(user.getName() + "is joining!");
+                textString = activity.getResources().getString(R.string.list_workmates_adapter_is_joining);
+                finalText = user.getName() + textString;
+                textView.setText(finalText);
             }
         }
     }

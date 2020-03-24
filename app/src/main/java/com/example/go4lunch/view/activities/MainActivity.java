@@ -19,6 +19,8 @@ import android.widget.Toast;
 
 
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.User;
+import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
 import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
 import com.example.go4lunch.view.fragments.MapViewFragment;
@@ -27,6 +29,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import butterknife.BindView;
 
@@ -49,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     MapViewFragment mapViewFragment;
     ListRestaurantsFragment listRestaurantsFragment;
     ListWorkmatesFragment listWorkmatesFragment;
+
+    User currentUser;
 
 
     @Override
@@ -187,16 +192,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (id)
         {
             case R.id.menu_drawer_lunch :
-                break;
+                this.showLunch();
             case R.id.menu_drawer_settings :
                 break;
             case R.id.menu_drawer_logout :
-                createAndShowPopUpLogOut();
+                this.createAndShowPopUpLogOut();
                 break;
         }
 
         this.drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void showLunch()
+    {
+        String uid  = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        UserHelper.getUser(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot)
+            {
+                currentUser = documentSnapshot.toObject(User.class);
+
+                if (currentUser.isChooseRestaurant())
+                {
+                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    intent.putExtra("placeId", currentUser.getRestaurantChoose().getPlaceId());
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Aucun restaurant choisi", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+
     }
 
     ///////////////////////////////////LOG OUT METHODS///////////////////////////////////
@@ -238,7 +268,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 }
             }
         });
-
-
     }
 }

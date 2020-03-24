@@ -1,9 +1,14 @@
 package com.example.go4lunch.view.fragments;
 
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +33,7 @@ import com.example.go4lunch.view.adapters.ListWorkmatesAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
@@ -51,8 +57,8 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
     private Disposable disposable;
     private User currentUser;
     private String uidUser;
-    private Boolean exitsRestaurantFirestore;
     private ListWorkmatesAdapter adapter;
+    private final static int REQUEST_CODE = 13;
 
     @BindView(R.id.details_fragment_name_restaurant_txt)
     TextView name;
@@ -70,12 +76,49 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
     TextView testCall;
     @BindView(R.id.details_fragment_workmates_recycler_view)
     RecyclerView workmatesRecyclerView;
+    @BindView(R.id.details_fragment_choose_button)
+    FloatingActionButton floatingActionButton;
 
+    public DetailsFragment() {
+        // Required empty public constructor
+    }
+
+    public static DetailsFragment newInstance(String placeId)
+    {
+        DetailsFragment detailsFragment = new DetailsFragment();
+        //this.placeId = placeId;
+        return detailsFragment;
+    }
+
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_details, container, false);
+        ButterKnife.bind(this, v);
+        placeId = DetailsActivity.placeId;
+        this.restaurantFinal = stream(placeId);
+        this.getCurrentUser();
+
+        return v;
+    }
 
     @OnClick(R.id.details_fragment_call_button)
     void onClickCallButton()
     {
-        testCall.setText(restaurantFinal.getPhoneNumber());
+        String phone = restaurantFinal.getPhoneNumber();
+        Uri uri = Uri.parse("tel:"+phone);
+        Intent intent = new Intent(Intent.ACTION_CALL, uri);
+
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE);
+        }
+        else
+        {
+            startActivity(intent);
+        }
+
     }
 
     @OnClick(R.id.details_fragment_like_button)
@@ -128,40 +171,43 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
     @OnClick(R.id.details_fragment_website_button)
     void onClickWebsiteButton()
     {
+        String url = restaurantFinal.getWebsite();
+        if(!url.startsWith("https://") && !url.startsWith("http://"))
+        {
+            url = "http://" + url;
+        }
+        Uri uri = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null)
+        {
+            startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(getContext(), "Aucune application correspondante trouvée", Toast.LENGTH_LONG).show();
+        }
     }
 
     @OnClick(R.id.details_fragment_choose_button)
     void onClickChooseButton()
     {
-        this.currentUser.setRestaurantChoose(this.restaurantFinal);
-        UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
-        UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
-    }
+        if(!this.currentUser.isChooseRestaurant())
+        {
+            this.currentUser.setRestaurantChoose(this.restaurantFinal);
+            this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
+            UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
+            UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
+        }
+        else
+        {
+            this.currentUser.unSetRestaurantChoose();
+            this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
+            UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
+            UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
+        }
 
-    public DetailsFragment() {
-        // Required empty public constructor
-    }
 
-    public static DetailsFragment newInstance(String placeId)
-    {
-        DetailsFragment detailsFragment = new DetailsFragment();
-        //this.placeId = placeId;
-        return detailsFragment;
-    }
-
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_details, container, false);
-        ButterKnife.bind(this, v);
-        placeId = DetailsActivity.placeId;
-        this.restaurantFinal = stream(placeId);
-        this.getCurrentUser();
-
-        return v;
     }
 
     private Restaurant stream (String placeId)
@@ -242,13 +288,13 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
                 .setLifecycleOwner(this)
                 .build();
     }
-    
+
 
     /*private void configRecyclerView()
     {
         this.test();
         this.adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(RestaurantHelper.getListWorkmates(restaurantFinal.getPlaceId())),
-                    Glide.with(this), this);
+                    Glide.with(this), this, getActivity());
         this.workmatesRecyclerView.setAdapter(adapter);
         this.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 

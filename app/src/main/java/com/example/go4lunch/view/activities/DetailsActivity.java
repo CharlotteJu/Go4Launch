@@ -8,12 +8,10 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.view.fragments.DetailsFragment;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import io.reactivex.disposables.Disposable;
 
 public class DetailsActivity extends AppCompatActivity {
 
@@ -21,15 +19,15 @@ public class DetailsActivity extends AppCompatActivity {
 
     DetailsFragment detailsFragment;
 
-   /* @BindView(R.id.toolbar)
-    Toolbar toolbar;*/
+   @BindView(R.id.details_activity_toolbar)
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         ButterKnife.bind(this);
-        //configureToolbar();
+        configureToolbar();
         displayFragment(displayDetailsFragment());
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeId");
@@ -38,10 +36,13 @@ public class DetailsActivity extends AppCompatActivity {
     /**
      * Configure the Toolbar {@link Toolbar}
      */
-    /*private void configureToolbar()
+    private void configureToolbar()
     {
         setSupportActionBar(toolbar);
-    }*/
+        //getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationIcon(R.drawable.ic_return);
+    }
 
     /**
      * Display a fragment

@@ -9,6 +9,21 @@
     <string name="auth_activity_button_facebook">Sign in with Facebook</string>
     <string name="auth_activity_button_google">Sign in with Google</string>
 
+    <!-- ITEM LIST RESTAURANTS -->
+    <string name="item_list_restaurants_restaurant">Restaurant</string>
+    <string name="item_list_restaurants_address">Address</string>
+    <string name="item_list_restaurants_hours">Hours</string>
+    <string name="item_list_restaurants_distance">Distance</string>
+    <string name="item_list_restaurants_number_workmates">(1)</string>
+
+    <!-- DETAILS FRAGMENT -->
+    <string name="details_fragment_restaurant">Restaurant</string>
+    <string name="details_fragment_address">Address</string>
+    <string name="details_fragment_call">CALL</string>
+    <string name="details_fragment_like">LIKE</string>
+    <string name="details_fragment_website">WEBSITE</string>
+
+
     <!-- BOTTOM NAVIGATION VIEW -->
     <string name="bottom_navigation_menu_mapview">Map View</string>
     <string name="bottom_navigation_menu_listview">List View</string>
@@ -29,10 +44,20 @@
     <string name="navigation_drawer_settings">SETTINGS</string>
     <string name="navigation_drawer_logout">LOGOUT</string>
 
-
     <!-- Used in NavigationDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- LIST WORKMATES ADAPTER -->
+    <string name="list_workmates_adapter_is_eating"> is eating (</string>
+    <string name="list_workmates_adapter_parenthesis">)</string>
+    <string name="list_workmates_adapter_hasnt_decided_yed"> hasn\'t decided yet</string>
+    <string name="list_workmates_adapter_is_joining">is joining!</string>
+
+    <!-- LIST RESTAURANTS ADAPTER -->
+    <string name="list_restaurants_adapter_open_now">Open now</string>
+    <string name="list_restaurants_adapter_close_now">Close now</string>
+
 
 
 

@@ -78,4 +78,10 @@ public class User
         this.restaurantChoose = restaurantChoose;
         this.chooseRestaurant = true;
     }
+
+    public void unSetRestaurantChoose()
+    {
+        this.restaurantChoose = null;
+        this.chooseRestaurant = false;
+    }
 }
