@@ -12,8 +12,8 @@
     <!-- NAVIGATION DRAWER -->
     <dimen name="nav_drawer_size_header">300dp</dimen>
     <dimen name="nav_drawer_size_title">40sp</dimen>
-    <dimen name="nav_drawer_size_name">20sp</dimen>
-    <dimen name="nav_drawer_size_email">15sp</dimen>
+    <dimen name="nav_drawer_size_name">16sp</dimen>
+    <dimen name="nav_drawer_size_email">12sp</dimen>
     <dimen name="nav_drawer_marginTop_title">50dp</dimen>
 
 

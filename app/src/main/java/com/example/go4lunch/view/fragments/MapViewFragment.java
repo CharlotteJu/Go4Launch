@@ -48,18 +48,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
-        fetchLocation();
-
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
-
         this.supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         fetchLocation();
         return v;

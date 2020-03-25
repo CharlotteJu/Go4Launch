@@ -44,6 +44,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private ListRestaurantsAdapter adapter;
     private static final int REQUEST_CODE = 12;
     private Location currentLocation;
+    private FusedLocationProviderClient fusedLocationProviderClient;
 
     private Disposable disposable;
 
@@ -64,7 +65,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
     @Override
@@ -102,7 +104,6 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
 
         }
-        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
@@ -141,6 +142,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
             @Override
             public void onError(Throwable e) {
+
+               String error = "error";
 
 
             }

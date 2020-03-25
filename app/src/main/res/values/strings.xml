@@ -23,6 +23,10 @@
     <string name="details_fragment_like">LIKE</string>
     <string name="details_fragment_website">WEBSITE</string>
 
+    <!-- NAVIGATION HEADER -->
+    <string name="navigation_header_name">Name</string>
+    <string name="navigation_header_email">Email</string>
+
 
     <!-- BOTTOM NAVIGATION VIEW -->
     <string name="bottom_navigation_menu_mapview">Map View</string>
