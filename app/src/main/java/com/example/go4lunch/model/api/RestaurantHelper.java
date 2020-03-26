@@ -28,9 +28,14 @@ public class RestaurantHelper
         return RestaurantHelper.getCollectionRestaurant().document(uid).get();
     }
 
-    public static Query getListWorkmates(String uid)
+    public static Query getListRestaurants()
     {
-        return getCollectionRestaurant().document(uid).collection("userList");
+        return RestaurantHelper.getCollectionRestaurant().orderBy("name");
+    }
+
+    public static Query getWorkmatesListForARestaurant(String uid)
+    {
+        return RestaurantHelper.getCollectionRestaurant().document(uid).collection("userList");
     }
 
     public static Task<Void> updateRestaurantUserList(String uid, List<User> userList)

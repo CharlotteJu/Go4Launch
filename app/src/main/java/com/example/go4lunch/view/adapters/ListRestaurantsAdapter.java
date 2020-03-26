@@ -16,10 +16,18 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.view.fragments.OnClickListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Calendar;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,7 +57,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
 
-
         return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity);
     }
 
@@ -65,7 +72,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         return this.restaurants.size();
     }
 
-    static class ListRestaurantsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
+    static class ListRestaurantsViewHolder extends RecyclerView.ViewHolder
     {
         @BindView(R.id.item_list_restaurant_name_txt)
         TextView name;
@@ -90,6 +97,8 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         private OnClickListener onClickListener;
         private Activity activity;
+        private String uidRestaurant;
+        private int numberWorkmates = 0;
 
 
         private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity) {
@@ -107,6 +116,8 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
             this.updateRating(restaurant);
             this.updateHours(restaurant);
+            this.updateNumberWorkmates(restaurant);
+            this.displayWorkmates();
 
             /*if (restaurant.getOpeningHours() != null)
             {
@@ -181,18 +192,54 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         }
 
+        private void updateNumberWorkmates (Restaurant restaurant)
+        {
+            RestaurantHelper.getListRestaurants().addSnapshotListener(activity, new EventListener<QuerySnapshot>()
+            {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+                {
+                    if (queryDocumentSnapshots != null)
+                    {
+                        for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
+                        {
+                            if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurant.getPlaceId()))
+                            {
+                                uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
+                                RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
+                                {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot)
+                                    {
+                                        numberWorkmates = documentSnapshot.toObject(Restaurant.class).getUserList().size();
+                                        String numberWorkmatesString = "(" + numberWorkmates + ")";
+                                        numberRating.setText(numberWorkmatesString);
+                                        displayWorkmates();
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+        }
 
-        @OnClick(R.id.item_list_restaurant_illustration_image)
+        private void displayWorkmates()
+        {
+            if (numberWorkmates > 0)
+            {
+                numberRating.setVisibility(View.VISIBLE);
+            }
+        }
+
+
+        @OnClick(R.id.item_list_restaurant_card_view)
         void test(View v)
         {
             onClickListener.onClickListener(getAdapterPosition());
         }
 
-        @Override
-        public void onClick(View view)
-        {
-            onClickListener.onClickListener(getAdapterPosition());
-        }
     }
 }
 

@@ -24,7 +24,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ListWorkmatesFragment extends Fragment implements ListWorkmatesAdapter.Listener{
+public class ListWorkmatesFragment extends Fragment {
 
     @BindView(R.id.fragment_list_workmates_recycler_view)
     RecyclerView recyclerView;
@@ -65,16 +65,10 @@ public class ListWorkmatesFragment extends Fragment implements ListWorkmatesAdap
     private void configRecyclerView()
     {
         ListWorkmatesAdapter adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(UserHelper.getListUsers()), Glide.with(this),
-                this, getActivity());
+                getActivity());
 
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-    }
-
-    @Override
-    public void onDataChanged()
-    {
 
     }
 }

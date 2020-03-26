@@ -1,6 +1,8 @@
 package com.example.go4lunch.model.api;
 
 
+import android.location.Location;
+
 import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
@@ -98,10 +100,20 @@ public class RestaurantStreams {
                         {
                             String name = res.get(i).getName();
                             String address = res.get(i).getVicinity();
-                            String photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
+                            String photo;
                             String placeId = res.get(i).getPlaceId();
                             double rating = res.get(i).getRating();
                             Boolean openNow;
+                            RestaurantPOJO.Location location = res.get(i).getGeometry().getLocation();
+
+                            if (res.get(i).getPhotos() != null)
+                            {
+                                photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
+                            }
+                            else
+                            {
+                                photo = "";
+                            }
 
                             if (res.get(i).getOpeningHours() != null)
                             {
@@ -113,7 +125,7 @@ public class RestaurantStreams {
                             }
 
 
-                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow);
+                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow, location);
                             restaurants.add(restaurant);
                         }
 

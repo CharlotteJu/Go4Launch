@@ -1,5 +1,7 @@
 package com.example.go4lunch.model;
 
+import android.location.Location;
+
 import java.util.List;
 
 public class Restaurant
@@ -15,6 +17,7 @@ public class Restaurant
     private String phoneNumber;
     private String website;
     private Boolean openNow;
+    private RestaurantPOJO.Location location;
 
     //////// CONSTRUCTOR ////////
 
@@ -30,6 +33,7 @@ public class Restaurant
         this.phoneNumber = phoneNumber;
         this.website = website;
 
+
     }
 
     public Restaurant ()
@@ -37,13 +41,15 @@ public class Restaurant
         this.openingHours = new DetailPOJO.OpeningHours();
     }
 
-    public Restaurant(String name, String address, String illustration, String placeId, double rating, Boolean openNow) {
+    public Restaurant(String name, String address, String illustration, String placeId, double rating, Boolean openNow, RestaurantPOJO.Location location)
+    {
         this.name = name;
         this.address = address;
         this.illustration = illustration;
         this.placeId = placeId;
         this.rating = rating;
         this.openNow = openNow;
+        this.location = location;
     }
 
     public Restaurant (String placeId, List<User> userList)
@@ -99,6 +105,10 @@ public class Restaurant
         return openNow;
     }
 
+    public RestaurantPOJO.Location getLocation() {
+        return location;
+    }
+
     //////// SETTERS ////////
 
 
@@ -148,5 +158,9 @@ public class Restaurant
 
     public void setOpenNow(Boolean openNow) {
         this.openNow = openNow;
+    }
+
+    public void setLocation(RestaurantPOJO.Location location) {
+        this.location = location;
     }
 }

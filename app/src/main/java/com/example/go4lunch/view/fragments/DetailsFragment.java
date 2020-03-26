@@ -30,16 +30,26 @@ import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListWorkmatesAdapter;
+import com.example.go4lunch.view.adapters.ListWorkmatesDetailsFragmentAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -50,14 +60,17 @@ import io.reactivex.observers.DisposableObserver;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Listener {
+public class DetailsFragment extends Fragment {
 
     private String placeId;
     private Restaurant restaurantFinal;
     private Disposable disposable;
     private User currentUser;
     private String uidUser;
-    private ListWorkmatesAdapter adapter;
+    private ListWorkmatesDetailsFragmentAdapter adapter;
+    private Boolean restaurantExistsInFirebase = false;
+    private String uidRestaurant;
+    private List<User> workmatesList;
     private final static int REQUEST_CODE = 13;
 
     @BindView(R.id.details_fragment_name_restaurant_txt)
@@ -198,6 +211,8 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
             UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
             UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
+            workmatesList.add(currentUser);
+            RestaurantHelper.updateRestaurantUserList(uidRestaurant, workmatesList);
         }
         else
         {
@@ -205,9 +220,22 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
             UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
             UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
+            workmatesList.remove(currentUser);
+            RestaurantHelper.updateRestaurantUserList(uidRestaurant, workmatesList);
         }
 
+    }
 
+    void configButton()
+    {
+        if (!this.currentUser.getRestaurantChoose().getPlaceId().equals(restaurantFinal.getPlaceId()))
+        {
+            this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
+        }
+        else
+        {
+            this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
+        }
     }
 
     private Restaurant stream (String placeId)
@@ -244,7 +272,9 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
         name.setText(restaurant.getName());
         Glide.with(this).load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
         address.setText(restaurant.getAddress());
+        this.configButton();
         this.updateRating(restaurant);
+        this.getFirebaseRestaurant();
     }
 
     private void updateRating(Restaurant restaurant)
@@ -281,39 +311,51 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
 
     }
 
-    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
+    private void configRecyclerView()
     {
-        return new FirestoreRecyclerOptions.Builder<User>()
-                .setQuery(query, User.class)
-                .setLifecycleOwner(this)
-                .build();
-    }
 
-
-    /*private void configRecyclerView()
-    {
-        this.test();
-        this.adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(RestaurantHelper.getListWorkmates(restaurantFinal.getPlaceId())),
-                    Glide.with(this), this, getActivity());
+        this.adapter = new ListWorkmatesDetailsFragmentAdapter(workmatesList, Glide.with(this), getActivity());
         this.workmatesRecyclerView.setAdapter(adapter);
         this.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
     }
 
-    private void test ()
+    private void getFirebaseRestaurant ()
     {
-        RestaurantHelper.getRestaurant(restaurantFinal.getPlaceId()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        RestaurantHelper.getListRestaurants().addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-            }
-        })
-        .addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                RestaurantHelper.createRestaurant(restaurantFinal.getPlaceId(), restaurantFinal.getPlaceId(), new ArrayList<User>());
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+            {
+                if (queryDocumentSnapshots != null)
+                {
+                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
+                    {
+                        if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurantFinal.getPlaceId()))
+                        {
+                            uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
+                            restaurantExistsInFirebase = true;
+                            RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    workmatesList = documentSnapshot.toObject(Restaurant.class).getUserList();
+                                    configRecyclerView();
+                                }
+                            });
+                            break;
+                        }
+                    }
+
+                    if (!restaurantExistsInFirebase)
+                    {
+                        uidRestaurant = UUID.randomUUID().toString();
+                        RestaurantHelper.createRestaurant(uidRestaurant, restaurantFinal.getPlaceId(), new ArrayList<User>());
+                    }
+                }
             }
         });
-    }*/
+
+
+    }
 
     /**
      * Unsubscribe of the HTTP Request
@@ -332,9 +374,4 @@ public class DetailsFragment extends Fragment implements ListWorkmatesAdapter.Li
         this.unsubscribe();
     }
 
-    @Override
-    public void onDataChanged()
-    {
-
-    }
 }

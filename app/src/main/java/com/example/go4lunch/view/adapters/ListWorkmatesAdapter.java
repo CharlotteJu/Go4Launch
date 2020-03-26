@@ -32,22 +32,16 @@ import butterknife.ButterKnife;
 
 public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWorkmatesAdapter.ListWorkmatesViewHolder>
 {
-    public interface Listener
-    {
-        void onDataChanged();
-    }
 
     private RequestManager glide;
     private Context context;
-    private Listener callback;
     private Activity activity;
 
 
-    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Listener callback, Activity activity )
+    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Activity activity )
     {
         super(options);
         this.glide = glide;
-        this.callback = callback;
         this.activity = activity;
     }
 
@@ -59,7 +53,7 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         this.context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_workmates, parent, false);
-        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, callback, activity);
+        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, activity);
     }
 
     @Override
@@ -68,11 +62,6 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         viewHolder.updateUI(user, glide, context);
     }
 
-    @Override
-    public void onDataChanged() {
-        super.onDataChanged();
-        this.callback.onDataChanged();
-    }
 
     static class ListWorkmatesViewHolder extends RecyclerView.ViewHolder
     {
@@ -81,59 +70,51 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         @BindView(R.id.item_list_workmates_txt)
         TextView textView;
 
-        private Listener callback;
         private Activity activity;
 
-        private ListWorkmatesViewHolder(@NonNull View itemView, Listener callback, Activity activity) {
+        private ListWorkmatesViewHolder(@NonNull View itemView, Activity activity) {
             super(itemView);
             ButterKnife.bind(this,itemView);
-            this.callback = callback;
             this.activity = activity;
         }
 
         private void updateUI(User user, RequestManager glide, Context context)
         {
-            glide.load(user.getIllustration()).apply(RequestOptions.centerCropTransform()).into(imageView);
+            glide.load(user.getIllustration()).apply(RequestOptions.circleCropTransform()).into(imageView);
 
             String textString;
             String finalText;
+            String firstName = user.getName().split(" ")[0];
 
-            if (callback instanceof ListWorkmatesFragment) {
+            if (user.isChooseRestaurant()) {
 
-                if (user.isChooseRestaurant()) {
+                textString = activity.getResources().getString(R.string.list_workmates_adapter_is_eating);
+                String textStringEnd = activity.getResources().getString(R.string.list_workmates_adapter_parenthesis);
 
-                    textString = activity.getResources().getString(R.string.list_workmates_adapter_is_eating);
-                    String textStringEnd = activity.getResources().getString(R.string.list_workmates_adapter_parenthesis);
+                finalText = firstName + " " + textString + user.getRestaurantChoose().getName() + textStringEnd;
 
-                    finalText = user.getName() + textString + user.getRestaurantChoose() + textStringEnd;
+                textView.setText(finalText);
 
-                    textView.setText(finalText);
-
-                    if (Build.VERSION.SDK_INT < 23) {
-                        textView.setTextAppearance(context, R.style.item_list_workmates_choose_txt);
-                    } else {
-                        textView.setTextAppearance(R.style.item_list_workmates_choose_txt);
-                    }
+                if (Build.VERSION.SDK_INT < 23) {
+                    textView.setTextAppearance(context, R.style.item_list_workmates_choose_txt);
                 } else {
+                    textView.setTextAppearance(R.style.item_list_workmates_choose_txt);
+                }
+            } else {
 
-                    textString = activity.getResources().getString(R.string.list_workmates_adapter_hasnt_decided_yed);
-                    finalText = user.getName() + textString;
+                textString = " " + activity.getResources().getString(R.string.list_workmates_adapter_hasnt_decided_yed);
+                finalText = firstName + textString;
 
-                    textView.setText(finalText);
+                textView.setText(finalText);
 
-                    if (Build.VERSION.SDK_INT < 23) {
-                        textView.setTextAppearance(context, R.style.item_list_workmates_no_choose_txt);
-                    } else {
-                        textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
-                    }
+                if (Build.VERSION.SDK_INT < 23) {
+                    textView.setTextAppearance(context, R.style.item_list_workmates_no_choose_txt);
+                } else {
+                    textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
                 }
             }
-            else if (callback instanceof DetailsFragment)
-            {
-                textString = activity.getResources().getString(R.string.list_workmates_adapter_is_joining);
-                finalText = user.getName() + textString;
-                textView.setText(finalText);
-            }
+
+
         }
     }
 }

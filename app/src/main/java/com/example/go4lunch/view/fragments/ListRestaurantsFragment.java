@@ -40,7 +40,7 @@ import io.reactivex.observers.DisposableObserver;
 
 public class ListRestaurantsFragment extends Fragment implements OnClickListener{
 
-    private List<Restaurant> restaurants = new ArrayList<>();
+    private List<Restaurant> restaurants;
     private ListRestaurantsAdapter adapter;
     private static final int REQUEST_CODE = 12;
     private Location currentLocation;
@@ -73,6 +73,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
+        restaurants = new ArrayList<>();
         ButterKnife.bind(this, v);
         configListRestaurants();
         return v;

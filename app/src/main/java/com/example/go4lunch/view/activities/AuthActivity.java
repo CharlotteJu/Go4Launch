@@ -6,22 +6,21 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.User;
 import com.example.go4lunch.model.api.UserHelper;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -32,11 +31,12 @@ import butterknife.OnClick;
 public class AuthActivity extends AppCompatActivity {
 
     private final static int FIREBASE_UI = 100;
+    Boolean userExists = false;
 
     @Override
     protected void onStart() {
         super.onStart();
-        this.userConnected();
+        this.connectUser();
     }
 
     @Override
@@ -60,7 +60,7 @@ public class AuthActivity extends AppCompatActivity {
         this.startSignInWithFacebook();
     }
 
-    private void userConnected()
+    private void connectUser()
     {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
         {
@@ -69,19 +69,53 @@ public class AuthActivity extends AppCompatActivity {
             String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-            if (UserHelper.getUser(uid) == null)
-            {
-                UserHelper.createUser(uid, email, name, urlPicture).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getApplicationContext(), "Création échouée", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
 
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
+            UserHelper.getListUsers().addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+                {
+                    if (queryDocumentSnapshots != null)
+                    {
+                        for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
+                        {
+                            if (queryDocumentSnapshots.getDocuments().get(i).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                                userExists = true;
+                                break;
+                            }
+                        }
+                        if (userExists)
+                        {
+                            lunchMainActivity();
+                        }
+                        else
+                        {
+                            UserHelper.createUser(uid, email, name, urlPicture)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>()
+                                    {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            lunchMainActivity();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener()
+                                    {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e)
+                                        {
+                                            Toast.makeText(getApplicationContext(), "Création échouée", Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        }
+                    }
+                }
+            });
         }
+    }
+
+    private void lunchMainActivity()
+    {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
     }
 
     //UI
@@ -120,9 +154,8 @@ public class AuthActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK)
             {
                 Toast.makeText(getApplicationContext(), R.string.response_sign_in_success,Toast.LENGTH_SHORT ).show();
-                this.userConnected();
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
+                this.connectUser();
+                this.lunchMainActivity();
             }
             else
             {
