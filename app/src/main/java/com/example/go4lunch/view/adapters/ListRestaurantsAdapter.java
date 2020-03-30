@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.view.fragments.OnClickListener;
@@ -24,7 +23,6 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.Calendar;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -83,9 +81,9 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         @BindView(R.id.item_list_restaurant_distance_txt)
         TextView distance;
         @BindView(R.id.item_list_restaurant_number_rating_txt)
-        TextView numberRating;
+        TextView numberWorkmatesTxt;
         @BindView(R.id.item_list_restaurant_people_rating_image)
-        ImageView peopleRating;
+        ImageView peopleWorkmatesImage;
         @BindView(R.id.item_list_restaurant_star_1_image)
         ImageView star1;
         @BindView(R.id.item_list_restaurant_star_2_image)
@@ -114,16 +112,10 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             name.setText(restaurant.getName());
             address.setText(restaurant.getAddress());
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
+            this.displayWorkmates();
             this.updateRating(restaurant);
             this.updateHours(restaurant);
             this.updateNumberWorkmates(restaurant);
-            this.displayWorkmates();
-
-            /*if (restaurant.getOpeningHours() != null)
-            {
-                List<DetailPOJO.Period> periodList = restaurant.getOpeningHours().getPeriods();
-                updateHours(periodList);
-            }*/
 
             //TODO : Distance
         }
@@ -138,25 +130,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            {
                hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_close_now));
            }
-
-
-            /*int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) -1 ;
-
-            String hourClose = periods.get(day).getClose().getTime();
-            int closeInt = Integer.parseInt(hourClose);
-
-            String time = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) + "" + Calendar.getInstance().get(Calendar.MINUTE);
-            int timeInt = Integer.parseInt(time);
-
-            if (closeInt - timeInt < 60)
-            {
-                hours.setText("Closing soon");
-            }
-            else
-            {
-                hours.setText("Open until " + closeInt);
-            }*/
-
         }
 
         private void updateRating(Restaurant restaurant)
@@ -213,7 +186,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
                                     {
                                         numberWorkmates = documentSnapshot.toObject(Restaurant.class).getUserList().size();
                                         String numberWorkmatesString = "(" + numberWorkmates + ")";
-                                        numberRating.setText(numberWorkmatesString);
+                                        numberWorkmatesTxt.setText(numberWorkmatesString);
                                         displayWorkmates();
                                     }
                                 });
@@ -229,13 +202,19 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         {
             if (numberWorkmates > 0)
             {
-                numberRating.setVisibility(View.VISIBLE);
+                this.numberWorkmatesTxt.setVisibility(View.VISIBLE);
+                this.peopleWorkmatesImage.setVisibility(View.VISIBLE);
+            }
+            else
+            {
+                this.numberWorkmatesTxt.setVisibility(View.INVISIBLE);
+                this.peopleWorkmatesImage.setVisibility(View.INVISIBLE);
             }
         }
 
 
         @OnClick(R.id.item_list_restaurant_card_view)
-        void test(View v)
+        void onClickItem()
         {
             onClickListener.onClickListener(getAdapterPosition());
         }

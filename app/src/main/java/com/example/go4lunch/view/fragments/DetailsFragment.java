@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,20 +28,13 @@ import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.view.activities.DetailsActivity;
-import com.example.go4lunch.view.adapters.ListWorkmatesAdapter;
 import com.example.go4lunch.view.adapters.ListWorkmatesDetailsFragmentAdapter;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.android.gms.tasks.OnCanceledListener;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -85,6 +77,8 @@ public class DetailsFragment extends Fragment {
     ImageView star2;
     @BindView(R.id.details_fragment_star_3_image)
     ImageView star3;
+    @BindView(R.id.details_fragment_like_button)
+    ImageView likeButton;
     @BindView(R.id.details_fragment_call_txt)
     TextView testCall;
     @BindView(R.id.details_fragment_workmates_recycler_view)
@@ -111,7 +105,6 @@ public class DetailsFragment extends Fragment {
         ButterKnife.bind(this, v);
         placeId = DetailsActivity.placeId;
         this.restaurantFinal = stream(placeId);
-        this.getCurrentUser();
 
         return v;
     }
@@ -167,18 +160,8 @@ public class DetailsFragment extends Fragment {
                 }
             });
         }
-    }
 
-    private void getCurrentUser()
-    {
-        uidUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        UserHelper.getUser(uidUser).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot)
-            {
-                currentUser = documentSnapshot.toObject(User.class);
-            }
-        });
+        this.updateLike();
     }
 
     @OnClick(R.id.details_fragment_website_button)
@@ -205,8 +188,14 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_choose_button)
     void onClickChooseButton()
     {
-        if(!this.currentUser.isChooseRestaurant())
+
+        if(!this.currentUser.isChooseRestaurant() || !this.currentUser.getRestaurantChoose().equals(restaurantFinal))
         {
+            if (this.currentUser.isChooseRestaurant())
+            {
+                this.updateOtherRestaurantInFirebase(currentUser.getRestaurantChoose());
+            }
+
             this.currentUser.setRestaurantChoose(this.restaurantFinal);
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
             UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
@@ -220,15 +209,28 @@ public class DetailsFragment extends Fragment {
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
             UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
             UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
-            workmatesList.remove(currentUser);
+
+            if (workmatesList.contains(currentUser))
+            {
+                workmatesList.remove(currentUser);
+            }
+
+            /*for (int i = 0; i < workmatesList.size(); i ++)
+            {
+                if (workmatesList.get(i).equals(currentUser))
+                {
+                    workmatesList.remove(i);
+                    break;
+                }
+            }*/
             RestaurantHelper.updateRestaurantUserList(uidRestaurant, workmatesList);
         }
 
     }
 
-    void configButton()
+    private void configButton()
     {
-        if (!this.currentUser.getRestaurantChoose().getPlaceId().equals(restaurantFinal.getPlaceId()))
+        if (!this.currentUser.isChooseRestaurant() || !this.currentUser.getRestaurantChoose().equals(this.restaurantFinal))
         {
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
         }
@@ -247,10 +249,7 @@ public class DetailsFragment extends Fragment {
             public void onNext(Restaurant restaurant)
             {
                 restaurantFinal = restaurant;
-                updateRestaurant(restaurantFinal);
-
-                //TODO voir la RCV
-                //configRecyclerView();
+                getCurrentUser();
             }
 
             @Override
@@ -267,6 +266,96 @@ public class DetailsFragment extends Fragment {
         return restaurantFinal;
     }
 
+    private void getCurrentUser()
+    {
+        uidUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        UserHelper.getUser(uidUser).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot)
+            {
+                currentUser = documentSnapshot.toObject(User.class);
+                updateRestaurant(restaurantFinal);
+            }
+        });
+    }
+
+    private void getFirebaseRestaurant ()
+    {
+        RestaurantHelper.getListRestaurants().addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+            {
+                if (queryDocumentSnapshots != null)
+                {
+                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
+                    {
+                        if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurantFinal.getPlaceId()))
+                        {
+                            uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
+                            restaurantExistsInFirebase = true;
+                            RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    workmatesList = documentSnapshot.toObject(Restaurant.class).getUserList();
+                                    configRecyclerView();
+                                }
+                            });
+                            break;
+                        }
+                    }
+
+                    if (!restaurantExistsInFirebase)
+                    {
+                        uidRestaurant = UUID.randomUUID().toString();
+                        RestaurantHelper.createRestaurant(uidRestaurant, restaurantFinal.getPlaceId(), new ArrayList<User>(), restaurantFinal.getName());
+                    }
+                }
+            }
+        });
+    }
+
+    private void updateOtherRestaurantInFirebase(Restaurant restaurant)
+    {
+        RestaurantHelper.getListRestaurants().addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+            {
+                if (queryDocumentSnapshots != null)
+                {
+                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
+                    {
+                        if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurant.getPlaceId()))
+                        {
+                            String uid = queryDocumentSnapshots.getDocuments().get(i).getId();
+                            RestaurantHelper.getRestaurant(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot)
+                                {
+
+                                    List<User> tempWorkmatesList = documentSnapshot.toObject(Restaurant.class).getUserList();
+
+                                    if (tempWorkmatesList.contains(currentUser))
+                                    {
+                                        tempWorkmatesList.remove(currentUser);
+                                    }
+                                    /*for (int i = 0; i < tempWorkmatesList.size(); i ++)
+                                    {
+                                        if (tempWorkmatesList.get(i).equals(currentUser))
+                                        {
+                                            tempWorkmatesList.remove(i);
+                                        }
+                                    }*/
+                                    RestaurantHelper.updateRestaurantUserList(uid,tempWorkmatesList);
+                                }
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     private void updateRestaurant(Restaurant restaurant)
     {
         name.setText(restaurant.getName());
@@ -275,6 +364,7 @@ public class DetailsFragment extends Fragment {
         this.configButton();
         this.updateRating(restaurant);
         this.getFirebaseRestaurant();
+        this.updateLike();
     }
 
     private void updateRating(Restaurant restaurant)
@@ -311,49 +401,34 @@ public class DetailsFragment extends Fragment {
 
     }
 
+    private void updateLike()
+    {
+        boolean favorite = false;
+
+        if (currentUser.getRestaurantListFavorites() != null)
+        {
+            if (currentUser.getRestaurantListFavorites().contains(restaurantFinal))
+            {
+                favorite = true;
+            }
+        }
+
+        if (favorite)
+        {
+            this.likeButton.setImageResource(R.drawable.ic_star_yellow_24dp);
+        }
+        else
+        {
+            this.likeButton.setImageResource(R.drawable.ic_star_orange_24dp);
+        }
+    }
+
     private void configRecyclerView()
     {
 
         this.adapter = new ListWorkmatesDetailsFragmentAdapter(workmatesList, Glide.with(this), getActivity());
         this.workmatesRecyclerView.setAdapter(adapter);
         this.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-    }
-
-    private void getFirebaseRestaurant ()
-    {
-        RestaurantHelper.getListRestaurants().addSnapshotListener(getActivity(), new EventListener<QuerySnapshot>() {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
-            {
-                if (queryDocumentSnapshots != null)
-                {
-                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                    {
-                        if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurantFinal.getPlaceId()))
-                        {
-                            uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
-                            restaurantExistsInFirebase = true;
-                            RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                    workmatesList = documentSnapshot.toObject(Restaurant.class).getUserList();
-                                    configRecyclerView();
-                                }
-                            });
-                            break;
-                        }
-                    }
-
-                    if (!restaurantExistsInFirebase)
-                    {
-                        uidRestaurant = UUID.randomUUID().toString();
-                        RestaurantHelper.createRestaurant(uidRestaurant, restaurantFinal.getPlaceId(), new ArrayList<User>());
-                    }
-                }
-            }
-        });
-
 
     }
 

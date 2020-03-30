@@ -17,9 +17,9 @@ public class RestaurantHelper
         return FirebaseFirestore.getInstance().collection("restaurant");
     }
 
-    public static Task<Void> createRestaurant(String uid, String placeId, List<User> userList)
+    public static Task<Void> createRestaurant(String uid, String placeId, List<User> userList, String name)
     {
-        Restaurant toCreate = new Restaurant(placeId, userList);
+        Restaurant toCreate = new Restaurant(placeId, userList, name);
         return RestaurantHelper.getCollectionRestaurant().document(uid).set(toCreate);
     }
 

@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
+import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.api.RestaurantStreams;
@@ -67,6 +69,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+
     }
 
     @Override
@@ -131,6 +134,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private List<Restaurant> stream(double lat, double lng, int radius)
     {
        String key = getActivity().getResources().getString(R.string.google_maps_key);
+
+
+       //String key = Objects.requireNonNull(getActivity()).getString(R.string.google_maps_key);
+       //String test = Objects.requireNonNull(getContext()).getString(R.string.google_maps_key);
        this.restaurants.clear();
 
        this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {

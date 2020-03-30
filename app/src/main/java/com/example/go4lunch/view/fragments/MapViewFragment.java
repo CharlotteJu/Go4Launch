@@ -1,11 +1,18 @@
 package com.example.go4lunch.view.fragments;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
+
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +26,8 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -83,10 +92,30 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 if (location != null) {
                     currentLocation = location;
                     restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-                    supportMapFragment.getMapAsync(MapViewFragment.this::onMapReady);
+                    //supportMapFragment.getMapAsync(MapViewFragment.this::onMapReady);
                 }
             }
         });
+    }
+
+   /* private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId)
+    {
+        Drawable drawable = ContextCompat.getDrawable(context, vectorResId);
+        //drawable.setBounds(0,0,drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.draw(canvas);
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }*/
+
+    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(context, vectorResId);
+        vectorDrawable.setBounds(0, 0, 8, 8);
+        Bitmap bitmap = Bitmap.createBitmap(8, 8, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
 
@@ -98,7 +127,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         for (int i = 0; i < restaurants.size(); i ++)
         {
             LatLng tempLatLng = new LatLng(restaurants.get(i).getLocation().getLat(), restaurants.get(i).getLocation().getLng());
-            MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng);
+            MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng).title(restaurants.get(i).getName());
+            tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_orange));
             this.googleMap.addMarker(tempMarker);
         }
 
@@ -139,14 +169,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             public void onNext(List<Restaurant> restaurantList) {
 
                 restaurants = restaurantList;
+                supportMapFragment.getMapAsync(MapViewFragment.this::onMapReady);
                 //TODO : Mettre les puces
             }
 
             @Override
             public void onError(Throwable e) {
-
-                String error = "error";
-
 
             }
 

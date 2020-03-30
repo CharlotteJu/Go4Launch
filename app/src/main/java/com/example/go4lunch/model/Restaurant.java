@@ -2,7 +2,10 @@ package com.example.go4lunch.model;
 
 import android.location.Location;
 
+import androidx.annotation.Nullable;
+
 import java.util.List;
+import java.util.Objects;
 
 public class Restaurant
 {
@@ -52,10 +55,11 @@ public class Restaurant
         this.location = location;
     }
 
-    public Restaurant (String placeId, List<User> userList)
+    public Restaurant (String placeId, List<User> userList, String name)
     {
         this.placeId = placeId;
         this.userList = userList;
+        this.name = name;
     }
 
     //////// GETTERS ////////
@@ -162,5 +166,28 @@ public class Restaurant
 
     public void setLocation(RestaurantPOJO.Location location) {
         this.location = location;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+
+        if (obj == null || obj.getClass() != getClass())
+        {
+            return false;
+        }
+
+        return Objects.equals(this.getPlaceId(),((Restaurant) obj).getPlaceId());
+
+        //return this.getPlaceId().equals(((Restaurant) obj).getPlaceId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getPlaceId());
     }
 }

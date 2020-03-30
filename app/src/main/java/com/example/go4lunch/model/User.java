@@ -1,7 +1,10 @@
 package com.example.go4lunch.model;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class User
 {
@@ -83,5 +86,27 @@ public class User
     {
         this.restaurantChoose = null;
         this.chooseRestaurant = false;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(getEmail());
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+
+        if (obj == null || obj.getClass() != getClass())
+        {
+            return false;
+        }
+
+        return Objects.equals(this.getEmail(), ((User) obj).getEmail());
     }
 }
