@@ -47,10 +47,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private static final int REQUEST_CODE = 12;
     private Location currentLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
-
     private Disposable disposable;
 
-    private OnClickListener onClickListener;
 
     @BindView(R.id.fragment_list_restaurants_recycler_view)
     RecyclerView recyclerView;
@@ -91,7 +89,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
      */
     private void configRecyclerView()
     {
-        this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this), this::onClickListener, getActivity());
+        this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this), this, getActivity());
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
@@ -109,13 +107,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                if (location != null) {
-                    currentLocation = location;
-                    restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-                }
+        task.addOnSuccessListener(location -> {
+            if (location != null) {
+                currentLocation = location;
+                restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
 
@@ -174,11 +169,6 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         {
             this.disposable.dispose();
         }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
     }
 
     @Override
