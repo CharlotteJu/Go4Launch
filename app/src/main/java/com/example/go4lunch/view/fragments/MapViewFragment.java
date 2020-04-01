@@ -8,10 +8,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -20,12 +22,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.view.activities.DetailsActivity;
+import com.example.go4lunch.view.adapters.InfoWindowMapAdapter;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -35,22 +40,31 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
+
+import static android.app.Activity.RESULT_OK;
 
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
@@ -66,6 +80,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap googleMap;
 
+
     public MapViewFragment() {
         // Required empty public constructor
     }
@@ -78,6 +93,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        String key = BuildConfig.google_maps_key;
+        Places.initialize(getContext(), key);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
@@ -91,6 +108,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         fetchLocation();
         return v;
     }
+
 
 
     private void fetchLocation() {
@@ -138,6 +156,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
+        MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.google_style);
+        this.googleMap.setMapStyle(mapStyleOptions);
 
         for (int i = 0; i < restaurants.size(); i ++)
         {
@@ -157,25 +177,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
             Marker markerFinal = this.googleMap.addMarker(tempMarker);
             markerFinal.setTag(restaurantTemp.getPlaceId());
-            this.googleMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
-                @Override
-                public void onInfoWindowLongClick(Marker marker) {
-                    Toast.makeText(getContext(), "test", Toast.LENGTH_SHORT).show();
-                }
-            });
-            this.googleMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-                @Override
-                public void onInfoWindowClick(Marker marker)
-                {
-                    Toast.makeText(getContext(), "test", Toast.LENGTH_SHORT).show();
-                }
-            });
+            this.googleMap.setOnInfoWindowLongClickListener(this::lunchDetailsActivity);
 
-
-            this.googleMap.setOnMarkerClickListener(marker -> {
-                lunchDetailsActivity(marker);
+            /*this.googleMap.setOnMarkerClickListener(marker -> {
+                marker.showInfoWindow();
                 return true;
-            });
+            });*/
         }
 
 
@@ -216,7 +223,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
      */
     private List<Restaurant> stream(double lat, double lng, int radius)
     {
-        String key = getActivity().getResources().getString(R.string.google_maps_key);
+        String key = BuildConfig.google_maps_key;
         this.restaurants.clear();
 
         this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {

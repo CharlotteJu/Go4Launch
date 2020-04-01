@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
@@ -224,7 +225,7 @@ public class DetailsFragment extends Fragment {
 
     private Restaurant stream (String placeId)
     {
-        String key = getActivity().getResources().getString(R.string.google_maps_key);
+        String key = BuildConfig.google_maps_key;
 
         this.disposable = RestaurantStreams.streamDetailRestaurantToRestaurant(placeId, key).subscribeWith(new DisposableObserver<Restaurant>() {
             @Override
