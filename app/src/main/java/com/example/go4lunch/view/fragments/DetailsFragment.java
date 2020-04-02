@@ -30,23 +30,19 @@ import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListWorkmatesDetailsFragmentAdapter;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.grpc.internal.AbstractReadableBuffer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -117,9 +113,9 @@ public class DetailsFragment extends Fragment {
         Uri uri = Uri.parse("tel:"+phone);
         Intent intent = new Intent(Intent.ACTION_CALL, uri);
 
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
+        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
         {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE);
         }
         else
         {
@@ -166,7 +162,7 @@ public class DetailsFragment extends Fragment {
         Uri uri = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null)
+        if (intent.resolveActivity(Objects.requireNonNull(getActivity()).getPackageManager()) != null)
         {
             startActivity(intent);
         }
@@ -201,14 +197,39 @@ public class DetailsFragment extends Fragment {
             UserHelper.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
             UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
 
-            if (workmatesList.contains(currentUser))
-            {
-                workmatesList.remove(currentUser);
-            }
+            workmatesList.remove(currentUser);
 
             RestaurantHelper.updateRestaurantUserList(uidRestaurant, workmatesList);
         }
 
+    }
+
+    private void updateOtherRestaurantInFirebase(Restaurant restaurant)
+    {
+        RestaurantHelper.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) -> {
+            if (queryDocumentSnapshots != null)
+            {
+                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
+                {
+                    if (Objects.equals(queryDocumentSnapshots.getDocuments().get(i).get("placeId"), restaurant.getPlaceId()))
+                    {
+                        String debug1 = (String) queryDocumentSnapshots.getDocuments().get(i).get("placeId");
+                        String debug2 = restaurant.getPlaceId();
+
+                        String uid = queryDocumentSnapshots.getDocuments().get(i).getId();
+                        RestaurantHelper.getRestaurant(uid).addOnSuccessListener(documentSnapshot -> {
+
+                            List<User> tempWorkmatesList = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList();
+
+                            tempWorkmatesList.remove(currentUser);
+
+                            RestaurantHelper.updateRestaurantUserList(uid,tempWorkmatesList);
+                        });
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     private void configButton()
@@ -251,7 +272,7 @@ public class DetailsFragment extends Fragment {
 
     private void getCurrentUser()
     {
-        uidUser = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         UserHelper.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
             currentUser = documentSnapshot.toObject(User.class);
             updateRestaurant(restaurantFinal);
@@ -260,21 +281,18 @@ public class DetailsFragment extends Fragment {
 
     private void getFirebaseRestaurant ()
     {
-        RestaurantHelper.getListRestaurants().addSnapshotListener(getActivity(), (queryDocumentSnapshots, e) -> {
+        RestaurantHelper.getListRestaurants().addSnapshotListener(Objects.requireNonNull(getActivity()), (queryDocumentSnapshots, e) -> {
             if (queryDocumentSnapshots != null)
             {
                 for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
                 {
-                    if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurantFinal.getPlaceId()))
+                    if (Objects.equals(queryDocumentSnapshots.getDocuments().get(i).get("placeId"), restaurantFinal.getPlaceId()))
                     {
                         uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
                         restaurantExistsInFirebase = true;
-                        RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                            @Override
-                            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                workmatesList = documentSnapshot.toObject(Restaurant.class).getUserList();
-                                configRecyclerView();
-                            }
+                        RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(documentSnapshot -> {
+                            workmatesList = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList();
+                            configRecyclerView();
                         });
                         break;
                     }
@@ -289,39 +307,7 @@ public class DetailsFragment extends Fragment {
         });
     }
 
-    private void updateOtherRestaurantInFirebase(Restaurant restaurant)
-    {
-        RestaurantHelper.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) -> {
-            if (queryDocumentSnapshots != null)
-            {
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                {
-                    if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurant.getPlaceId()))
-                    {
-                        String uid = queryDocumentSnapshots.getDocuments().get(i).getId();
-                        RestaurantHelper.getRestaurant(uid).addOnSuccessListener(documentSnapshot -> {
 
-                            List<User> tempWorkmatesList = documentSnapshot.toObject(Restaurant.class).getUserList();
-
-                            if (tempWorkmatesList.contains(currentUser))
-                            {
-                                tempWorkmatesList.remove(currentUser);
-                            }
-                            /*for (int i = 0; i < tempWorkmatesList.size(); i ++)
-                            {
-                                if (tempWorkmatesList.get(i).equals(currentUser))
-                                {
-                                    tempWorkmatesList.remove(i);
-                                }
-                            }*/
-                            RestaurantHelper.updateRestaurantUserList(uid,tempWorkmatesList);
-                        });
-                        break;
-                    }
-                }
-            }
-        });
-    }
 
     private void updateRestaurant(Restaurant restaurant)
     {

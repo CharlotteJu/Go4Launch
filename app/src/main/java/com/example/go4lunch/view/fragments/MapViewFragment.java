@@ -1,70 +1,44 @@
 package com.example.go4lunch.view.fragments;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.User;
 import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.view.activities.DetailsActivity;
-import com.example.go4lunch.view.adapters.InfoWindowMapAdapter;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.api.model.RectangularBounds;
-import com.google.android.libraries.places.api.model.TypeFilter;
-import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
-import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
-
-import static android.app.Activity.RESULT_OK;
 
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
@@ -75,10 +49,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private SupportMapFragment supportMapFragment;
     private List<Restaurant> restaurants;
     private Disposable disposable;
-    private List<Restaurant> restaurantsWithWorkmates;
+    private List<String> restaurantsWithWorkmates;
 
-
-    private GoogleMap googleMap;
+    //private GoogleMap googleMap;
 
 
     public MapViewFragment() {
@@ -86,15 +59,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     public static MapViewFragment newInstance() {
-        MapViewFragment fragment = new MapViewFragment();
-        return fragment;
+        return new MapViewFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         String key = BuildConfig.google_maps_key;
-        Places.initialize(getContext(), key);
+        Places.initialize(Objects.requireNonNull(getContext()), key);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
@@ -113,9 +85,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private void fetchLocation() {
         if (ActivityCompat.checkSelfPermission(
-                getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
             return;
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
@@ -129,7 +101,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private void updateNumberWorkmates ()
     {
-        RestaurantHelper.getListRestaurants().addSnapshotListener(getActivity(), (queryDocumentSnapshots, e) ->
+        RestaurantHelper.getListRestaurants().addSnapshotListener(Objects.requireNonNull(getActivity()), (queryDocumentSnapshots, e) ->
         {
             if (queryDocumentSnapshots != null)
             {
@@ -138,26 +110,22 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 {
                     if (test.get(i).getUserList() != null && test.get(i).getUserList().size() > 0)
                     {
-                        String uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
-                        RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(documentSnapshot -> {
-                            Restaurant restaurantTemp = documentSnapshot.toObject(Restaurant.class);
-                            restaurantsWithWorkmates.add(restaurantTemp);
-                            supportMapFragment.getMapAsync(MapViewFragment.this);
-                        });
-                        break;
+                        String placeId = (String) queryDocumentSnapshots.getDocuments().get(i).get("placeId");
+                        restaurantsWithWorkmates.add(placeId);
                     }
                 }
-                //supportMapFragment.getMapAsync(MapViewFragment.this);
             }
+
+            supportMapFragment.getMapAsync(MapViewFragment.this);
 
         });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        this.googleMap = googleMap;
-        MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.google_style);
-        this.googleMap.setMapStyle(mapStyleOptions);
+
+        MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(Objects.requireNonNull(getContext()), R.raw.google_style);
+        googleMap.setMapStyle(mapStyleOptions);
 
         for (int i = 0; i < restaurants.size(); i ++)
         {
@@ -165,7 +133,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             LatLng tempLatLng = new LatLng(restaurantTemp.getLocation().getLat(), restaurantTemp.getLocation().getLng());
             MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng).title(restaurantTemp.getName());
 
-            if (restaurantsWithWorkmates.contains(restaurantTemp))
+            if (restaurantsWithWorkmates.contains(restaurantTemp.getPlaceId()))
             {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
 
@@ -175,22 +143,17 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_orange));
             }
 
-            Marker markerFinal = this.googleMap.addMarker(tempMarker);
+            Marker markerFinal = googleMap.addMarker(tempMarker);
             markerFinal.setTag(restaurantTemp.getPlaceId());
-            this.googleMap.setOnInfoWindowLongClickListener(this::lunchDetailsActivity);
-
-            /*this.googleMap.setOnMarkerClickListener(marker -> {
-                marker.showInfoWindow();
-                return true;
-            });*/
+            googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
 
 
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
         float zoom = 16;
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        this.googleMap.addMarker(markerOptions);
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        googleMap.addMarker(markerOptions);
 
     }
 
@@ -232,7 +195,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
                 restaurants = restaurantList;
                 updateNumberWorkmates();
-
             }
 
             @Override

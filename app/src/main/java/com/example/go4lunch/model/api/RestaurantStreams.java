@@ -61,21 +61,18 @@ public class RestaurantStreams {
     public static Observable<Restaurant> streamDetailRestaurantToRestaurant(String placeId, String key)
     {
         return streamDetailRestaurant(placeId, key)
-                .map(new Function<DetailPOJO, Restaurant>() {
-                    @Override
-                    public Restaurant apply(DetailPOJO detailPOJO) throws Exception {
-                        String name = detailPOJO.getResult().getName();
-                        String address = detailPOJO.getResult().getVicinity();
-                        String photo = getPhoto(detailPOJO.getResult().getPhotos().get(0).getPhotoReference(), 400, key);
-                        String placeId = detailPOJO.getResult().getPlaceId();
-                        double rating = detailPOJO.getResult().getRating();
-                        DetailPOJO.OpeningHours openingHours = detailPOJO.getResult().getOpeningHours();
-                        String phoneNumber = detailPOJO.getResult().getInternationalPhoneNumber();
-                        String website = detailPOJO.getResult().getWebsite();
+                .map(detailPOJO -> {
+                    String name = detailPOJO.getResult().getName();
+                    String address = detailPOJO.getResult().getVicinity();
+                    String photo = getPhoto(detailPOJO.getResult().getPhotos().get(0).getPhotoReference(), 400, key);
+                    String placeId1 = detailPOJO.getResult().getPlaceId();
+                    double rating = detailPOJO.getResult().getRating();
+                    DetailPOJO.OpeningHours openingHours = detailPOJO.getResult().getOpeningHours();
+                    String phoneNumber = detailPOJO.getResult().getInternationalPhoneNumber();
+                    String website = detailPOJO.getResult().getWebsite();
 
-                        Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openingHours, phoneNumber, website);
-                        return restaurant;
-                    }
+                    Restaurant restaurant = new Restaurant(name, address, photo, placeId1, rating, openingHours, phoneNumber, website);
+                    return restaurant;
                 });
     }
 
@@ -90,47 +87,45 @@ public class RestaurantStreams {
     public static Observable<List<Restaurant>> streamFetchRestaurantInList(double lat, double lng, int radius, String key)
     {
         return streamFetchRestaurant(lat, lng, radius, key)
-                .map(new Function<RestaurantPOJO, List<Restaurant>>() {
-                    @Override
-                    public List<Restaurant> apply(RestaurantPOJO restaurantPOJO) throws Exception {
+                .map(restaurantPOJO -> {
 
-                        List<RestaurantPOJO.Result> res = restaurantPOJO.getResults();
+                    restaurants = new ArrayList<>();
+                    List<RestaurantPOJO.Result> res = restaurantPOJO.getResults();
 
-                        for (int i = 0; i < res.size(); i ++)
+                    for (int i = 0; i < res.size(); i ++)
+                    {
+                        String name = res.get(i).getName();
+                        String address = res.get(i).getVicinity();
+                        String photo;
+                        String placeId = res.get(i).getPlaceId();
+                        double rating = res.get(i).getRating();
+                        Boolean openNow;
+                        RestaurantPOJO.Location location = res.get(i).getGeometry().getLocation();
+
+                        if (res.get(i).getPhotos() != null)
                         {
-                            String name = res.get(i).getName();
-                            String address = res.get(i).getVicinity();
-                            String photo;
-                            String placeId = res.get(i).getPlaceId();
-                            double rating = res.get(i).getRating();
-                            Boolean openNow;
-                            RestaurantPOJO.Location location = res.get(i).getGeometry().getLocation();
-
-                            if (res.get(i).getPhotos() != null)
-                            {
-                                photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
-                            }
-                            else
-                            {
-                                photo = "";
-                            }
-
-                            if (res.get(i).getOpeningHours() != null)
-                            {
-                                openNow = res.get(i).getOpeningHours().getOpenNow();
-                            }
-                            else
-                            {
-                                openNow = false;
-                            }
-
-
-                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow, location);
-                            restaurants.add(restaurant);
+                            photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
+                        }
+                        else
+                        {
+                            photo = "";
                         }
 
-                        return restaurants;
+                        if (res.get(i).getOpeningHours() != null)
+                        {
+                            openNow = res.get(i).getOpeningHours().getOpenNow();
+                        }
+                        else
+                        {
+                            openNow = false;
+                        }
+
+
+                        Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow, location);
+                        restaurants.add(restaurant);
                     }
+
+                    return restaurants;
                 });
     }
 
@@ -149,26 +144,23 @@ public class RestaurantStreams {
                 .flatMapIterable(restaurantList -> restaurants)
                 .flatMap(restaurant -> streamDetailRestaurant(restaurant.getPlaceId(), key))
                 .toList()
-                .map(new Function<List<DetailPOJO>, List<Restaurant>>() {
-                    @Override
-                    public List<Restaurant> apply(List<DetailPOJO> detailPOJOS) throws Exception {
-                        restaurants.clear();
-                        for (int i = 0; i < detailPOJOS.size(); i ++)
-                        {
-                            String name = detailPOJOS.get(i).getResult().getName();
-                            String address = detailPOJOS.get(i).getResult().getVicinity();
-                            String photo = getPhoto(detailPOJOS.get(i).getResult().getPhotos().get(0).getPhotoReference(), 400, key);
-                            String placeId = detailPOJOS.get(i).getResult().getPlaceId();
-                            double rating = detailPOJOS.get(i).getResult().getRating();
-                            DetailPOJO.OpeningHours openingHours = detailPOJOS.get(i).getResult().getOpeningHours();
-                            String phoneNumber = detailPOJOS.get(i).getResult().getInternationalPhoneNumber();
-                            String website = detailPOJOS.get(i).getResult().getWebsite();
+                .map(detailPOJOS -> {
+                    restaurants.clear();
+                    for (int i = 0; i < detailPOJOS.size(); i ++)
+                    {
+                        String name = detailPOJOS.get(i).getResult().getName();
+                        String address = detailPOJOS.get(i).getResult().getVicinity();
+                        String photo = getPhoto(detailPOJOS.get(i).getResult().getPhotos().get(0).getPhotoReference(), 400, key);
+                        String placeId = detailPOJOS.get(i).getResult().getPlaceId();
+                        double rating = detailPOJOS.get(i).getResult().getRating();
+                        DetailPOJO.OpeningHours openingHours = detailPOJOS.get(i).getResult().getOpeningHours();
+                        String phoneNumber = detailPOJOS.get(i).getResult().getInternationalPhoneNumber();
+                        String website = detailPOJOS.get(i).getResult().getWebsite();
 
-                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openingHours, phoneNumber, website);
-                            restaurants.add(restaurant);
-                        }
-                        return restaurants;
+                        Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openingHours, phoneNumber, website);
+                        restaurants.add(restaurant);
                     }
+                    return restaurants;
                 })
                 .toObservable();
     }

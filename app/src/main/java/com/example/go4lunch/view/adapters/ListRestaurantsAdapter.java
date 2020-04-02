@@ -2,6 +2,7 @@ package com.example.go4lunch.view.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +16,10 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.view.fragments.OnClickListener;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -24,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -38,13 +42,15 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
     private List<Restaurant> restaurants;
     private RequestManager glide;
     private Activity activity;
+    private Location currentLocation;
 
-    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide, OnClickListener onClickListener, Activity activity)
+    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide, OnClickListener onClickListener, Activity activity, Location currentLocation)
     {
         this.restaurants = restaurants;
         this.glide = glide;
         this.onClickListener = onClickListener;
         this.activity = activity;
+        this.currentLocation = currentLocation;
     }
 
     @NonNull
@@ -55,7 +61,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
 
-        return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity);
+        return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity, currentLocation);
     }
 
     @Override
@@ -97,13 +103,15 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         private Activity activity;
         private String uidRestaurant;
         private int numberWorkmates = 0;
+        private Location currentLocation;
 
 
-        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity) {
+        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity, Location location) {
             super(itemView);
             ButterKnife.bind(this,itemView);
             this.onClickListener = onClickListener;
             this.activity = activity;
+            this.currentLocation = location;
         }
 
 
@@ -116,8 +124,21 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             this.updateRating(restaurant);
             this.updateHours(restaurant);
             this.updateNumberWorkmates(restaurant);
+            this.updateDistance(restaurant);
+        }
 
-            //TODO : Distance
+        private void updateDistance(Restaurant restaurant)
+        {
+            //Get the restaurant's location
+            Location restaurantLocation = new Location("fusedLocationProvider");
+            restaurantLocation.setLatitude(restaurant.getLocation().getLat());
+            restaurantLocation.setLongitude(restaurant.getLocation().getLng());
+
+            //Get the distance between currentLocation and restaurantLocation
+            int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
+            String distanceString = distanceLocation + "m";
+            this.distance.setText(distanceString);
+
         }
 
         private void updateHours(Restaurant restaurant)
@@ -167,31 +188,21 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         private void updateNumberWorkmates (Restaurant restaurant)
         {
-            RestaurantHelper.getListRestaurants().addSnapshotListener(activity, new EventListener<QuerySnapshot>()
-            {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+            RestaurantHelper.getListRestaurants().addSnapshotListener(activity, (queryDocumentSnapshots, e) -> {
+                if (queryDocumentSnapshots != null)
                 {
-                    if (queryDocumentSnapshots != null)
+                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
                     {
-                        for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
+                        if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurant.getPlaceId()))
                         {
-                            if (queryDocumentSnapshots.getDocuments().get(i).get("placeId").equals(restaurant.getPlaceId()))
-                            {
-                                uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
-                                RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>()
-                                {
-                                    @Override
-                                    public void onSuccess(DocumentSnapshot documentSnapshot)
-                                    {
-                                        numberWorkmates = documentSnapshot.toObject(Restaurant.class).getUserList().size();
-                                        String numberWorkmatesString = "(" + numberWorkmates + ")";
-                                        numberWorkmatesTxt.setText(numberWorkmatesString);
-                                        displayWorkmates();
-                                    }
-                                });
-                                break;
-                            }
+                            uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
+                            RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(documentSnapshot -> {
+                                numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
+                                String numberWorkmatesString = "(" + numberWorkmates + ")";
+                                numberWorkmatesTxt.setText(numberWorkmatesString);
+                                displayWorkmates();
+                            });
+                            break;
                         }
                     }
                 }

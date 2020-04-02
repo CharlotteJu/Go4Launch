@@ -9,6 +9,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.core.OrderBy;
 
 import java.util.List;
 
@@ -20,10 +21,9 @@ public class UserHelper
     }
 
     public static Query getListUsers()
-    {
-        return UserHelper.getCollectionUser().orderBy("name");
+    {//return UserHelper.getCollectionUser().orderBy("name");
+       return UserHelper.getCollectionUser().orderBy("chooseRestaurant", Query.Direction.DESCENDING);
     }
-
 
     public static Task<Void> createUser(String uid, String email, String username, String urlPicture)
     {

@@ -7,9 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +25,6 @@ import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
@@ -66,7 +63,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getContext()));
 
     }
 
@@ -89,7 +86,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
      */
     private void configRecyclerView()
     {
-        this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this), this, getActivity());
+        this.adapter = new ListRestaurantsAdapter(restaurants, Glide.with(this), this, getActivity(), currentLocation);
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
@@ -101,16 +98,16 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private void configListRestaurants()
     {
         if (ActivityCompat.checkSelfPermission(
-                getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
 
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {
             if (location != null) {
                 currentLocation = location;
-                restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+                stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
 
@@ -126,7 +123,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
      * @param radius double to define the distance around the current User
      * @return a List<Restaurant>
      */
-    private List<Restaurant> stream(double lat, double lng, int radius)
+    private void stream(double lat, double lng, int radius)
     {
        String key = BuildConfig.google_maps_key;
 
@@ -153,8 +150,6 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
             }
         });
-
-        return restaurants;
     }
 
     /**
