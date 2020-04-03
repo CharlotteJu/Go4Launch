@@ -16,7 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -35,7 +34,6 @@ import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
 import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
 import com.example.go4lunch.view.fragments.MapViewFragment;
-import com.facebook.places.model.PlaceFields;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -55,6 +53,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -88,22 +87,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Location currentLocation;
 
     private static final int REQUEST_CODE = 101;
-
-
     private int AUTOCOMPLETE_REQUEST_CODE = 15;
 
-    private void test ()
+    private void configureAutocompleteSearchToolbar()
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
         RectangularBounds rectangularBounds = RectangularBounds.newInstance
-                (new LatLng(currentLocation.getLatitude()-25, currentLocation.getLongitude()-25),
-                        new LatLng(currentLocation.getLatitude()+25, currentLocation.getLongitude()+25));
+                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
 
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-                .setLocationBias(rectangularBounds)
+                .setLocationRestriction(rectangularBounds)
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .build(getApplicationContext());
         startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+    }
+
+    private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
+    {
+        List<LatLng> list = new ArrayList<>();
+
+        double latA = currentLocation.getLatitude() - (radius/111);
+        double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
+        LatLng pointA = new LatLng(latA, lngA);
+        list.add(pointA);
+
+
+        double latB = currentLocation.getLatitude() + radius/111 ;
+        double lngB = currentLocation.getLongitude() + radius/(111 * Math.cos(latB * (Math.PI/180.0f)));
+
+        LatLng pointB = new LatLng(latB, lngB);
+        list.add(pointB);
+
+        return list;
+
     }
 
     private void fetchLocation() {
@@ -117,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         task.addOnSuccessListener(location -> {
             if (location != null) {
                 currentLocation = location;
-                //test();
             }
         });
     }
@@ -126,7 +143,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.toolbar_menu, menu);
-
         return true;
     }
 
@@ -135,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         if (item.getItemId() == R.id.toolbar_menu_search)
         {
-            test();
+            configureAutocompleteSearchToolbar();
         }
 
         return super.onOptionsItemSelected(item);
@@ -150,7 +166,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             {
                 assert data != null;
                 Place place = Autocomplete.getPlaceFromIntent(data);
-                String name = place.getName();
                 String placeId = place.getId();
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
                 intent.putExtra("placeId", placeId);
@@ -227,12 +242,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             {
                 case R.id.action_mapview :
                     displayFragment(displayMapViewFragment());
+                    this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(true);
                     return true;
                 case R.id.action_listview :
                     displayFragment(displayListRestaurantsFragment());
+                    this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(true);
                     return true;
                 case R.id.action_workmates :
                     displayFragment(displayListWorkmatesFragment());
+                    this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(false);
                     return true;
                 default:
                     return false;

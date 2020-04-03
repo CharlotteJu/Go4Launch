@@ -101,6 +101,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private void updateNumberWorkmates ()
     {
+        restaurantsWithWorkmates.clear();
+
         RestaurantHelper.getListRestaurants().addSnapshotListener(Objects.requireNonNull(getActivity()), (queryDocumentSnapshots, e) ->
         {
             if (queryDocumentSnapshots != null)
@@ -120,6 +122,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         });
     }
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -147,7 +151,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             markerFinal.setTag(restaurantTemp.getPlaceId());
             googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
-
 
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");

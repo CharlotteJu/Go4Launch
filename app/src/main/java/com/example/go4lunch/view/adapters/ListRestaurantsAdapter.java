@@ -188,7 +188,26 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         private void updateNumberWorkmates (Restaurant restaurant)
         {
-            RestaurantHelper.getListRestaurants().addSnapshotListener(activity, (queryDocumentSnapshots, e) -> {
+
+            RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    if (documentSnapshot.exists())
+                    {
+                        numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
+                        String numberWorkmatesString = "(" + numberWorkmates + ")";
+                        numberWorkmatesTxt.setText(numberWorkmatesString);
+                        displayWorkmates();
+                    }
+                    else
+                    {
+                        numberWorkmates = 0;
+                        displayWorkmates();
+                    }
+                }
+            });
+
+            /*RestaurantHelper.getListRestaurants().addSnapshotListener(activity, (queryDocumentSnapshots, e) -> {
                 if (queryDocumentSnapshots != null)
                 {
                     for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
@@ -206,7 +225,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
                         }
                     }
                 }
-            });
+            });*/
         }
 
         private void displayWorkmates()
