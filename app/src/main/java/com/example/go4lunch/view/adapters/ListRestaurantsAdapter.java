@@ -101,7 +101,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         private OnClickListener onClickListener;
         private Activity activity;
-        private String uidRestaurant;
         private int numberWorkmates = 0;
         private Location currentLocation;
 
@@ -136,6 +135,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
             //Get the distance between currentLocation and restaurantLocation
             int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
+            restaurant.setDistanceCurrentUser(distanceLocation);
             String distanceString = distanceLocation + "m";
             this.distance.setText(distanceString);
 

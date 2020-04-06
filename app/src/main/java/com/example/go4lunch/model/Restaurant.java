@@ -4,11 +4,13 @@ import android.location.Location;
 
 import androidx.annotation.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 public class Restaurant
 {
+
     private String name;
     private String address;
     private int numberReservation;
@@ -21,6 +23,7 @@ public class Restaurant
     private String website;
     private Boolean openNow;
     private RestaurantPOJO.Location location;
+    private int distanceCurrentUser;
 
     //////// CONSTRUCTOR ////////
 
@@ -113,6 +116,10 @@ public class Restaurant
         return location;
     }
 
+    public int getDistanceCurrentUser() {
+        return distanceCurrentUser;
+    }
+
     //////// SETTERS ////////
 
 
@@ -168,6 +175,11 @@ public class Restaurant
         this.location = location;
     }
 
+    public void setDistanceCurrentUser(int distanceCurrentUser) {
+        this.distanceCurrentUser = distanceCurrentUser;
+    }
+
+
     @Override
     public boolean equals(@Nullable Object obj)
     {
@@ -190,4 +202,5 @@ public class Restaurant
     public int hashCode() {
         return Objects.hash(this.getPlaceId());
     }
+
 }

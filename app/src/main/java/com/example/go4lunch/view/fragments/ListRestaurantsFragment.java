@@ -26,13 +26,17 @@ import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -45,6 +49,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private Location currentLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Disposable disposable;
+
+
 
 
     @BindView(R.id.fragment_list_restaurants_recycler_view)
@@ -113,6 +119,58 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
 
     }
+
+
+
+
+    @OnClick(R.id.fragment_list_restaurants_near_me_fab)
+    void triProximity ()
+    {
+        Collections.sort(restaurants, (o1, o2) -> {
+            Integer restau1 = o1.getDistanceCurrentUser();
+            Integer restau2 = o2.getDistanceCurrentUser();
+
+            return restau1.compareTo(restau2);
+
+        });
+        this.adapter.notifyDataSetChanged();
+
+    }
+
+
+
+    @OnClick(R.id.fragment_list_restaurants_rating_fab)
+    void triRate ()
+    {
+        Collections.sort(restaurants, (o1, o2) -> {
+            Double restau1 = o1.getRating();
+            Double restau2 = o2.getRating();
+
+            return restau1.compareTo(restau2);
+        });
+
+        Collections.reverse(restaurants);
+
+        this.adapter.notifyDataSetChanged();
+    }
+
+
+    @OnClick(R.id.fragment_list_restaurants_name_fab)
+    void triName()
+    {
+        Collections.sort(restaurants, (o1, o2) -> {
+
+            String restau1 = o1.getName();
+            String restau2 = o2.getName();
+
+
+            return restau1.compareTo(restau2);
+        });
+
+        this.adapter.notifyDataSetChanged();
+    }
+
+
 
     ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
 
