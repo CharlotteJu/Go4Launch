@@ -160,14 +160,29 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     {
         Collections.sort(restaurants, (o1, o2) -> {
 
-            String restau1 = o1.getName();
-            String restau2 = o2.getName();
+            String restaurant1 = o1.getName();
+            String restaurant2 = o2.getName();
 
-
-            return restau1.compareTo(restau2);
+            return restaurant1.compareTo(restaurant2);
         });
 
         this.adapter.notifyDataSetChanged();
+    }
+
+    private void updateDistanceToCurrentLocation()
+    {
+        Location restaurantLocation = new Location("fusedLocationProvider");
+
+        for (int i = 0; i < restaurants.size(); i ++)
+        {
+            //Get the restaurant's location
+            restaurantLocation.setLatitude(restaurants.get(i).getLocation().getLat());
+            restaurantLocation.setLongitude(restaurants.get(i).getLocation().getLng());
+
+            //Get the distance between currentLocation and restaurantLocation
+            int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
+            restaurants.get(i).setDistanceCurrentUser(distanceLocation);
+        }
     }
 
 
@@ -192,21 +207,15 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
             public void onNext(List<Restaurant> restaurantList) {
 
                restaurants = restaurantList;
+               updateDistanceToCurrentLocation();
                configRecyclerView();
             }
 
             @Override
-            public void onError(Throwable e) {
-
-               String error = "error";
-
-
-            }
+            public void onError(Throwable e) {}
 
             @Override
-            public void onComplete() {
-
-            }
+            public void onComplete() {}
         });
     }
 

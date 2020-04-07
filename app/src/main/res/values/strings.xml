@@ -62,6 +62,10 @@
     <string name="list_restaurants_adapter_open_now">Open now</string>
     <string name="list_restaurants_adapter_close_now">Close now</string>
 
+    <!-- NOTIFICATION SERVICE -->
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <string name="notification_title">"Vous avez reçu une notification"</string>
+
 
 
 

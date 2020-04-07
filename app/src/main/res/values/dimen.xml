@@ -39,11 +39,4 @@
     <dimen name="item_list_workmates_margin_image">10dp</dimen>
     <dimen name="item_list_workmates_margin_start_txt">20dp</dimen>
 
-    <!-- LIST RESTAURANT FRAGMENT -->
-    <dimen name="list_restaurant_fragment_standard_55">55dp</dimen>
-    <dimen name="list_restaurant_fragment_standard_105">105dp</dimen>
-    <dimen name="list_restaurant_fragment_standard_155">155dp</dimen>
-
-
-
 </resources>

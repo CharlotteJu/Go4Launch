@@ -128,15 +128,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         private void updateDistance(Restaurant restaurant)
         {
-            //Get the restaurant's location
-            Location restaurantLocation = new Location("fusedLocationProvider");
-            restaurantLocation.setLatitude(restaurant.getLocation().getLat());
-            restaurantLocation.setLongitude(restaurant.getLocation().getLng());
-
-            //Get the distance between currentLocation and restaurantLocation
-            int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
-            restaurant.setDistanceCurrentUser(distanceLocation);
-            String distanceString = distanceLocation + "m";
+            String distanceString = restaurant.getDistanceCurrentUser() + "m";
             this.distance.setText(distanceString);
 
         }
@@ -189,21 +181,18 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         private void updateNumberWorkmates (Restaurant restaurant)
         {
 
-            RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    if (documentSnapshot.exists())
-                    {
-                        numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
-                        String numberWorkmatesString = "(" + numberWorkmates + ")";
-                        numberWorkmatesTxt.setText(numberWorkmatesString);
-                        displayWorkmates();
-                    }
-                    else
-                    {
-                        numberWorkmates = 0;
-                        displayWorkmates();
-                    }
+            RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists())
+                {
+                    numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
+                    String numberWorkmatesString = "(" + numberWorkmates + ")";
+                    numberWorkmatesTxt.setText(numberWorkmatesString);
+                    displayWorkmates();
+                }
+                else
+                {
+                    numberWorkmates = 0;
+                    displayWorkmates();
                 }
             });
 

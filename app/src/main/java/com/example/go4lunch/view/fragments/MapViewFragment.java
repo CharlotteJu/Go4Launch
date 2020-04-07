@@ -1,12 +1,14 @@
 package com.example.go4lunch.view.fragments;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -32,11 +34,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -50,8 +55,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private List<Restaurant> restaurants;
     private Disposable disposable;
     private List<String> restaurantsWithWorkmates;
+    private String radiusStringEnter;
 
-    //private GoogleMap googleMap;
 
 
     public MapViewFragment() {
@@ -117,9 +122,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     }
                 }
             }
-
             supportMapFragment.getMapAsync(MapViewFragment.this);
-
         });
     }
 
@@ -157,8 +160,102 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         float zoom = 16;
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
         googleMap.addMarker(markerOptions);
+        /*googleMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
+            @Override
+            public void onInfoWindowLongClick(Marker marker) {
+                updateStream();
+            }
+        });*/
+
+
+       /* googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+
+                Projection projection = googleMap.getProjection();
+                VisibleRegion visibleRegion = projection.getVisibleRegion();
+                LatLng latLngRight = visibleRegion.farRight;
+                LatLng latLngLeft = visibleRegion.farLeft;
+
+                double test = calculateRectangularBoundsSinceCurrentLocation(latLngRight, latLngLeft);
+            }
+        });*/
+
+
 
     }
+
+    /*private double calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
+    {
+
+        //double radiusTest = (latLngRight.longitude - latLngLeft.longitude)/2;
+
+        double radiusTest;
+
+        if (latLngRight.longitude - currentLocation.getLongitude() > currentLocation.getLongitude() - latLngLeft.longitude ||
+                latLngRight.longitude - currentLocation.getLongitude() == currentLocation.getLongitude() - latLngLeft.longitude)
+        {
+           double x = 111 * Math.cos(latLngRight.latitude * (Math.PI/180.0f));
+            radiusTest = x*(latLngRight.longitude - currentLocation.getLongitude());
+        }
+        else
+        {
+            radiusTest = latLngLeft.longitude*(111 * Math.cos(latLngLeft.latitude * (Math.PI/180.0f))) + currentLocation.getLongitude();
+        }
+
+        return radiusTest;
+
+    }*/
+
+   /* private int updateRadius(String enter)
+    {
+        int r = Integer.parseInt(enter);
+
+        if (r > 10000)
+        {
+            r = 10000;
+        }
+
+        return r;
+    }
+
+
+    void updateStream()
+    {
+        this.createAndShowPopUpLogOut();
+        int r = updateRadius(radiusStringEnter);
+        restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), r);
+    }*/
+
+
+    /**
+     * Create and show an AlertDialog to logOut() {@link AlertDialog}
+     */
+    /*private void createAndShowPopUpLogOut()
+    {
+
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getContext()));
+        builder.setTitle("DISTANCE");
+        builder.setMessage("A quelle distance voulez-vous voir des restaurants ? (limite : 10KM)");
+        LayoutInflater layoutInflater = LayoutInflater.from(getContext());
+        View v = layoutInflater.inflate(R.layout.alert_dialog_map_view_distance, null);
+        builder.setView(v);
+        TextInputEditText textInputEditText = v.findViewById(R.id.testEditTxt);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+                radiusStringEnter = Objects.requireNonNull(textInputEditText.getText()).toString();
+            }
+        });
+        builder.setCancelable(false);
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }*/
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -201,14 +298,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             }
 
             @Override
-            public void onError(Throwable e) {
-
-            }
+            public void onError(Throwable e) {}
 
             @Override
-            public void onComplete() {
-
-            }
+            public void onComplete() {}
         });
 
         return restaurants;

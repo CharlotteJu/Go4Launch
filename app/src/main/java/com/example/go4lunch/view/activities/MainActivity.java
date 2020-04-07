@@ -12,8 +12,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -351,7 +353,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             case R.id.menu_drawer_lunch :
                 this.showLunch();
+                break;
             case R.id.menu_drawer_settings :
+                this.createAndShowPopUpSettings();
                 break;
             case R.id.menu_drawer_logout :
                 this.createAndShowPopUpLogOut();
@@ -410,6 +414,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 });
         builder.setNegativeButton("Non", null);
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void createAndShowPopUpSettings()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("NOTIFICATIONS");
+        builder.setMessage("Voulez-vous activer les notifications ?");
+        builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("PREF_NOTIF", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("NOTIFICATIONS_BOOLEAN", true);
+                editor.commit();
+            }
+        });
+        builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("PREF_NOTIF", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("NOTIFICATIONS_BOOLEAN", false);
+                editor.commit();
+            }
+        });
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
