@@ -38,6 +38,7 @@ import butterknife.OnClick;
 public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurantsAdapter.ListRestaurantsViewHolder>
 {
 
+    // FOR DATA
     private OnClickListener onClickListener;
     private List<Restaurant> restaurants;
     private RequestManager glide;
@@ -119,6 +120,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             name.setText(restaurant.getName());
             address.setText(restaurant.getAddress());
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
+
             this.displayWorkmates();
             this.updateRating(restaurant);
             this.updateHours(restaurant);
@@ -133,6 +135,10 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         }
 
+        /**
+         * Update hours with restaurant's boolean getOpenNow()
+         * @param restaurant
+         */
         private void updateHours(Restaurant restaurant)
         {
            if (restaurant.getOpenNow())
@@ -145,6 +151,10 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            }
         }
 
+        /**
+         * Update star's visibility with rating
+         * @param restaurant
+         */
         private void updateRating(Restaurant restaurant)
         {
             double rating = restaurant.getRating();
@@ -178,6 +188,10 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         }
 
+        /**
+         * Update the workmate's number with documentSnapshot from Firebase
+         * @param restaurant
+         */
         private void updateNumberWorkmates (Restaurant restaurant)
         {
 
@@ -217,6 +231,9 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             });*/
         }
 
+        /**
+         * Update the visibility of numberWorkmatesTxt and peopleWorkmatesImage if numberWorkmates > 0
+         */
         private void displayWorkmates()
         {
             if (numberWorkmates > 0)

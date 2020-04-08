@@ -54,6 +54,11 @@ public class ListWorkmatesFragment extends Fragment {
 
     }
 
+    /**
+     * Generate options for the FirestoreRecycler adapter with a query
+     * @param query
+     * @return
+     */
     private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
     {
         return new FirestoreRecyclerOptions.Builder<User>()

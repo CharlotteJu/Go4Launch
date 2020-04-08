@@ -10,6 +10,8 @@ import android.os.Bundle;
 import com.example.go4lunch.R;
 import com.example.go4lunch.view.fragments.DetailsFragment;
 
+import java.util.Objects;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -40,7 +42,7 @@ public class DetailsActivity extends AppCompatActivity {
     {
         setSupportActionBar(toolbar);
         //getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationIcon(R.drawable.ic_return);
     }
 
@@ -60,7 +62,7 @@ public class DetailsActivity extends AppCompatActivity {
     {
         if (this.detailsFragment == null)
         {
-            this.detailsFragment = DetailsFragment.newInstance(placeId);
+            this.detailsFragment = DetailsFragment.newInstance();
         }
         return this.detailsFragment;
     }

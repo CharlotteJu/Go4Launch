@@ -78,6 +78,13 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
             this.activity = activity;
         }
 
+        /**
+         * Update textView with information from Firebase
+         * If the user chose a restaurant, textView is bold
+         * @param user
+         * @param glide
+         * @param context
+         */
         private void updateUI(User user, RequestManager glide, Context context)
         {
             glide.load(user.getIllustration()).apply(RequestOptions.circleCropTransform()).into(imageView);

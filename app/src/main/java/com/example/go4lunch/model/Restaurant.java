@@ -58,11 +58,12 @@ public class Restaurant
         this.location = location;
     }
 
-    public Restaurant (String placeId, List<User> userList, String name)
+    public Restaurant (String placeId, List<User> userList, String name, String address)
     {
         this.placeId = placeId;
         this.userList = userList;
         this.name = name;
+        this.address = address;
     }
 
     //////// GETTERS ////////

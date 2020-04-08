@@ -70,42 +70,26 @@ public class AuthActivity extends AppCompatActivity {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
 
-            UserHelper.getListUsers().addSnapshotListener(this, new EventListener<QuerySnapshot>() {
-                @Override
-                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
+            UserHelper.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
+                if (queryDocumentSnapshots != null)
                 {
-                    if (queryDocumentSnapshots != null)
+                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
                     {
-                        for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                        {
-                            if (queryDocumentSnapshots.getDocuments().get(i).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                                userExists = true;
-                                break;
-                            }
+                        if (queryDocumentSnapshots.getDocuments().get(i).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
+                            userExists = true;
+                            break;
                         }
-                        if (userExists)
-                        {
-                            lunchMainActivity();
-                        }
-                        else
-                        {
-                            UserHelper.createUser(uid, email, name, urlPicture)
-                                    .addOnSuccessListener(new OnSuccessListener<Void>()
-                                    {
-                                        @Override
-                                        public void onSuccess(Void aVoid) {
-                                            lunchMainActivity();
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener()
-                                    {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e)
-                                        {
-                                            Toast.makeText(getApplicationContext(), "Création échouée", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                        }
+                    }
+                    if (userExists)
+                    {
+                        lunchMainActivity();
+                    }
+                    else
+                    {
+                        UserHelper.createUser(uid, email, name, urlPicture)
+                                .addOnSuccessListener(aVoid -> lunchMainActivity())
+                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
+                                        R.string.auth_activity_connection_canceled, Toast.LENGTH_SHORT).show());
                     }
                 }
             });

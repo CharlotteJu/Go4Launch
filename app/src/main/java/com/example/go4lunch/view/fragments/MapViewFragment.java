@@ -20,18 +20,22 @@ import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
+import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.material.textfield.TextInputEditText;
@@ -49,13 +53,13 @@ import io.reactivex.observers.DisposableObserver;
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private Location currentLocation;
-    private FusedLocationProviderClient fusedLocationProviderClient;
-    private static final int REQUEST_CODE = 101;
+    //private FusedLocationProviderClient fusedLocationProviderClient;
+    //private static final int REQUEST_CODE = 101;
     private SupportMapFragment supportMapFragment;
     private List<Restaurant> restaurants;
     private Disposable disposable;
     private List<String> restaurantsWithWorkmates;
-    private String radiusStringEnter;
+    //private String radiusStringEnter;
 
 
 
@@ -72,7 +76,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         String key = BuildConfig.google_maps_key;
         Places.initialize(Objects.requireNonNull(getContext()), key);
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        currentLocation = StaticFields.CURRENT_LOCATION;
+        restaurants = new ArrayList<>();
+        restaurantsWithWorkmates = new ArrayList<>();
+        this.stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+        //fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
     @Override
@@ -80,15 +88,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
         this.supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        restaurants = new ArrayList<>();
-        restaurantsWithWorkmates = new ArrayList<>();
-        fetchLocation();
+
+        //fetchLocation();
         return v;
     }
 
 
 
-    private void fetchLocation() {
+    /*private void fetchLocation() {
         if (ActivityCompat.checkSelfPermission(
                 Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -102,8 +109,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
-    }
+    }*/
 
+    /**
+     * Update the workmate's number with documentSnapshot from Firebase
+     */
     private void updateNumberWorkmates ()
     {
         restaurantsWithWorkmates.clear();
@@ -156,28 +166,25 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         }
 
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
+        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
         float zoom = 16;
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
         googleMap.addMarker(markerOptions);
-        /*googleMap.setOnInfoWindowLongClickListener(new GoogleMap.OnInfoWindowLongClickListener() {
-            @Override
-            public void onInfoWindowLongClick(Marker marker) {
-                updateStream();
-            }
-        });*/
 
 
-       /* googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+
+       /*googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
             @Override
             public void onCameraIdle() {
 
                 Projection projection = googleMap.getProjection();
                 VisibleRegion visibleRegion = projection.getVisibleRegion();
-                LatLng latLngRight = visibleRegion.farRight;
-                LatLng latLngLeft = visibleRegion.farLeft;
+                LatLng farRight = visibleRegion.farRight;
+                LatLng farLeft = visibleRegion.farLeft;
 
-                double test = calculateRectangularBoundsSinceCurrentLocation(latLngRight, latLngLeft);
+
+                int radiusUpdate = calculateRectangularBoundsSinceCurrentLocation(farRight, farLeft);
+                restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), radiusUpdate);
             }
         });*/
 
@@ -185,79 +192,61 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
-    /*private double calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
+    //////////// A VOIR SI UTILE
+    private int calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
     {
+        // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran
 
-        //double radiusTest = (latLngRight.longitude - latLngLeft.longitude)/2;
+        // ------------------------------------------------------------------------------------------------------------------
+        // on se sert des formules suivantes :
+        // convertion degree vers radian : 360 degrees = 2 PI radian => 1 degree = 2 PI / 360.
+        final float DEG_EN_RADIAN = 2.0f * (float)Math.PI / 360.0f;
 
-        double radiusTest;
+        // 1 degree en latitude = 111,32 km (111320 m)
+        final float OUVERTURE_LAT_EN_METRES = 111320.0f;
 
-        if (latLngRight.longitude - currentLocation.getLongitude() > currentLocation.getLongitude() - latLngLeft.longitude ||
-                latLngRight.longitude - currentLocation.getLongitude() == currentLocation.getLongitude() - latLngLeft.longitude)
+        // 1 degree en longitude = 111,32 km * cos(latitude)    /!\ dans un fonction sinus, cosinu ou tangeante, la latitude doit etre exprimée en radian (et non pas en degree)
+        // ici on utilise la latitude de la position courante car les points sont très - TRES - proches les uns des autres (c'est une approximation acceptable)
+        final float OUVERTURE_LONG_EN_METRES = 111320.0f * (float)Math.cos(currentLocation.getLatitude() * DEG_EN_RADIAN);
+
+        // theoreme de pythagore pour un triangle rectangle : c (hypothenuse) = √(a² + b²)
+
+        // ------------------------------------------------------------------------------------------------------------------
+        // Distance position actuelle <=> Coin haut-gauche
+        float a_gauche, b_gauche;
+        // ouverture de la latitude en degree ET convertion de l'ouverture en metres
+        a_gauche = Math.abs((float)(latLngLeft.latitude - currentLocation.getLatitude())) * OUVERTURE_LAT_EN_METRES;
+
+        // meme chose en longitude
+        b_gauche = Math.abs((float)(latLngLeft.longitude - currentLocation.getLongitude())) * OUVERTURE_LONG_EN_METRES;
+
+        // Math.sqrt() = fonction racine carree
+        float dist_PositionCourante_CoinHautGauche = (float)Math.sqrt((a_gauche * a_gauche) + (b_gauche * b_gauche));
+
+        // ------------------------------------------------------------------------------------------------------------------
+        // Distance position actuelle <=> Coin haut-droit
+        float a_droit, b_droit;
+        a_droit = Math.abs((float)(latLngRight.latitude - currentLocation.getLatitude())) * OUVERTURE_LAT_EN_METRES;
+        b_droit = Math.abs((float)(latLngRight.longitude - currentLocation.getLongitude())) * OUVERTURE_LONG_EN_METRES;
+        float dist_PositionCourante_CoinHautDroit = (float)Math.sqrt((a_droit * a_droit) + (b_droit * b_droit));
+
+        if (dist_PositionCourante_CoinHautDroit > 10000 || dist_PositionCourante_CoinHautGauche > 10000)
         {
-           double x = 111 * Math.cos(latLngRight.latitude * (Math.PI/180.0f));
-            radiusTest = x*(latLngRight.longitude - currentLocation.getLongitude());
+            return 10000;
+        }
+        else if (dist_PositionCourante_CoinHautDroit >= dist_PositionCourante_CoinHautGauche)
+        {
+            return (int) dist_PositionCourante_CoinHautDroit;
         }
         else
         {
-            radiusTest = latLngLeft.longitude*(111 * Math.cos(latLngLeft.latitude * (Math.PI/180.0f))) + currentLocation.getLongitude();
+            return (int) dist_PositionCourante_CoinHautGauche;
         }
 
-        return radiusTest;
-
-    }*/
-
-   /* private int updateRadius(String enter)
-    {
-        int r = Integer.parseInt(enter);
-
-        if (r > 10000)
-        {
-            r = 10000;
-        }
-
-        return r;
     }
 
 
-    void updateStream()
-    {
-        this.createAndShowPopUpLogOut();
-        int r = updateRadius(radiusStringEnter);
-        restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), r);
-    }*/
-
-
-    /**
-     * Create and show an AlertDialog to logOut() {@link AlertDialog}
-     */
-    /*private void createAndShowPopUpLogOut()
-    {
-
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(Objects.requireNonNull(getContext()));
-        builder.setTitle("DISTANCE");
-        builder.setMessage("A quelle distance voulez-vous voir des restaurants ? (limite : 10KM)");
-        LayoutInflater layoutInflater = LayoutInflater.from(getContext());
-        View v = layoutInflater.inflate(R.layout.alert_dialog_map_view_distance, null);
-        builder.setView(v);
-        TextInputEditText textInputEditText = v.findViewById(R.id.testEditTxt);
-
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                radiusStringEnter = Objects.requireNonNull(textInputEditText.getText()).toString();
-            }
-        });
-        builder.setCancelable(false);
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }*/
-
-
-    @Override
+   /* @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
@@ -265,7 +254,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 fetchLocation();
             }
         }
-    }
+    }*/
 
     private void lunchDetailsActivity(Marker marker)
     {

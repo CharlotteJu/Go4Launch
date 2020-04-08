@@ -28,23 +28,19 @@ import com.example.go4lunch.model.User;
 import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.model.api.UserHelper;
+import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListWorkmatesDetailsFragmentAdapter;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.grpc.internal.AbstractReadableBuffer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -53,15 +49,15 @@ import io.reactivex.observers.DisposableObserver;
  */
 public class DetailsFragment extends Fragment {
 
+    // FOR DATA
     private String placeId;
     private Restaurant restaurantFinal;
     private Disposable disposable;
     private User currentUser;
     private String uidUser;
     private ListWorkmatesDetailsFragmentAdapter adapter;
-    //private Boolean restaurantExistsInFirebase = false;
-    //private String uidRestaurant;
     private List<User> workmatesList;
+
     private final static int REQUEST_CODE = 13;
 
     @BindView(R.id.details_fragment_name_restaurant_txt)
@@ -89,10 +85,9 @@ public class DetailsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static DetailsFragment newInstance(String placeId)
+    public static DetailsFragment newInstance()
     {
         DetailsFragment detailsFragment = new DetailsFragment();
-        //this.placeId = placeId;
         return detailsFragment;
     }
 
@@ -103,6 +98,8 @@ public class DetailsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, v);
         placeId = DetailsActivity.placeId;
+        currentUser = StaticFields.CURRENT_USER;
+        uidUser = StaticFields.IUD_USER;
         this.restaurantFinal = stream(placeId);
 
         return v;
@@ -142,12 +139,14 @@ public class DetailsFragment extends Fragment {
         if (!currentUser.getRestaurantListFavorites().contains(restaurantFinal))
         {
             restaurantList.add(restaurantFinal);
-            UserHelper.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Restaurant ajouté aux favoris", Toast.LENGTH_SHORT).show());
+            UserHelper.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener
+                    (aVoid -> Toast.makeText(getContext(), R.string.details_fragment_restaurant_added_favorites, Toast.LENGTH_SHORT).show());
         }
         else
         {
             restaurantList.remove(restaurantFinal);
-            UserHelper.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Restaurant retiré des favoris", Toast.LENGTH_SHORT).show());
+            UserHelper.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener
+                    (aVoid -> Toast.makeText(getContext(), R.string.details_fragment_restaurant_removed_favorites, Toast.LENGTH_SHORT).show());
         }
 
         this.updateLike();
@@ -170,7 +169,7 @@ public class DetailsFragment extends Fragment {
         }
         else
         {
-            Toast.makeText(getContext(), "Aucune application correspondante trouvée", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), R.string.details_fragment_website_no_application_found, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -191,6 +190,9 @@ public class DetailsFragment extends Fragment {
             UserHelper.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
             workmatesList.add(currentUser);
             RestaurantHelper.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
+
+            StaticFields.RESTAURANT_CHOOSE_BY_CURRENT_USER = restaurantFinal;
+            StaticFields.RESTAURANT_CHOOSE_BY_CURRENT_USER.setUserList(workmatesList);
         }
         else
         {
@@ -273,33 +275,28 @@ public class DetailsFragment extends Fragment {
             public void onNext(Restaurant restaurant)
             {
                 restaurantFinal = restaurant;
-                getCurrentUser();
+                updateRestaurant(restaurantFinal);
+                //getCurrentUser();
             }
 
             @Override
-            public void onError(Throwable e) {
-
-                String onError;
-
-            }
+            public void onError(Throwable e) {}
 
             @Override
-            public void onComplete() {
-
-            }
+            public void onComplete() {}
         });
 
         return restaurantFinal;
     }
 
-    private void getCurrentUser()
+    /*private void getCurrentUser()
     {
         uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         UserHelper.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
             currentUser = documentSnapshot.toObject(User.class);
             updateRestaurant(restaurantFinal);
         });
-    }
+    }*/
 
     private void getFirebaseRestaurant ()
     {
@@ -312,7 +309,7 @@ public class DetailsFragment extends Fragment {
             else
             {
                 workmatesList = new ArrayList<>();
-                RestaurantHelper.createRestaurant(restaurantFinal.getPlaceId(), restaurantFinal.getPlaceId(), workmatesList, restaurantFinal.getName());
+                RestaurantHelper.createRestaurant(restaurantFinal.getPlaceId(), restaurantFinal.getPlaceId(), workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
             }
         });
 

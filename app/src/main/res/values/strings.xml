@@ -8,6 +8,18 @@
     <string name="auth_activity_subtitle">Find a nice restaurant and invite your co-workers for lunch!</string>
     <string name="auth_activity_button_facebook">Sign in with Facebook</string>
     <string name="auth_activity_button_google">Sign in with Google</string>
+    <string name="auth_activity_connection_canceled">Connection canceled</string>
+
+    <!-- MAIN ACTIVITY -->
+    <string name="main_activity_no_choose_restaurant">You have not selected restaurant</string>
+    <string name="main_activity_success_sign_out">Sign out with success</string>
+    <string name="main_activity_pop_up_log_out_title">SIGN OUT</string>
+    <string name="main_activity_pop_up_log_out_message">Are you sure that you want to logout ?</string>
+    <string name="main_activity_pop_up_yes">YES</string>
+    <string name="main_activity_pop_up_no">NO</string>
+    <string name="main_activity_pop_up_notifications_title">NOTIFICATIONS</string>
+    <string name="main_activity_pop_up_notifications_message">Do you want to activate notifications ?</string>
+
 
     <!-- ITEM LIST RESTAURANTS -->
     <string name="item_list_restaurants_restaurant">Restaurant</string>
@@ -22,6 +34,13 @@
     <string name="details_fragment_call">CALL</string>
     <string name="details_fragment_like">LIKE</string>
     <string name="details_fragment_website">WEBSITE</string>
+    <string name="details_fragment_restaurant_added_favorites">Restaurant added to favorites</string>
+    <string name="details_fragment_restaurant_removed_favorites">Restaurant removed to favorites</string>
+    <string name="details_fragment_website_no_application_found">No corresponding application found</string>
+
+    <!-- MAP VIEW FRAGMENT -->
+    <string name="map_view_fragment_my_position">My position</string>
+
 
     <!-- NAVIGATION HEADER -->
     <string name="navigation_header_name">Name</string>
@@ -64,7 +83,8 @@
 
     <!-- NOTIFICATION SERVICE -->
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
-    <string name="notification_title">"Vous avez reçu une notification"</string>
+    <string name="sdk_8_notification_channel_id" translatable="false">fcm_sdk_8_channel</string>
+    <string name="notification_title">"You've received a Go4Lunch's notification"</string>
 
 
 

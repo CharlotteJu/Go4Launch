@@ -33,6 +33,7 @@ import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.model.api.UserHelper;
+import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
 import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
 import com.example.go4lunch.view.fragments.MapViewFragment;
@@ -58,6 +59,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 
@@ -83,14 +85,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     MapViewFragment mapViewFragment;
     ListRestaurantsFragment listRestaurantsFragment;
     ListWorkmatesFragment listWorkmatesFragment;
-
     private User currentUser;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
 
     private static final int REQUEST_CODE = 101;
     private int AUTOCOMPLETE_REQUEST_CODE = 15;
+    private static final String NOTIFICATIONS_SHARED_PREFERENCES = "PREF_NOTIF";
+    private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+
+        fetchLocation();
+        getCurrentUser();
+
+        //this.displayFragment(displayMapViewFragment());
+        this.configureBottomView();
+        this.configureToolbar();
+        this.configureDrawerLayout();
+        this.configureNavigationView();
+    }
+
+    ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
+
+    /**
+     * Configure the Toolbar {@link Toolbar}
+     */
+    private void configureToolbar()
+    {
+        setSupportActionBar(toolbar);
+
+    }
+
+    /**
+     * Configure the toolbar search with {@link Autocomplete}
+     */
     private void configureAutocompleteSearchToolbar()
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
@@ -104,114 +139,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .build(getApplicationContext());
         startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-    }
-
-    private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
-    {
-        List<LatLng> list = new ArrayList<>();
-
-        double latA = currentLocation.getLatitude() - (radius/111);
-        double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
-        LatLng pointA = new LatLng(latA, lngA);
-        list.add(pointA);
-
-
-        double latB = currentLocation.getLatitude() + radius/111 ;
-        double lngB = currentLocation.getLongitude() + radius/(111 * Math.cos(latB * (Math.PI/180.0f)));
-
-        LatLng pointB = new LatLng(latB, lngB);
-        list.add(pointB);
-
-        return list;
-
-    }
-
-    private void fetchLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return;
-        }
-        Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(location -> {
-            if (location != null) {
-                currentLocation = location;
-            }
-        });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.toolbar_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (item.getItemId() == R.id.toolbar_menu_search)
-        {
-            configureAutocompleteSearchToolbar();
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        if (requestCode == AUTOCOMPLETE_REQUEST_CODE)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                assert data != null;
-                Place place = Autocomplete.getPlaceFromIntent(data);
-                String placeId = place.getId();
-                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                intent.putExtra("placeId", placeId);
-                startActivity(intent);
-
-            }
-            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
-            {
-                assert data != null;
-                Status status = Autocomplete.getStatusFromIntent(data);
-            }
-        }
-
-
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
-        fetchLocation();
-
-        this.displayFragment(displayMapViewFragment());
-        this.configureBottomView();
-        this.configureToolbar();
-        this.configureDrawerLayout();
-        this.configureNavigationView();
-    }
-
-    ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
-
-
-    /**
-     * Configure the Toolbar {@link Toolbar}
-     */
-    private void configureToolbar()
-    {
-        setSupportActionBar(toolbar);
-
     }
 
     /**
@@ -231,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureNavigationView()
     {
         navigationView.setNavigationItemSelectedListener(this);
-        updateNavigationHeader();
+        //updateNavigationHeader();
     }
 
     /**
@@ -272,16 +199,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         emailUser = headerView.findViewById(R.id.nav_header_email_txt);
         illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
 
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        //String userName = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? getString(R.string.navigation_header_name) : firebaseUser.getDisplayName();
+        //String userEmail = TextUtils.isEmpty(firebaseUser.getEmail()) ? getString(R.string.navigation_header_name) : firebaseUser.getEmail();
 
-        String userName = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? getString(R.string.navigation_header_name) : firebaseUser.getDisplayName();
-        nameUser.setText(userName);
-        String userEmail = TextUtils.isEmpty(firebaseUser.getEmail()) ? getString(R.string.navigation_header_name) : firebaseUser.getEmail();
-        emailUser.setText(userEmail);
+        nameUser.setText(StaticFields.CURRENT_USER.getName());
+        emailUser.setText(StaticFields.CURRENT_USER.getEmail());
 
-        if (firebaseUser.getPhotoUrl() != null)
+        if (StaticFields.CURRENT_USER.getIllustration() != null)
         {
-            Glide.with(this).load(firebaseUser.getPhotoUrl()).circleCrop().into(illustrationUser);
+            Glide.with(this).load(StaticFields.CURRENT_USER.getIllustration()).circleCrop().into(illustrationUser);
         }
     }
 
@@ -330,6 +257,67 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return listWorkmatesFragment;
     }
 
+
+
+    //// A VOIR SI UTILE
+    private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
+    {
+        List<LatLng> list = new ArrayList<>();
+
+        double latA = currentLocation.getLatitude() - (radius/111);
+        double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
+        LatLng pointA = new LatLng(latA, lngA);
+        list.add(pointA);
+
+
+        double latB = currentLocation.getLatitude() + radius/111 ;
+        double lngB = currentLocation.getLongitude() + radius/(111 * Math.cos(latB * (Math.PI/180.0f)));
+
+        LatLng pointB = new LatLng(latB, lngB);
+        list.add(pointB);
+
+        return list;
+    }
+
+    ///////////////////////////////////GET CURRENT INFORMATION///////////////////////////////////
+
+    /**
+     * Get the current User {@link UserHelper} {@link User}
+     * Set a value to the static fields CURRENT_USER and IUD USER
+     * We can update the NavigationHeader when we have user
+     */
+    private void getCurrentUser()
+    {
+        String uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        UserHelper.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
+            StaticFields.CURRENT_USER = documentSnapshot.toObject(User.class);
+            StaticFields.IUD_USER = uidUser;
+            updateNavigationHeader();
+        });
+    }
+
+    /**
+     * Fetch the current location {@link ActivityCompat} {@link Location}
+     * Set a value to the static field CURRENT_LOCATION
+     * We can display 1st fragment when we have the location
+     */
+    private void fetchLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            return;
+        }
+        Task<Location> task = fusedLocationProviderClient.getLastLocation();
+        task.addOnSuccessListener(location -> {
+            if (location != null) {
+                StaticFields.CURRENT_LOCATION = location;
+                currentLocation = location;
+                this.displayFragment(displayMapViewFragment());
+            }
+        });
+    }
+
     ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
 
     @Override
@@ -366,6 +354,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        if (item.getItemId() == R.id.toolbar_menu_search)
+        {
+            configureAutocompleteSearchToolbar();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE)
+        {
+            if (resultCode == RESULT_OK)
+            {
+                assert data != null;
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                String placeId = place.getId();
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra("placeId", placeId);
+                startActivity(intent);
+
+            }
+            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
+            {
+                assert data != null;
+                Status status = Autocomplete.getStatusFromIntent(data);
+            }
+        }
+
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
 
     /**
@@ -375,27 +407,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void showLunch()
     {
-        String uid  = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        UserHelper.getUser(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot)
-            {
-                currentUser = documentSnapshot.toObject(User.class);
-
-                if (currentUser.isChooseRestaurant())
-                {
-                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                    intent.putExtra("placeId", currentUser.getRestaurantChoose().getPlaceId());
-                    startActivity(intent);
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Aucun restaurant choisi", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-
-
+        if (currentUser.isChooseRestaurant())
+        {
+            Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+            intent.putExtra("placeId", currentUser.getRestaurantChoose().getPlaceId());
+            startActivity(intent);
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(), R.string.main_activity_no_choose_restaurant, Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
@@ -404,46 +425,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void createAndShowPopUpLogOut()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("TITRE");
-        builder.setMessage("Êtes-vous sûr de vouloir vous déconnecter ?");
-        builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)
-                    {
-                        logOut();
-                    }
-                });
-        builder.setNegativeButton("Non", null);
-
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
-    private void createAndShowPopUpSettings()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("NOTIFICATIONS");
-        builder.setMessage("Voulez-vous activer les notifications ?");
-        builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("PREF_NOTIF", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("NOTIFICATIONS_BOOLEAN", true);
-                editor.commit();
-            }
-        });
-        builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which)
-            {
-                SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences("PREF_NOTIF", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putBoolean("NOTIFICATIONS_BOOLEAN", false);
-                editor.commit();
-            }
-        });
+        builder.setTitle(getResources().getString(R.string.main_activity_pop_up_log_out_title));
+        builder.setMessage(getResources().getString(R.string.main_activity_pop_up_log_out_message));
+        builder.setPositiveButton(getResources().getString(R.string.main_activity_pop_up_yes), (dialogInterface, i) -> logOut());
+        builder.setNegativeButton(getResources().getString(R.string.main_activity_pop_up_no), null);
 
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
@@ -454,17 +439,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void logOut()
     {
-        AuthUI.getInstance().signOut(this).addOnSuccessListener(this, new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                if (FirebaseAuth.getInstance().getCurrentUser() == null)
-                {
-                    Toast.makeText(getApplicationContext(), "Déconnexion réussie", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(MainActivity.this, AuthActivity.class);
-                    startActivity(intent);
-                }
+        AuthUI.getInstance().signOut(this).addOnSuccessListener(this, aVoid ->
+        {
+            if (FirebaseAuth.getInstance().getCurrentUser() == null)
+            {
+                Toast.makeText(getApplicationContext(), R.string.main_activity_success_sign_out, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, AuthActivity.class);
+                startActivity(intent);
             }
         });
     }
+
+    /**
+     * Create and show an AlertDialog to updateSharedPreferences() {@link AlertDialog}
+     */
+    private void createAndShowPopUpSettings()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.main_activity_pop_up_notifications_title));
+        builder.setMessage(getResources().getString(R.string.main_activity_pop_up_notifications_message));
+        builder.setPositiveButton(getResources().getString(R.string.main_activity_pop_up_yes),
+                (dialogInterface, i) -> updateSharedPreferences(true));
+        builder.setNegativeButton(getResources().getString(R.string.main_activity_pop_up_no),
+                (dialog, which) -> updateSharedPreferences(false));
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+
+    /**
+     * Update SharedPreferences for notifications {@link SharedPreferences}
+     * @param notificationsAuthorized
+     */
+    private void updateSharedPreferences(boolean notificationsAuthorized)
+    {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
+        editor.commit();
+    }
+
+
 
 }

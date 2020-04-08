@@ -21,6 +21,7 @@ import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.api.RestaurantStreams;
+import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -45,12 +46,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
     private List<Restaurant> restaurants;
     private ListRestaurantsAdapter adapter;
-    private static final int REQUEST_CODE = 12;
+    //private static final int REQUEST_CODE = 12;
     private Location currentLocation;
-    private FusedLocationProviderClient fusedLocationProviderClient;
+    //private FusedLocationProviderClient fusedLocationProviderClient;
     private Disposable disposable;
-
-
 
 
     @BindView(R.id.fragment_list_restaurants_recycler_view)
@@ -61,16 +60,17 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         // Required empty public constructor
     }
 
-    public static ListRestaurantsFragment newInstance() {
+    public static ListRestaurantsFragment newInstance()
+    {
         ListRestaurantsFragment fragment = new ListRestaurantsFragment();
         return fragment;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getContext()));
-
+        //fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getContext()));
     }
 
     @Override
@@ -103,7 +103,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
      */
     private void configListRestaurants()
     {
-        if (ActivityCompat.checkSelfPermission(
+        currentLocation = StaticFields.CURRENT_LOCATION;
+        stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+
+        /*if (ActivityCompat.checkSelfPermission(
                 Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
@@ -115,13 +118,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                 currentLocation = location;
                 stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
-        });
+        });*/
 
 
     }
-
-
-
 
     @OnClick(R.id.fragment_list_restaurants_near_me_fab)
     void triProximity ()
@@ -136,8 +136,6 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         this.adapter.notifyDataSetChanged();
 
     }
-
-
 
     @OnClick(R.id.fragment_list_restaurants_rating_fab)
     void triRate ()
@@ -169,6 +167,9 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         this.adapter.notifyDataSetChanged();
     }
 
+    /**
+     * Update the attribute DistanceCurrentUser for each restaurant
+     */
     private void updateDistanceToCurrentLocation()
     {
         Location restaurantLocation = new Location("fusedLocationProvider");
@@ -178,9 +179,9 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
             //Get the restaurant's location
             restaurantLocation.setLatitude(restaurants.get(i).getLocation().getLat());
             restaurantLocation.setLongitude(restaurants.get(i).getLocation().getLng());
-
             //Get the distance between currentLocation and restaurantLocation
             int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
+
             restaurants.get(i).setDistanceCurrentUser(distanceLocation);
         }
     }
