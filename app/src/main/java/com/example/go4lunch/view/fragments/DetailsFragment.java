@@ -136,6 +136,7 @@ public class DetailsFragment extends Fragment {
             restaurantList = currentUser.getRestaurantListFavorites();
         }
 
+        // Update data in Firebase
         if (!currentUser.getRestaurantListFavorites().contains(restaurantFinal))
         {
             restaurantList.add(restaurantFinal);

@@ -12,6 +12,8 @@ import com.example.go4lunch.model.api.UserHelper;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class StaticFields
@@ -23,6 +25,10 @@ public abstract class StaticFields
     public static String IUD_USER;
 
     public static Restaurant RESTAURANT_CHOOSE_BY_CURRENT_USER;
+
+    public static List<Restaurant> RESTAURANTS_LIST = new ArrayList<>();
+
+    public static List<Restaurant> RESTAURANTS_LIST_WITH_WORKMATES = new ArrayList<>();
 
 
 

@@ -1,15 +1,9 @@
 package com.example.go4lunch.view.fragments;
 
-import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,30 +16,21 @@ import com.example.go4lunch.model.api.RestaurantHelper;
 import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.VisibleRegion;
-import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.Places;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import butterknife.BindView;
-import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -56,9 +41,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     //private FusedLocationProviderClient fusedLocationProviderClient;
     //private static final int REQUEST_CODE = 101;
     private SupportMapFragment supportMapFragment;
-    private List<Restaurant> restaurants;
+    private List<Restaurant> restaurantList;
     private Disposable disposable;
-    private List<String> restaurantsWithWorkmates;
+    private List<Restaurant> restaurantsWithWorkmates;
     //private String radiusStringEnter;
 
 
@@ -76,10 +61,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         String key = BuildConfig.google_maps_key;
         Places.initialize(Objects.requireNonNull(getContext()), key);
+
         currentLocation = StaticFields.CURRENT_LOCATION;
-        restaurants = new ArrayList<>();
-        restaurantsWithWorkmates = new ArrayList<>();
-        this.stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+        restaurantList = StaticFields.RESTAURANTS_LIST;
+        restaurantsWithWorkmates = StaticFields.RESTAURANTS_LIST_WITH_WORKMATES;
+
+        //restaurantList = new ArrayList<>();
+        //restaurantsWithWorkmates = new ArrayList<>();
+        //this.stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
         //fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
     }
 
@@ -89,6 +78,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
         this.supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
 
+        supportMapFragment.getMapAsync(MapViewFragment.this);
         //fetchLocation();
         return v;
     }
@@ -114,7 +104,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     /**
      * Update the workmate's number with documentSnapshot from Firebase
      */
-    private void updateNumberWorkmates ()
+    /*private void updateNumberWorkmates ()
     {
         restaurantsWithWorkmates.clear();
 
@@ -134,7 +124,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             }
             supportMapFragment.getMapAsync(MapViewFragment.this);
         });
-    }
+    }*/
 
 
 
@@ -144,13 +134,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(Objects.requireNonNull(getContext()), R.raw.google_style);
         googleMap.setMapStyle(mapStyleOptions);
 
-        for (int i = 0; i < restaurants.size(); i ++)
+        for (int i = 0; i < restaurantList.size(); i ++)
         {
-            Restaurant restaurantTemp = restaurants.get(i);
+            Restaurant restaurantTemp = restaurantList.get(i);
             LatLng tempLatLng = new LatLng(restaurantTemp.getLocation().getLat(), restaurantTemp.getLocation().getLng());
             MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng).title(restaurantTemp.getName());
 
-            if (restaurantsWithWorkmates.contains(restaurantTemp.getPlaceId()))
+            if (restaurantsWithWorkmates.contains(restaurantTemp))
             {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
 
@@ -273,16 +263,16 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
      * @param radius double to define the distance around the current User
      * @return a List<Restaurant>
      */
-    private List<Restaurant> stream(double lat, double lng, int radius)
+    /*private List<Restaurant> stream(double lat, double lng, int radius)
     {
         String key = BuildConfig.google_maps_key;
-        this.restaurants.clear();
+        this.restaurantList.clear();
 
         this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
             @Override
             public void onNext(List<Restaurant> restaurantList) {
 
-                restaurants = restaurantList;
+                MapViewFragment.this.restaurantList = restaurantList;
                 updateNumberWorkmates();
             }
 
@@ -293,13 +283,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             public void onComplete() {}
         });
 
-        return restaurants;
+        return restaurantList;
     }
 
     /**
      * Unsubscribe of the HTTP Request
      */
-    private void unsubscribe()
+    /*private void unsubscribe()
     {
         if (this.disposable != null && !this.disposable.isDisposed())
         {
@@ -311,7 +301,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onDestroy() {
         super.onDestroy();
         this.unsubscribe();
-    }
+    }*/
 
 
 }

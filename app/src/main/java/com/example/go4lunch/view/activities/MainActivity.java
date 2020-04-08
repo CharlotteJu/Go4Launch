@@ -13,13 +13,11 @@ import androidx.fragment.app.Fragment;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,8 +28,12 @@ import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
+import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
+import com.example.go4lunch.model.api.RestaurantHelper;
+import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.model.api.UserHelper;
 import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
@@ -42,7 +44,6 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
@@ -53,8 +54,9 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +66,8 @@ import java.util.Objects;
 import butterknife.BindView;
 
 import butterknife.ButterKnife;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -88,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private User currentUser;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
+    private Disposable disposable;
 
     private static final int REQUEST_CODE = 101;
     private int AUTOCOMPLETE_REQUEST_CODE = 15;
@@ -100,16 +105,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
+        this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
 
-        fetchLocation();
-        getCurrentUser();
+
+        this.fetchLocation();
+        this.getCurrentUser();
+        this.getRestaurantListWithWorkmates();
+
 
         //this.displayFragment(displayMapViewFragment());
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
         this.configureNavigationView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.unsubscribe();
     }
 
     ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
@@ -314,8 +328,71 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 StaticFields.CURRENT_LOCATION = location;
                 currentLocation = location;
                 this.displayFragment(displayMapViewFragment());
+                this.streamRestaurantsFromPlaces(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
+    }
+
+    /**
+     * Recover the List<Restaurant> with the HTTP Request
+     * @param lat double with latitude of the current User
+     * @param lng double with longitude of the current User
+     * @param radius double to define the distance around the current User
+     */
+    private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
+    {
+            String key = BuildConfig.google_maps_key;
+
+            this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
+                @Override
+                public void onNext(List<Restaurant> restaurantList)
+                {
+                    StaticFields.RESTAURANTS_LIST = restaurantList;
+                }
+
+                @Override
+                public void onError(Throwable e) {}
+
+                @Override
+                public void onComplete() {}
+            });
+
+    }
+
+    /**
+     * Unsubscribe of the HTTP Request
+     */
+    private void unsubscribe()
+    {
+        if (this.disposable != null && !this.disposable.isDisposed())
+        {
+            this.disposable.dispose();
+        }
+    }
+
+    private void getRestaurantListWithWorkmates()
+    {
+        List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
+
+        RestaurantHelper.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
+        {
+            if (queryDocumentSnapshots != null)
+            {
+                List<Restaurant> restaurantListFromFirebase = queryDocumentSnapshots.toObjects(Restaurant.class);
+
+                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
+                {
+                    if (restaurantListFromFirebase.get(i).getUserList() != null && restaurantListFromFirebase.get(i).getUserList().size() > 0)
+                    {
+                        restaurantsWithWorkmates.add(restaurantListFromFirebase.get(i));
+                    }
+                }
+
+                StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
+            }
+        });
+
+
     }
 
     ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////

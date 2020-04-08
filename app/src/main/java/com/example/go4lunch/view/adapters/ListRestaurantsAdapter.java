@@ -3,6 +3,7 @@ package com.example.go4lunch.view.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.api.RestaurantHelper;
+import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.fragments.OnClickListener;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -194,8 +196,31 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
          */
         private void updateNumberWorkmates (Restaurant restaurant)
         {
+            boolean testDebug = StaticFields.RESTAURANTS_LIST_WITH_WORKMATES.contains(restaurant);
 
-            RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot -> {
+            if (StaticFields.RESTAURANTS_LIST_WITH_WORKMATES.contains(restaurant))
+            {
+                RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot ->
+                {
+                    numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
+                    String numberWorkmatesString = "(" + numberWorkmates + ")";
+                    numberWorkmatesTxt.setText(numberWorkmatesString);
+                    displayWorkmates();
+                });
+                /*restaurant.getName();
+                numberWorkmates = restaurant.getUserList().size();
+                String numberWorkmatesString = "(" + numberWorkmates + ")";
+                numberWorkmatesTxt.setText(numberWorkmatesString);
+                displayWorkmates();*/
+            }
+
+            else
+            {
+                numberWorkmates = 0;
+                displayWorkmates();
+            }
+
+           /* RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot -> {
                 if (documentSnapshot.exists())
                 {
                     numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
