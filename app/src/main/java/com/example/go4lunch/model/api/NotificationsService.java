@@ -45,7 +45,6 @@ public class NotificationsService extends FirebaseMessagingService
         if (remoteMessage.getNotification() != null) {
             String message = remoteMessage.getNotification().getBody();
 
-
             if (getSharePreferences())
             {
                 currentUser = StaticFields.CURRENT_USER;
@@ -54,32 +53,11 @@ public class NotificationsService extends FirebaseMessagingService
                 {
                     getCurrentRestaurant(message);
                 }
-               // getCurrentUser(message);
-                /*// 8 - Show notification after received message
-                getCurrentRestaurant(message);
-                this.sendVisualNotification(messageFinal);*/
+
             }
         }
     }
 
-   /* private void getCurrentUser(String message)
-    {
-        String uid  = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        UserHelper.getUser(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot)
-            {
-                currentUser = documentSnapshot.toObject(User.class);
-
-                if (currentUser.isChooseRestaurant())
-                {
-                    currentRestaurant = currentUser.getRestaurantChoose();
-                    getCurrentRestaurant(message);
-                }
-
-            }
-        });
-    }*/
 
     private void getCurrentRestaurant(String message)
     {
@@ -111,41 +89,6 @@ public class NotificationsService extends FirebaseMessagingService
 
         sendVisualNotification(messageToPush);
 
-       /* String uid = currentRestaurant.getPlaceId();
-        RestaurantHelper.getRestaurant(uid).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot)
-            {
-                currentRestaurant = documentSnapshot.toObject(Restaurant.class);
-                String name = currentRestaurant.getName();
-                String address = currentRestaurant.getAddress();
-                List<User> listWorkmates = currentRestaurant.getUserList();
-
-
-                StringBuilder messageFinal = new StringBuilder();
-                messageFinal.append(message).append(" ").append(name).append(" - ").append(address);
-
-                if (listWorkmates.size() > 1)
-                {
-                    StringBuilder nameList = new StringBuilder();
-                    for (int i = 0; i < listWorkmates.size(); i ++)
-                    {
-                        String nameWorkmate = listWorkmates.get(i).getName();
-                        nameList.append(", ");
-                        nameList.append(nameWorkmate);
-                    }
-                    messageFinal.append(" with ").append(nameList);
-                }
-                else
-                {
-                    messageFinal.append(".");
-                }
-
-                String messageToPush = String.valueOf(messageFinal);
-
-                sendVisualNotification(messageToPush);
-            }
-        });*/
     }
 
     private boolean getSharePreferences()

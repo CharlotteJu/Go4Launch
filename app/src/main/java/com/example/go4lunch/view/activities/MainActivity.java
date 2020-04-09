@@ -327,7 +327,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if (location != null) {
                 StaticFields.CURRENT_LOCATION = location;
                 currentLocation = location;
-                this.displayFragment(displayMapViewFragment());
+
                 this.streamRestaurantsFromPlaces(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
@@ -348,6 +348,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 public void onNext(List<Restaurant> restaurantList)
                 {
                     StaticFields.RESTAURANTS_LIST = restaurantList;
+                    getRestaurantListWithWorkmates();
+                    displayFragment(displayMapViewFragment());
                 }
 
                 @Override
@@ -382,20 +384,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
                 {
-                    if (restaurantListFromFirebase.get(i).getUserList() != null && restaurantListFromFirebase.get(i).getUserList().size() > 0)
+                    Restaurant restaurantTemp = restaurantListFromFirebase.get(i);
+
+                    if (StaticFields.RESTAURANTS_LIST.contains(restaurantTemp))
                     {
-                        restaurantsWithWorkmates.add(restaurantListFromFirebase.get(i));
+                        if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
+                        {
+                            restaurantsWithWorkmates.add(restaurantTemp);
+                        }
                     }
+
                 }
 
                 StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
             }
+
+
+
         });
 
 
     }
 
     ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
 
     @Override
     public void onBackPressed() {
@@ -404,10 +421,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             this.drawerLayout.closeDrawer(GravityCompat.START);
         }
-        else
-        {
-            super.onBackPressed();
-        }
+
     }
 
     @Override
@@ -484,10 +498,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void showLunch()
     {
-        if (currentUser.isChooseRestaurant())
+        if (StaticFields.CURRENT_USER.isChooseRestaurant()  /*currentUser.isChooseRestaurant()*/)
         {
             Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-            intent.putExtra("placeId", currentUser.getRestaurantChoose().getPlaceId());
+            intent.putExtra("placeId", StaticFields.CURRENT_USER.getRestaurantChoose().getPlaceId()/*currentUser.getRestaurantChoose().getPlaceId()*/);
             startActivity(intent);
         }
         else
