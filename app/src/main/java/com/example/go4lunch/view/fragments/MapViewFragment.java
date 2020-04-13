@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.api.RestaurantHelper;
-import com.example.go4lunch.model.api.RestaurantStreams;
 import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -27,12 +25,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.libraries.places.api.Places;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DisposableObserver;
 
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {

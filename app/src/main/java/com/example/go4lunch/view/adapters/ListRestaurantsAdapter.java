@@ -3,7 +3,6 @@ package com.example.go4lunch.view.adapters;
 import android.app.Activity;
 import android.content.Context;
 import android.location.Location;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,21 +16,12 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.RestaurantPOJO;
-import com.example.go4lunch.model.api.RestaurantHelper;
+import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
 import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.fragments.OnClickListener;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.List;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -43,17 +33,18 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
     // FOR DATA
     private OnClickListener onClickListener;
     private List<Restaurant> restaurants;
+    private List<Restaurant> restaurantsWithWorkmates;
     private RequestManager glide;
     private Activity activity;
     private Location currentLocation;
 
-    public ListRestaurantsAdapter(List<Restaurant> restaurants, RequestManager glide, OnClickListener onClickListener, Activity activity, Location currentLocation)
+    public ListRestaurantsAdapter(/*List<Restaurant> restaurants,*/ RequestManager glide, OnClickListener onClickListener, Activity activity /*, Location currentLocation*/)
     {
-        this.restaurants = restaurants;
+        //this.restaurants = restaurants;
         this.glide = glide;
         this.onClickListener = onClickListener;
         this.activity = activity;
-        this.currentLocation = currentLocation;
+        //this.currentLocation = currentLocation;
     }
 
     @NonNull
@@ -64,7 +55,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
 
-        return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity, currentLocation);
+        return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity, this.restaurantsWithWorkmates);
     }
 
     @Override
@@ -77,6 +68,13 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
     @Override
     public int getItemCount() {
         return this.restaurants.size();
+    }
+
+    public void updateList(List<Restaurant> restaurantList, List<Restaurant> restaurantListWithWorkmates)
+    {
+        this.restaurants = restaurantList;
+        this.restaurantsWithWorkmates = restaurantListWithWorkmates;
+
     }
 
     static class ListRestaurantsViewHolder extends RecyclerView.ViewHolder
@@ -105,15 +103,15 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         private OnClickListener onClickListener;
         private Activity activity;
         private int numberWorkmates = 0;
-        private Location currentLocation;
+        private List<Restaurant> restaurantsWithWorkmates;
 
 
-        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity, Location location) {
+        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity, List<Restaurant> restaurantsWithWorkmates) {
             super(itemView);
             ButterKnife.bind(this,itemView);
             this.onClickListener = onClickListener;
             this.activity = activity;
-            this.currentLocation = location;
+            this.restaurantsWithWorkmates = restaurantsWithWorkmates;
         }
 
 
@@ -196,11 +194,17 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
          */
         private void updateNumberWorkmates (Restaurant restaurant)
         {
-            boolean testDebug = StaticFields.RESTAURANTS_LIST_WITH_WORKMATES.contains(restaurant);
-
-            if (StaticFields.RESTAURANTS_LIST_WITH_WORKMATES.contains(restaurant))
+            if (this.restaurantsWithWorkmates.contains(restaurant))
             {
-                RestaurantHelper.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot ->
+                numberWorkmates = restaurant.getUserList().size();
+                String numberWorkmatesString = "(" + numberWorkmates + ")";
+                numberWorkmatesTxt.setText(numberWorkmatesString);
+                displayWorkmates();
+            }
+
+           /* if (StaticFields.RESTAURANTS_LIST_WITH_WORKMATES.contains(restaurant))
+            {
+                RestaurantFirebaseRepository.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot ->
                 {
                     numberWorkmates = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList().size();
                     String numberWorkmatesString = "(" + numberWorkmates + ")";
@@ -211,8 +215,8 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
                 numberWorkmates = restaurant.getUserList().size();
                 String numberWorkmatesString = "(" + numberWorkmates + ")";
                 numberWorkmatesTxt.setText(numberWorkmatesString);
-                displayWorkmates();*/
-            }
+                displayWorkmates();
+            }*/
 
             else
             {

@@ -17,7 +17,7 @@ import butterknife.ButterKnife;
 
 public class DetailsActivity extends AppCompatActivity {
 
-    public static String placeId;
+    private String placeId;
 
     DetailsFragment detailsFragment;
 
@@ -62,7 +62,7 @@ public class DetailsActivity extends AppCompatActivity {
     {
         if (this.detailsFragment == null)
         {
-            this.detailsFragment = DetailsFragment.newInstance();
+            this.detailsFragment = DetailsFragment.newInstance(placeId);
         }
         return this.detailsFragment;
     }

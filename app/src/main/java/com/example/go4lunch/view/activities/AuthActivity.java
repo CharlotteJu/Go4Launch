@@ -1,25 +1,26 @@
 package com.example.go4lunch.view.activities;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
 
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.api.UserHelper;
+import com.example.go4lunch.model.User;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
+import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -33,11 +34,15 @@ public class AuthActivity extends AppCompatActivity {
     private final static int FIREBASE_UI = 100;
     Boolean userExists = false;
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        this.connectUser();
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+
+    private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
     }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +69,16 @@ public class AuthActivity extends AppCompatActivity {
     {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
         {
-            String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-            String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-            String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            viewModelGo4Lunch.usersListMutableLiveData.observe(this, new Observer<List<User>>() {
+                @Override
+                public void onChanged(List<User> userList)
+                {
 
+                }
+            });
 
-            UserHelper.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
+            UserFirebaseRepository.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
                 if (queryDocumentSnapshots != null)
                 {
                     for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
@@ -86,10 +94,16 @@ public class AuthActivity extends AppCompatActivity {
                     }
                     else
                     {
-                        UserHelper.createUser(uid, email, name, urlPicture)
+                        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                        String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                        String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
+
+                        viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
+
+                        /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
                                 .addOnSuccessListener(aVoid -> lunchMainActivity())
                                 .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
-                                        R.string.auth_activity_connection_canceled, Toast.LENGTH_SHORT).show());
+                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());*/
                     }
                 }
             });
@@ -137,13 +151,13 @@ public class AuthActivity extends AppCompatActivity {
         {
             if (resultCode == RESULT_OK)
             {
-                Toast.makeText(getApplicationContext(), R.string.response_sign_in_success,Toast.LENGTH_SHORT ).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.response_sign_in_success),Toast.LENGTH_SHORT ).show();
                 this.connectUser();
                 this.lunchMainActivity();
             }
             else
             {
-                Toast.makeText(getApplicationContext(), R.string.response_sign_in_error,Toast.LENGTH_SHORT ).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.response_sign_in_error),Toast.LENGTH_SHORT ).show();
             }
         }
     }
@@ -153,4 +167,7 @@ public class AuthActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         this.responseSignIn(requestCode, resultCode, data);
     }
+
+    @Override
+    public void onBackPressed() {}
 }

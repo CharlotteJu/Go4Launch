@@ -10,6 +10,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
 import android.content.Context;
@@ -32,9 +34,12 @@ import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.model.api.RestaurantHelper;
-import com.example.go4lunch.model.api.RestaurantStreams;
-import com.example.go4lunch.model.api.UserHelper;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
+import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
+import com.example.go4lunch.view_model.repositories.RestaurantPlacesRepository;
+import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
 import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
@@ -54,9 +59,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +68,7 @@ import java.util.Objects;
 import butterknife.BindView;
 
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -93,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
     private Disposable disposable;
+    private List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
+    private List<Restaurant> restaurantsFromPlaces = new ArrayList<>();
 
     private static final int REQUEST_CODE = 101;
     private int AUTOCOMPLETE_REQUEST_CODE = 15;
@@ -126,6 +131,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.unsubscribe();
     }
 
+    private ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+    private ViewModelGo4Lunch viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+    private Disposable disposable1;
+
+    private void observeMutableLiveData()
+    {
+
+    }
+
+    private void getRestaurantsListPlaces ()
+    {
+        viewModelGo4Lunch.restaurantsListPlacesMutableLiveData.observe(this, listObservable -> disposable1 = listObservable.subscribeWith(new DisposableObserver<List<Restaurant>>() {
+            @Override
+            public void onNext(List<Restaurant> restaurantList)
+            {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        }));
+    }
     ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
 
     /**
@@ -213,16 +247,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         emailUser = headerView.findViewById(R.id.nav_header_email_txt);
         illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
 
+        viewModelGo4Lunch.userCurrentMutableLiveData.observe(this, new Observer<User>() {
+            @Override
+            public void onChanged(User user)
+            {
+                currentUser = user;
+            }
+        });
+
         //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         //String userName = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? getString(R.string.navigation_header_name) : firebaseUser.getDisplayName();
         //String userEmail = TextUtils.isEmpty(firebaseUser.getEmail()) ? getString(R.string.navigation_header_name) : firebaseUser.getEmail();
 
-        nameUser.setText(StaticFields.CURRENT_USER.getName());
-        emailUser.setText(StaticFields.CURRENT_USER.getEmail());
+        nameUser.setText(currentUser.getName());
+        emailUser.setText(currentUser.getEmail());
 
-        if (StaticFields.CURRENT_USER.getIllustration() != null)
+        //nameUser.setText(StaticFields.CURRENT_USER.getName());
+        //emailUser.setText(StaticFields.CURRENT_USER.getEmail());
+
+        if (currentUser.getIllustration() != null)
+        //if (StaticFields.CURRENT_USER.getIllustration() != null)
         {
-            Glide.with(this).load(StaticFields.CURRENT_USER.getIllustration()).circleCrop().into(illustrationUser);
+            Glide.with(this).load(/*StaticFields.CURRENT_USER.getIllustration())*/currentUser.getIllustration()).circleCrop().into(illustrationUser);
         }
     }
 
@@ -232,7 +278,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void displayFragment(Fragment fragment)
     {
-        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).commit();
+        //TODO : Vérifier l'ajout à la backstack
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).addToBackStack("backstack").commit();
+
     }
 
     /**
@@ -296,18 +345,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     ///////////////////////////////////GET CURRENT INFORMATION///////////////////////////////////
 
     /**
-     * Get the current User {@link UserHelper} {@link User}
+     * Get the current User {@link UserFirebaseRepository} {@link User}
      * Set a value to the static fields CURRENT_USER and IUD USER
      * We can update the NavigationHeader when we have user
      */
     private void getCurrentUser()
     {
         String uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        UserHelper.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
+        viewModelGo4Lunch.setUserCurrentMutableLiveData(uidUser);
+
+        /*UserFirebaseRepository.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
             StaticFields.CURRENT_USER = documentSnapshot.toObject(User.class);
             StaticFields.IUD_USER = uidUser;
             updateNavigationHeader();
-        });
+        });*/
     }
 
     /**
@@ -328,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 StaticFields.CURRENT_LOCATION = location;
                 currentLocation = location;
 
-                this.streamRestaurantsFromPlaces(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+               // this.streamRestaurantsFromPlaces(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
     }
@@ -339,11 +390,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * @param lng double with longitude of the current User
      * @param radius double to define the distance around the current User
      */
-    private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
+    /*private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
     {
             String key = BuildConfig.google_maps_key;
 
-            this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
+            this.disposable = RestaurantPlacesRepository.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
                 @Override
                 public void onNext(List<Restaurant> restaurantList)
                 {
@@ -359,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 public void onComplete() {}
             });
 
-    }
+    }*/
 
     /**
      * Unsubscribe of the HTTP Request
@@ -374,9 +425,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void getRestaurantListWithWorkmates()
     {
-        List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
 
-        RestaurantHelper.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
+        viewModelGo4Lunch.restaurantsListFirebaseMutableLiveData.observe(this, new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurantList)
+            {
+                List<Restaurant> listTemp = restaurantList;
+
+                for (int i = 0; i < listTemp.size(); i ++)
+                {
+                    if (listTemp.get(i).getUserList().size() > 0)
+                    {
+                        restaurantsWithWorkmates.add(listTemp.get(i));
+                    }
+                }
+            }
+        });
+
+        /*RestaurantFirebaseRepository.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
         {
             if (queryDocumentSnapshots != null)
             {
@@ -399,9 +465,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
             }
 
-
-
-        });
+        });*/
 
 
     }
@@ -492,21 +556,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
 
     /**
-     * Find current User {@link UserHelper}
+     * Find current User {@link UserFirebaseRepository}
      * Check Boolean isChooseRestaurant {@link User}
      * Display a Toast or launch Details Activity
      */
     private void showLunch()
     {
-        if (StaticFields.CURRENT_USER.isChooseRestaurant()  /*currentUser.isChooseRestaurant()*/)
+        if (currentUser.isChooseRestaurant())
         {
             Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-            intent.putExtra("placeId", StaticFields.CURRENT_USER.getRestaurantChoose().getPlaceId()/*currentUser.getRestaurantChoose().getPlaceId()*/);
+            intent.putExtra("placeId", currentUser.getRestaurantChoose().getPlaceId());
             startActivity(intent);
         }
         else
         {
-            Toast.makeText(getApplicationContext(), R.string.main_activity_no_choose_restaurant, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_no_choose_restaurant), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -534,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             if (FirebaseAuth.getInstance().getCurrentUser() == null)
             {
-                Toast.makeText(getApplicationContext(), R.string.main_activity_success_sign_out, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_success_sign_out), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, AuthActivity.class);
                 startActivity(intent);
             }

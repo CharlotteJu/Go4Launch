@@ -3,6 +3,9 @@ package com.example.go4lunch.view.fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -13,10 +16,12 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.model.api.UserHelper;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
+import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.example.go4lunch.view.adapters.ListWorkmatesAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.Query;
 
 import java.util.List;
@@ -49,7 +54,7 @@ public class ListWorkmatesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_workmates, container, false);
         ButterKnife.bind(this, v);
-        configRecyclerView();
+        //configRecyclerView();
         return v;
 
     }
@@ -67,14 +72,41 @@ public class ListWorkmatesFragment extends Fragment {
                 .build();
     }
 
-    private void configRecyclerView()
+
+    private ViewModelFactoryGo4Lunch test2 = Injection.viewModelFactoryGo4Lunch();
+    private ViewModelGo4Lunch test = ViewModelProviders.of(this, test2).get(ViewModelGo4Lunch.class);
+    List<User> usersList;
+    ListWorkmatesAdapter adapter;
+
+    private void testObserveList()
     {
-        ListWorkmatesAdapter adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(UserHelper.getListUsers()), Glide.with(this),
+        this.test.setUsersListMutableLiveData();
+
+        this.test.usersListMutableLiveData.observe(this, new Observer<List<User>>() {
+            @Override
+            public void onChanged(List<User> userList)
+            {
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        this.test.usersListMutableLiveData.observe(this, new Observer<List<User>>() {
+            @Override
+            public void onChanged(List<User> userList)
+            {
+                usersList = userList;
+            }
+        });
+    }
+
+    /*private void configRecyclerView()
+    {
+        ListWorkmatesAdapter adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(test.usersListMutableLiveData), Glide.with(this),
                 getActivity());
 
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-    }
+    }*/
 }
 

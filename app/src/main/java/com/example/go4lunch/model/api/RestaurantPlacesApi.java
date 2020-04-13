@@ -43,7 +43,7 @@ public interface RestaurantPlacesApi
     /**
      * Create an instance of Retrofit with the base url of API Google
      */
-    public static final Retrofit retrofit = new Retrofit.Builder()
+    Retrofit retrofit = new Retrofit.Builder()
             .baseUrl("https://maps.googleapis.com/maps/api/place/")
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
