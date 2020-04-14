@@ -38,7 +38,7 @@ public class ViewModelGo4Lunch extends ViewModel
     private MutableLiveData<List<Restaurant>> restaurantsListFirebaseMutableLiveData= new MutableLiveData<>();
 
     private MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesMutableLiveData= new MutableLiveData<>();
-    private MutableLiveData<Restaurant> restaurantDetailPlacesMutableLiveData= new MutableLiveData<>();
+    private MutableLiveData<Observable<Restaurant>> restaurantDetailPlacesMutableLiveData= new MutableLiveData<>();
 
     /////////////////////// USER FIREBASE ///////////////////////
     //-----------------------
@@ -163,14 +163,14 @@ public class ViewModelGo4Lunch extends ViewModel
         });
     }
 
-    public void createRestaurant(String uid, String placeId, List<User> userList, String name, String address)
+    public void createRestaurant(String placeId, List<User> userList, String name, String address)
     {
-        this.restaurantFirebaseRepository.createRestaurant(uid, placeId, userList, name, address);
+        this.restaurantFirebaseRepository.createRestaurant(placeId, userList, name, address);
     }
 
-    public void updateRestaurantUserList(String uid, List<User> userList)
+    public void updateRestaurantUserList(String placeId, List<User> userList)
     {
-        this.restaurantFirebaseRepository.updateRestaurantUserList(uid, userList);
+        this.restaurantFirebaseRepository.updateRestaurantUserList(placeId, userList);
     }
 
     /////////////////////// RESTAURANT PLACES ///////////////////////
@@ -191,9 +191,19 @@ public class ViewModelGo4Lunch extends ViewModel
         this.restaurantsListPlacesMutableLiveData.setValue(this.restaurantPlacesRepository.streamFetchRestaurantInList(lat, lng, radius, key));
     }
 
-    public void setRestaurantDetailPlacesMutableLiveData(String placeId, String key)
+    public MutableLiveData<Observable<Restaurant>> getRestaurantDetailPlacesMutableLiveData(String placeId, String key)
     {
-        //this.restaurantPlacesRepository.streamDetailRestaurantToRestaurant(placeId, key);
+        if (this.restaurantDetailPlacesMutableLiveData != null)
+        {
+            this.setRestaurantDetailPlacesMutableLiveData(placeId, key);
+        }
+
+        return this.restaurantDetailPlacesMutableLiveData;
+    }
+
+    private void setRestaurantDetailPlacesMutableLiveData(String placeId, String key)
+    {
+        this.restaurantDetailPlacesMutableLiveData.setValue(this.restaurantPlacesRepository.streamDetailRestaurantToRestaurant(placeId, key));
     }
 
 }

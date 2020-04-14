@@ -101,6 +101,7 @@ public class AuthActivity extends AppCompatActivity {
                 String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
 
                 viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
+                this.lunchMainActivity();
 
                         /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
                                 .addOnSuccessListener(aVoid -> lunchMainActivity())

@@ -19,14 +19,14 @@ public class RestaurantFirebaseRepository implements RestaurantFirebaseInterface
     }
 
     @Override
-    public Task<Void> createRestaurant(String uid, String placeId, List<User> userList, String name, String address) {
+    public Task<Void> createRestaurant(String placeId, List<User> userList, String name, String address) {
         Restaurant toCreate = new Restaurant(placeId, userList, name, address);
-        return getCollectionRestaurant().document(uid).set(toCreate);
+        return getCollectionRestaurant().document(placeId).set(toCreate);
     }
 
     @Override
-    public Task<DocumentSnapshot> getRestaurant(String uid) {
-        return getCollectionRestaurant().document(uid).get();
+    public Task<DocumentSnapshot> getRestaurant(String placeId) {
+        return getCollectionRestaurant().document(placeId).get();
     }
 
     @Override
@@ -40,7 +40,7 @@ public class RestaurantFirebaseRepository implements RestaurantFirebaseInterface
     }
 
     @Override
-    public Task<Void> updateRestaurantUserList(String uid, List<User> userList) {
-        return getCollectionRestaurant().document(uid).update("userList", userList);
+    public Task<Void> updateRestaurantUserList(String placeId, List<User> userList) {
+        return getCollectionRestaurant().document(placeId).update("userList", userList);
     }
 }

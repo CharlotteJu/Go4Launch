@@ -12,12 +12,12 @@ public interface RestaurantFirebaseInterface
 {
     CollectionReference getCollectionRestaurant();
 
-    Task<Void> createRestaurant(String uid, String placeId, List<User> userList, String name, String address);
+    Task<Void> createRestaurant(String placeId, List<User> userList, String name, String address);
 
-    Task<DocumentSnapshot> getRestaurant(String uid);
+    Task<DocumentSnapshot> getRestaurant(String placeId);
 
     Query getListRestaurants();
 
-    Task<Void> updateRestaurantUserList(String uid, List<User> userList);
+    Task<Void> updateRestaurantUserList(String placeId, List<User> userList);
 
 }
