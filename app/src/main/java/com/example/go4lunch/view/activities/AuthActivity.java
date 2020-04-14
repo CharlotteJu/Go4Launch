@@ -32,17 +32,10 @@ import butterknife.OnClick;
 public class AuthActivity extends AppCompatActivity {
 
     private final static int FIREBASE_UI = 100;
-    Boolean userExists = false;
+    private Boolean userExists = false;
 
     private ViewModelGo4Lunch viewModelGo4Lunch;
-
-    private void configViewModel()
-    {
-        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
-        viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
-    }
-
-
+    private List<User> usersList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +43,25 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
+        this.configViewModel();
+    }
+
+    private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        this.getUsersList();
+    }
+
+    private void getUsersList()
+    {
+        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, new Observer<List<User>>() {
+            @Override
+            public void onChanged(List<User> userList)
+            {
+                usersList = userList;
+            }
+        });
     }
 
 
@@ -70,15 +82,62 @@ public class AuthActivity extends AppCompatActivity {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
         {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            viewModelGo4Lunch.usersListMutableLiveData.observe(this, new Observer<List<User>>() {
-                @Override
-                public void onChanged(List<User> userList)
+            for (int i = 0; i < usersList.size(); i ++)
+            {
+                if (usersList.get(i).getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
                 {
-
+                    userExists = true;
+                    break;
                 }
-            });
+            }
+            if (userExists)
+            {
+                lunchMainActivity();
+            }
+            else
+            {
+                String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
 
-            UserFirebaseRepository.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
+                viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
+
+                        /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
+                                .addOnSuccessListener(aVoid -> lunchMainActivity())
+                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
+                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());*/
+            }
+
+            /*viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList ->
+            {
+                for (int i = 0; i < userList.size(); i ++)
+                {
+                    if (userList.get(i).getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
+                    {
+                        userExists = true;
+                        break;
+                    }
+                }
+                if (userExists)
+                {
+                    lunchMainActivity();
+                }
+                else
+                {
+                    String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                    String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                    String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
+
+                    viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
+
+                        /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
+                                .addOnSuccessListener(aVoid -> lunchMainActivity())
+                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
+                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());
+                }
+            });*
+
+            /*UserFirebaseRepository.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
                 if (queryDocumentSnapshots != null)
                 {
                     for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
@@ -103,10 +162,10 @@ public class AuthActivity extends AppCompatActivity {
                         /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
                                 .addOnSuccessListener(aVoid -> lunchMainActivity())
                                 .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
-                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());*/
+                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());
                     }
                 }
-            });
+            });*/
         }
     }
 

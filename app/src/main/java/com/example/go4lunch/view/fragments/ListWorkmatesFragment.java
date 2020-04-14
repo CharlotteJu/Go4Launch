@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
@@ -34,6 +35,10 @@ public class ListWorkmatesFragment extends Fragment {
     @BindView(R.id.fragment_list_workmates_recycler_view)
     RecyclerView recyclerView;
 
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private List<User> usersList;
+    private ListWorkmatesAdapter adapter;
+
 
     public ListWorkmatesFragment() {
         // Required empty public constructor
@@ -47,6 +52,7 @@ public class ListWorkmatesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.configViewModel();
     }
 
     @Override
@@ -57,6 +63,24 @@ public class ListWorkmatesFragment extends Fragment {
         //configRecyclerView();
         return v;
 
+    }
+
+    ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
+
+    private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        this.getUserList();
+    }
+
+    private void getUserList()
+    {
+        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList ->
+        {
+            this.usersList = userList;
+            adapter.notifyDataSetChanged();
+        });
     }
 
     /**
@@ -70,33 +94,6 @@ public class ListWorkmatesFragment extends Fragment {
                 .setQuery(query, User.class)
                 .setLifecycleOwner(this)
                 .build();
-    }
-
-
-    private ViewModelFactoryGo4Lunch test2 = Injection.viewModelFactoryGo4Lunch();
-    private ViewModelGo4Lunch test = ViewModelProviders.of(this, test2).get(ViewModelGo4Lunch.class);
-    List<User> usersList;
-    ListWorkmatesAdapter adapter;
-
-    private void testObserveList()
-    {
-        this.test.setUsersListMutableLiveData();
-
-        this.test.usersListMutableLiveData.observe(this, new Observer<List<User>>() {
-            @Override
-            public void onChanged(List<User> userList)
-            {
-                adapter.notifyDataSetChanged();
-            }
-        });
-
-        this.test.usersListMutableLiveData.observe(this, new Observer<List<User>>() {
-            @Override
-            public void onChanged(List<User> userList)
-            {
-                usersList = userList;
-            }
-        });
     }
 
     /*private void configRecyclerView()

@@ -92,12 +92,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     MapViewFragment mapViewFragment;
     ListRestaurantsFragment listRestaurantsFragment;
     ListWorkmatesFragment listWorkmatesFragment;
-    private User currentUser;
+
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
     private Disposable disposable;
-    private List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
-    private List<Restaurant> restaurantsFromPlaces = new ArrayList<>();
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private User currentUser;
+
+
+    //private List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
+    //private List<Restaurant> restaurantsFromPlaces = new ArrayList<>();
 
     private static final int REQUEST_CODE = 101;
     private int AUTOCOMPLETE_REQUEST_CODE = 15;
@@ -112,54 +116,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
 
-
         this.fetchLocation();
-        this.getCurrentUser();
-        this.getRestaurantListWithWorkmates();
+        this.configViewModel();
 
-
-        //this.displayFragment(displayMapViewFragment());
+        this.displayFragment(displayMapViewFragment());
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
         this.configureNavigationView();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        this.unsubscribe();
+
+
+    ///////////////////////////////////VIEW MODEL///////////////////////////////////
+
+    private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch= ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        this.getCurrentUser();
     }
 
-    private ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
-    private ViewModelGo4Lunch viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
-    private Disposable disposable1;
 
-    private void observeMutableLiveData()
+
+    private void getCurrentUser()
     {
-
-    }
-
-    private void getRestaurantsListPlaces ()
-    {
-        viewModelGo4Lunch.restaurantsListPlacesMutableLiveData.observe(this, listObservable -> disposable1 = listObservable.subscribeWith(new DisposableObserver<List<Restaurant>>() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uid).observe(this, new Observer<User>()
+        {
             @Override
-            public void onNext(List<Restaurant> restaurantList)
+            public void onChanged(User user)
             {
+                updateNavigationHeader(user);
+                currentUser = user;
 
             }
+        });
 
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        }));
     }
+
+
+
     ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
 
     /**
@@ -239,21 +236,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /**
      * Update the NavigationView's info {@link NavigationView}
      */
-    private void updateNavigationHeader()
+    private void updateNavigationHeader(User currentUser)
     {
         final View headerView = navigationView.getHeaderView(0);
 
         nameUser = headerView.findViewById(R.id.nav_header_name_txt);
         emailUser = headerView.findViewById(R.id.nav_header_email_txt);
         illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
-
-        viewModelGo4Lunch.userCurrentMutableLiveData.observe(this, new Observer<User>() {
-            @Override
-            public void onChanged(User user)
-            {
-                currentUser = user;
-            }
-        });
 
         //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         //String userName = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? getString(R.string.navigation_header_name) : firebaseUser.getDisplayName();
@@ -262,13 +251,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         nameUser.setText(currentUser.getName());
         emailUser.setText(currentUser.getEmail());
 
-        //nameUser.setText(StaticFields.CURRENT_USER.getName());
-        //emailUser.setText(StaticFields.CURRENT_USER.getEmail());
-
         if (currentUser.getIllustration() != null)
-        //if (StaticFields.CURRENT_USER.getIllustration() != null)
         {
-            Glide.with(this).load(/*StaticFields.CURRENT_USER.getIllustration())*/currentUser.getIllustration()).circleCrop().into(illustrationUser);
+            Glide.with(this).load(currentUser.getIllustration()).circleCrop().into(illustrationUser);
         }
     }
 
@@ -344,22 +329,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     ///////////////////////////////////GET CURRENT INFORMATION///////////////////////////////////
 
-    /**
-     * Get the current User {@link UserFirebaseRepository} {@link User}
-     * Set a value to the static fields CURRENT_USER and IUD USER
-     * We can update the NavigationHeader when we have user
-     */
-    private void getCurrentUser()
-    {
-        String uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        viewModelGo4Lunch.setUserCurrentMutableLiveData(uidUser);
 
-        /*UserFirebaseRepository.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
-            StaticFields.CURRENT_USER = documentSnapshot.toObject(User.class);
-            StaticFields.IUD_USER = uidUser;
-            updateNavigationHeader();
-        });*/
-    }
 
     /**
      * Fetch the current location {@link ActivityCompat} {@link Location}
@@ -385,34 +355,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     /**
-     * Recover the List<Restaurant> with the HTTP Request
-     * @param lat double with latitude of the current User
-     * @param lng double with longitude of the current User
-     * @param radius double to define the distance around the current User
-     */
-    /*private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
-    {
-            String key = BuildConfig.google_maps_key;
-
-            this.disposable = RestaurantPlacesRepository.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
-                @Override
-                public void onNext(List<Restaurant> restaurantList)
-                {
-                    StaticFields.RESTAURANTS_LIST = restaurantList;
-                    getRestaurantListWithWorkmates();
-                    displayFragment(displayMapViewFragment());
-                }
-
-                @Override
-                public void onError(Throwable e) {}
-
-                @Override
-                public void onComplete() {}
-            });
-
-    }*/
-
-    /**
      * Unsubscribe of the HTTP Request
      */
     private void unsubscribe()
@@ -423,52 +365,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    private void getRestaurantListWithWorkmates()
-    {
 
-        viewModelGo4Lunch.restaurantsListFirebaseMutableLiveData.observe(this, new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurantList)
-            {
-                List<Restaurant> listTemp = restaurantList;
-
-                for (int i = 0; i < listTemp.size(); i ++)
-                {
-                    if (listTemp.get(i).getUserList().size() > 0)
-                    {
-                        restaurantsWithWorkmates.add(listTemp.get(i));
-                    }
-                }
-            }
-        });
-
-        /*RestaurantFirebaseRepository.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
-        {
-            if (queryDocumentSnapshots != null)
-            {
-                List<Restaurant> restaurantListFromFirebase = queryDocumentSnapshots.toObjects(Restaurant.class);
-
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
-                {
-                    Restaurant restaurantTemp = restaurantListFromFirebase.get(i);
-
-                    if (StaticFields.RESTAURANTS_LIST.contains(restaurantTemp))
-                    {
-                        if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
-                        {
-                            restaurantsWithWorkmates.add(restaurantTemp);
-                        }
-                    }
-
-                }
-
-                StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
-            }
-
-        });*/
-
-
-    }
 
     ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
 
@@ -476,6 +373,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.unsubscribe();
     }
 
     @Override
@@ -633,6 +536,125 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
         editor.commit();
     }
+
+
+    ///////////////////////////////////ANCIENNES METHODES///////////////////////////////////
+
+    /**
+     * Get the current User {@link UserFirebaseRepository} {@link User}
+     * Set a value to the static fields CURRENT_USER and IUD USER
+     * We can update the NavigationHeader when we have user
+     */
+   /* private void getCurrentUser()
+    {
+        String uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+        viewModelGo4Lunch.setUserCurrentMutableLiveData(uidUser);
+
+        /*UserFirebaseRepository.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
+            StaticFields.CURRENT_USER = documentSnapshot.toObject(User.class);
+            StaticFields.IUD_USER = uidUser;
+            updateNavigationHeader();
+        });
+    }*/
+
+     /*private void getRestaurantsListPlaces ()
+    {
+        String key = BuildConfig.google_maps_key;
+        viewModelGo4Lunch.getsetRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), 500, key)
+                .observe(this, listObservable ->
+                        disposable = listObservable.subscribeWith(new DisposableObserver<List<Restaurant>>() {
+            @Override
+            public void onNext(List<Restaurant> restaurantList)
+            {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        }));
+    }*/
+
+    /**
+     * Recover the List<Restaurant> with the HTTP Request
+     * @param lat double with latitude of the current User
+     * @param lng double with longitude of the current User
+     * @param radius double to define the distance around the current User
+     */
+    /*private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
+    {
+            String key = BuildConfig.google_maps_key;
+
+            this.disposable = RestaurantPlacesRepository.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
+                @Override
+                public void onNext(List<Restaurant> restaurantList)
+                {
+                    StaticFields.RESTAURANTS_LIST = restaurantList;
+                    getRestaurantListWithWorkmates();
+                    displayFragment(displayMapViewFragment());
+                }
+
+                @Override
+                public void onError(Throwable e) {}
+
+                @Override
+                public void onComplete() {}
+            });
+
+    }*/
+
+    /*private void getRestaurantListWithWorkmates()
+    {
+
+        viewModelGo4Lunch.restaurantsListFirebaseMutableLiveData.observe(this, new Observer<List<Restaurant>>() {
+            @Override
+            public void onChanged(List<Restaurant> restaurantList)
+            {
+                List<Restaurant> listTemp = restaurantList;
+
+                for (int i = 0; i < listTemp.size(); i ++)
+                {
+                    if (listTemp.get(i).getUserList().size() > 0)
+                    {
+                        restaurantsWithWorkmates.add(listTemp.get(i));
+                    }
+                }
+            }
+        });
+
+        /*RestaurantFirebaseRepository.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
+        {
+            if (queryDocumentSnapshots != null)
+            {
+                List<Restaurant> restaurantListFromFirebase = queryDocumentSnapshots.toObjects(Restaurant.class);
+
+                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
+                {
+                    Restaurant restaurantTemp = restaurantListFromFirebase.get(i);
+
+                    if (StaticFields.RESTAURANTS_LIST.contains(restaurantTemp))
+                    {
+                        if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
+                        {
+                            restaurantsWithWorkmates.add(restaurantTemp);
+                        }
+                    }
+
+                }
+
+                StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
+            }
+
+        });
+
+
+    }*/
 
 
 

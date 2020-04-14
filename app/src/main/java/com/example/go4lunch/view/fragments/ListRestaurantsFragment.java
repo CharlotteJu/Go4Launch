@@ -47,11 +47,15 @@ import io.reactivex.observers.DisposableObserver;
 
 public class ListRestaurantsFragment extends Fragment implements OnClickListener{
 
-    private List<Restaurant> restaurantListFromPlaces;
+    private List<Restaurant> restaurantListFromPlaces = new ArrayList<>();
     private ListRestaurantsAdapter adapter;
     private static final int REQUEST_CODE = 12;
     private Location currentLocation;
     private FusedLocationProviderClient fusedLocationProviderClient;
+
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private Disposable disposable;
+    private List<Restaurant> restaurantListWithWorkmates = new ArrayList<>();
 
 
 
@@ -74,23 +78,23 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     {
         super.onCreate(savedInstanceState);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(Objects.requireNonNull(getContext()));
-        this.currentLocation = StaticFields.CURRENT_LOCATION;
-        this.restaurantListFromPlaces = StaticFields.RESTAURANTS_LIST;
+
+        //this.currentLocation = StaticFields.CURRENT_LOCATION;
+        //this.restaurantListFromPlaces = StaticFields.RESTAURANTS_LIST;
+        //this.updateDistanceToCurrentLocation();
 
         this.configViewModel();
-
-        this.updateDistanceToCurrentLocation();
-
-
+        this.fetchLocation();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
-        //restaurantList = new ArrayList<>();
         ButterKnife.bind(this, v);
+
         //configListRestaurants();
+        //restaurantList = new ArrayList<>();
 
         this.configRecyclerView();
         return v;
@@ -98,72 +102,54 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     }
 
 
-    private ViewModelGo4Lunch viewModelGo4Lunch;
-    private Disposable disposable;
-    private List<Restaurant> restaurantListWithWorkmates = new ArrayList<>();
-
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
     private void configViewModel()
     {
         ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
         viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
-        this.setAllInformationsForViewModel();
-    }
-
-    private void setAllInformationsForViewModel()
-    {
-        this.setRestaurantListFromFirebase();
-        this.setRestaurantListFromPlaces();
-    }
-
-    private void setRestaurantListFromFirebase()
-    {
-        viewModelGo4Lunch.setRestaurantsListFirebaseMutableLiveData();
-    }
-
-    private void getRestaurantListFromFirebase()
-    {
-        viewModelGo4Lunch.restaurantsListFirebaseMutableLiveData.observe(this, new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurantList)
-            {
-                List<Restaurant> listRestaurantsTemp = restaurantList;
-
-                for (int i = 0; i < listRestaurantsTemp.size(); i ++)
-                {
-                    if (listRestaurantsTemp.get(i).getUserList().size() > 0)
-                    {
-                        restaurantListWithWorkmates.add(listRestaurantsTemp.get(i));
-                    }
-                }
-
-            }
-        });
-    }
-
-    private void setRestaurantListFromPlaces()
-    {
-        String key = BuildConfig.google_maps_key;
-        viewModelGo4Lunch.setRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), 500, key);
+        this.getRestaurantListFromFirebase();
+        this.getRestaurantListFromPlaces();
     }
 
     private void getRestaurantListFromPlaces()
     {
-        viewModelGo4Lunch.restaurantsListPlacesMutableLiveData.observe(this,
-                listObservable -> disposable = listObservable.subscribeWith(new DisposableObserver<List<Restaurant>>() {
-            @Override
-            public void onNext(List<Restaurant> restaurantList)
+        String key = BuildConfig.google_maps_key;
+        this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), 500, key)
+                .observe(this, listObservable -> disposable = listObservable
+                .subscribeWith(new DisposableObserver<List<Restaurant>>()
+                {
+                    @Override
+                    public void onNext(List<Restaurant> restaurantList)
+                    {
+                        restaurantListFromPlaces = restaurantList;
+                        updateDistanceToCurrentLocation();
+                        adapter.updateList(restaurantList, restaurantListWithWorkmates);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {}
+
+                    @Override
+                    public void onComplete() {}
+                }));
+    }
+
+    private void getRestaurantListFromFirebase()
+    {
+        this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
+            List<Restaurant> listRestaurantsTemp = restaurantList;
+
+            for (int i = 0; i < listRestaurantsTemp.size(); i ++)
             {
-                restaurantListFromPlaces = restaurantList;
+                if (listRestaurantsTemp.get(i).getUserList().size() > 0)
+                {
+                    restaurantListWithWorkmates.add(listRestaurantsTemp.get(i));
+                }
             }
 
-            @Override
-            public void onError(Throwable e) {}
-
-            @Override
-            public void onComplete() {}
-        }));
+            adapter.updateList(restaurantList, restaurantListWithWorkmates);
+        });
     }
 
 
@@ -184,29 +170,26 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
 
     /**
-     * Configure the List<Restaurant> while checking the Access Permission
+     * Fetch the current location {@link ActivityCompat} {@link Location}
+     * Set a value to the static field CURRENT_LOCATION
+     * We can display 1st fragment when we have the location
      */
-     /*private void configListRestaurants()
-    {
-        //currentLocation = StaticFields.CURRENT_LOCATION;
-        //stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-
-        if ((ActivityCompat.checkSelfPermission(
-                Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(
-                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-
+    private void fetchLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            return;
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {
             if (location != null) {
+                StaticFields.CURRENT_LOCATION = location;
                 currentLocation = location;
-                //stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
             }
         });
+    }
 
-
-    }*/
 
     @OnClick(R.id.fragment_list_restaurants_near_me_fab)
     void triProximity ()
@@ -271,12 +254,60 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         }
     }
 
+    /**
+     * Unsubscribe of the HTTP Request
+     */
+    private void unsubscribe()
+    {
+        if (this.disposable != null && !this.disposable.isDisposed())
+        {
+            this.disposable.dispose();
+        }
+    }
+
+    ////////////////////////////////////////// OVERRIDE METHODS ///////////////////////////////////////////
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        this.unsubscribe();
+    }
+
+    @Override
+    public void onClickListener(int position)
+    {
+        Intent intent = new Intent(getContext(), DetailsActivity.class);
+        intent.putExtra("placeId", restaurantListFromPlaces.get(position).getPlaceId());
+        startActivity(intent);
+    }
+
+    ///////////////////////////////////ANCIENNES METHODES///////////////////////////////////
+    /**
+     * Configure the List<Restaurant> while checking the Access Permission
+     */
+     /*private void configListRestaurants()
+    {
+        //currentLocation = StaticFields.CURRENT_LOCATION;
+        //stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+
+        if ((ActivityCompat.checkSelfPermission(
+                Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) && (ActivityCompat.checkSelfPermission(
+                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+
+        }
+        Task<Location> task = fusedLocationProviderClient.getLastLocation();
+        task.addOnSuccessListener(location -> {
+            if (location != null) {
+                currentLocation = location;
+                //stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+            }
+        });
 
 
-    ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
+    }*/
 
-
-    /*private void stream(double lat, double lng, int radius)
+     /*private void stream(double lat, double lng, int radius)
     {
         String key = BuildConfig.google_maps_key;
 
@@ -298,29 +329,4 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
             public void onComplete() {}
         });
     }*/
-
-    /**
-     * Unsubscribe of the HTTP Request
-     */
-    private void unsubscribe()
-    {
-        if (this.disposable != null && !this.disposable.isDisposed())
-        {
-            this.disposable.dispose();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        this.unsubscribe();
-    }
-
-    @Override
-    public void onClickListener(int position)
-    {
-        Intent intent = new Intent(getContext(), DetailsActivity.class);
-        intent.putExtra("placeId", restaurantListFromPlaces.get(position).getPlaceId());
-        startActivity(intent);
-    }
 }

@@ -31,21 +31,30 @@ public class ViewModelGo4Lunch extends ViewModel
     }
 
 
-    public MutableLiveData<User> userCurrentMutableLiveData;
-    public MutableLiveData<List<User>> usersListMutableLiveData;
+    private MutableLiveData<User> userCurrentMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<User>> usersListMutableLiveData = new MutableLiveData<>();
 
-    public MutableLiveData<Restaurant> restaurantFirebaseMutableLiveData;
-    public MutableLiveData<List<Restaurant>> restaurantsListFirebaseMutableLiveData;
+    private MutableLiveData<Restaurant> restaurantFirebaseMutableLiveData= new MutableLiveData<>();
+    private MutableLiveData<List<Restaurant>> restaurantsListFirebaseMutableLiveData= new MutableLiveData<>();
 
-    public MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesMutableLiveData;
-    public MutableLiveData<Restaurant> restaurantDetailPlacesMutableLiveData;
+    private MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesMutableLiveData= new MutableLiveData<>();
+    private MutableLiveData<Restaurant> restaurantDetailPlacesMutableLiveData= new MutableLiveData<>();
 
     /////////////////////// USER FIREBASE ///////////////////////
     //-----------------------
 
 
+    public MutableLiveData<User> getUserCurrentMutableLiveData(String uid)
+    {
+        if (this.userCurrentMutableLiveData != null)
+        {
+            this.setUserCurrentMutableLiveData(uid);
+        }
 
-    public void setUserCurrentMutableLiveData(String uid)
+        return this.userCurrentMutableLiveData;
+    }
+
+    private void setUserCurrentMutableLiveData(String uid)
     {
         this.userFirebaseRepository.getUser(uid).addOnSuccessListener(documentSnapshot ->
         {
@@ -54,7 +63,17 @@ public class ViewModelGo4Lunch extends ViewModel
         });
     }
 
-    public void setUsersListMutableLiveData()
+    public MutableLiveData<List<User>> getUsersListMutableLiveData()
+    {
+        if (this.usersListMutableLiveData != null)
+        {
+            this.setUsersListMutableLiveData();
+        }
+
+        return this.usersListMutableLiveData;
+    }
+
+    private void setUsersListMutableLiveData()
     {
         this.userFirebaseRepository.getListUsers().addSnapshotListener((queryDocumentSnapshots, e) ->
         {
@@ -72,21 +91,11 @@ public class ViewModelGo4Lunch extends ViewModel
         });
     }
 
-    public void getListUser()
-    {
-        this.userFirebaseRepository.getListUsers();
-    }
 
     // PEUT-ON RECUPERER ONSUCCESS OU ONFAILURE ? --> CALLBACK (comme RCV)
-    public boolean createUser (String uid, String email, String username, String urlPicture)
+    public void createUser (String uid, String email, String username, String urlPicture)
     {
-        final boolean[] userCreated = new boolean[1];
-
-        this.userFirebaseRepository.createUser(uid, email, username, urlPicture)
-                .addOnSuccessListener(aVoid -> userCreated[0] = true)
-                .addOnFailureListener(e -> userCreated[0] = false);
-
-        return userCreated[0];
+        this.userFirebaseRepository.createUser(uid, email, username, urlPicture);
     }
 
     public void updateUserIsChooseRestaurant (String uid, Boolean isChooseRestaurant)
@@ -107,15 +116,35 @@ public class ViewModelGo4Lunch extends ViewModel
     /////////////////////// RESTAURANT FIREBASE ///////////////////////
     //-----------------------
 
-    public void setRestaurantFirebaseMutableLiveData(String uid)
+    public MutableLiveData<Restaurant> getRestaurantFirebaseMutableLiveData(String placeId)
     {
-        this.restaurantFirebaseRepository.getRestaurant(uid).addOnSuccessListener(documentSnapshot -> {
+        if (this.restaurantFirebaseMutableLiveData != null)
+        {
+            this.setRestaurantFirebaseMutableLiveData(placeId);
+        }
+
+        return this.restaurantFirebaseMutableLiveData;
+    }
+
+    private void setRestaurantFirebaseMutableLiveData(String placeId)
+    {
+        this.restaurantFirebaseRepository.getRestaurant(placeId).addOnSuccessListener(documentSnapshot -> {
             Restaurant restaurant = documentSnapshot.toObject(Restaurant.class);
             restaurantFirebaseMutableLiveData.setValue(restaurant);
         });
     }
 
-    public void setRestaurantsListFirebaseMutableLiveData()
+    public MutableLiveData<List<Restaurant>> getRestaurantsListFirebaseMutableLiveData()
+    {
+        if (this.restaurantsListFirebaseMutableLiveData != null)
+        {
+            this.setRestaurantsListFirebaseMutableLiveData();
+        }
+
+        return this.restaurantsListFirebaseMutableLiveData;
+    }
+
+    private void setRestaurantsListFirebaseMutableLiveData()
     {
         this.restaurantFirebaseRepository.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
         {
@@ -147,8 +176,17 @@ public class ViewModelGo4Lunch extends ViewModel
     /////////////////////// RESTAURANT PLACES ///////////////////////
     //-----------------------
 
-    // COMMENT RECUPERER UN OBSERVABLE DANS UN LIVEDATA ?
-    public void setRestaurantsListPlacesMutableLiveData(double lat, double lng, int radius, String key)
+    public MutableLiveData<Observable<List<Restaurant>>> getRestaurantsListPlacesMutableLiveData(double lat, double lng, int radius, String key)
+    {
+        if (this.restaurantsListPlacesMutableLiveData != null)
+        {
+            this.setRestaurantsListPlacesMutableLiveData(lat, lng, radius, key);
+        }
+
+        return this.restaurantsListPlacesMutableLiveData;
+    }
+
+    private void setRestaurantsListPlacesMutableLiveData(double lat, double lng, int radius, String key)
     {
         this.restaurantsListPlacesMutableLiveData.setValue(this.restaurantPlacesRepository.streamFetchRestaurantInList(lat, lng, radius, key));
     }
