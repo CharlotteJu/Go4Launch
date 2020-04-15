@@ -30,9 +30,10 @@ public class DetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_details);
         ButterKnife.bind(this);
         configureToolbar();
-        displayFragment(displayDetailsFragment());
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeId");
+        displayFragment(displayDetailsFragment());
+
     }
 
     /**

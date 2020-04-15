@@ -77,17 +77,20 @@ public class ViewModelGo4Lunch extends ViewModel
     {
         this.userFirebaseRepository.getListUsers().addSnapshotListener((queryDocumentSnapshots, e) ->
         {
-            assert queryDocumentSnapshots != null;
-            List<DocumentSnapshot> userList = queryDocumentSnapshots.getDocuments();
-            List<User> users = new ArrayList<>();
-
-            for (int i = 0; i < userList.size(); i ++)
+            if (queryDocumentSnapshots != null)
             {
-                User user = userList.get(i).toObject(User.class);
-                users.add(user);
+                List<DocumentSnapshot> userList = queryDocumentSnapshots.getDocuments();
+                List<User> users = new ArrayList<>();
+
+                for (int i = 0; i < userList.size(); i ++)
+                {
+                    User user = userList.get(i).toObject(User.class);
+                    users.add(user);
+                }
+
+                usersListMutableLiveData.setValue(users);
             }
 
-            usersListMutableLiveData.setValue(users);
         });
     }
 
@@ -116,21 +119,29 @@ public class ViewModelGo4Lunch extends ViewModel
     /////////////////////// RESTAURANT FIREBASE ///////////////////////
     //-----------------------
 
-    public MutableLiveData<Restaurant> getRestaurantFirebaseMutableLiveData(String placeId)
+    public MutableLiveData<Restaurant> getRestaurantFirebaseMutableLiveData(Restaurant restaurant)
     {
         if (this.restaurantFirebaseMutableLiveData != null)
         {
-            this.setRestaurantFirebaseMutableLiveData(placeId);
+            this.setRestaurantFirebaseMutableLiveData(restaurant);
         }
 
         return this.restaurantFirebaseMutableLiveData;
     }
 
-    private void setRestaurantFirebaseMutableLiveData(String placeId)
+    private void setRestaurantFirebaseMutableLiveData(Restaurant restaurant)
     {
-        this.restaurantFirebaseRepository.getRestaurant(placeId).addOnSuccessListener(documentSnapshot -> {
-            Restaurant restaurant = documentSnapshot.toObject(Restaurant.class);
-            restaurantFirebaseMutableLiveData.setValue(restaurant);
+        this.restaurantFirebaseRepository.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot -> {
+
+            if(documentSnapshot.exists())
+            {
+                Restaurant restaurantToLiveData = documentSnapshot.toObject(Restaurant.class);
+                restaurantFirebaseMutableLiveData.setValue(restaurantToLiveData);
+            }
+            else
+            {
+                //createRestaurant(restaurant.getPlaceId(), new ArrayList<>(), restaurant.getName(), restaurant.getAddress());
+            }
         });
     }
 
@@ -165,7 +176,12 @@ public class ViewModelGo4Lunch extends ViewModel
 
     public void createRestaurant(String placeId, List<User> userList, String name, String address)
     {
-        this.restaurantFirebaseRepository.createRestaurant(placeId, userList, name, address);
+        this.restaurantFirebaseRepository.createRestaurant(placeId, userList, name, address).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                String test;
+            }
+        });
     }
 
     public void updateRestaurantUserList(String placeId, List<User> userList)

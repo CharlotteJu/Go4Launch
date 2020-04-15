@@ -46,6 +46,7 @@ public class AuthActivity extends AppCompatActivity {
         this.configViewModel();
     }
 
+
     private void configViewModel()
     {
         ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
@@ -60,6 +61,7 @@ public class AuthActivity extends AppCompatActivity {
             public void onChanged(List<User> userList)
             {
                 usersList = userList;
+                connectUser();
             }
         });
     }

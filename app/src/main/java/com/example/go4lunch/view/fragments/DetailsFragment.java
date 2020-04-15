@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -122,8 +123,8 @@ public class DetailsFragment extends Fragment {
         viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
         this.getRestaurantFromPlaces();
        // this.getRestaurantFinalFromFirebase();
-        this.getCurrentUser();
-        this.getRestaurantListFromFirebase();
+        //this.getCurrentUser();
+       // this.getRestaurantListFromFirebase();
     }
 
     private void getRestaurantFromPlaces()
@@ -136,18 +137,20 @@ public class DetailsFragment extends Fragment {
                         public void onNext(Restaurant restaurant)
                         {
                             restaurantFinal = restaurant;
-                            getRestaurantFinalFromFirebase();
-                            updateRestaurant(restaurantFinal);
+                            getRestaurantListFromFirebase();
+                           // updateRestaurant(restaurantFinal);
                         }
 
                         @Override
-                        public void onError(Throwable e) {
-
+                        public void onError(Throwable e)
+                        {
+                            String error;
                         }
 
                         @Override
-                        public void onComplete() {
-
+                        public void onComplete()
+                        {
+                            String complete;
                         }
                     });
         });
@@ -155,12 +158,28 @@ public class DetailsFragment extends Fragment {
 
     private void getRestaurantFinalFromFirebase()
     {
-        this.viewModelGo4Lunch.getRestaurantFirebaseMutableLiveData(placeId)
+        this.viewModelGo4Lunch.getRestaurantFirebaseMutableLiveData(restaurantFinal)
                 .observe(this, restaurant -> {
                     // S'il n'est pas dans la liste, est-ce que j'arrive ici ?
-                    restaurantFinal.setUserList(restaurant.getUserList());
-                    initFirebaseRestaurant();
-                    updateRestaurant(restaurantFinal);
+                    String test;
+                    this.workmatesList = restaurant.getUserList();
+
+                    restaurantFinal.setUserList(workmatesList);
+                    this.configRecyclerView();
+
+
+                    /*if (restaurant.getUserList() == null)
+                    {
+                        restaurantFinal.setUserList(new ArrayList<>());
+                    }
+                    else
+                    {
+                        restaurantFinal.setUserList(restaurant.getUserList());
+                    }*/
+
+                    //initFirebaseRestaurant();
+                    getCurrentUser();
+                    //updateRestaurant(restaurantFinal);
 
         });
     }
@@ -168,7 +187,15 @@ public class DetailsFragment extends Fragment {
     private void getRestaurantListFromFirebase()
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
-           restaurantsListFromFirebase = restaurantList;
+            restaurantsListFromFirebase = restaurantList;
+            if (!restaurantsListFromFirebase.contains(restaurantFinal)) {
+                this.workmatesList = new ArrayList<>();
+                this.viewModelGo4Lunch.createRestaurant(placeId, workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
+                //this.configRecyclerView();
+                //restaurantFinal.setUserList(workmatesList);
+            }
+            this.getRestaurantFinalFromFirebase();
+
         });
     }
 
@@ -182,7 +209,7 @@ public class DetailsFragment extends Fragment {
         else
         {
             this.workmatesList = new ArrayList<>();
-            this.viewModelGo4Lunch.createRestaurant(placeId, restaurantFinal.getUserList(), restaurantFinal.getName(), restaurantFinal.getAddress());
+            //this.viewModelGo4Lunch.createRestaurant(placeId, workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
         }
     }
 
@@ -190,8 +217,15 @@ public class DetailsFragment extends Fragment {
 
     private void getCurrentUser()
     {
-        String uid = FirebaseAuth.getInstance().getUid();
-        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uid).observe(this, user -> currentUser = user);
+        uidUser = FirebaseAuth.getInstance().getUid();
+        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uidUser).observe(this, new Observer<User>() {
+            @Override
+            public void onChanged(User user)
+            {
+                currentUser = user;
+                updateRestaurant(restaurantFinal);
+            }
+        });
 
     }
 
@@ -200,18 +234,27 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_call_button)
     void onClickCallButton()
     {
-        String phone = restaurantFinal.getPhoneNumber();
-        Uri uri = Uri.parse("tel:"+phone);
-        Intent intent = new Intent(Intent.ACTION_CALL, uri);
-
-        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
+        if (restaurantFinal.getPhoneNumber() != null)
         {
-            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE);
+            String phone = restaurantFinal.getPhoneNumber();
+            Uri uri = Uri.parse("tel:"+phone);
+            Intent intent = new Intent(Intent.ACTION_CALL, uri);
+
+            if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
+            {
+                ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE);
+            }
+            else
+            {
+                startActivity(intent);
+            }
         }
         else
         {
-            startActivity(intent);
+            Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_no_phone), Toast.LENGTH_LONG).show();
         }
+
+
 
     }
 
@@ -260,22 +303,31 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_website_button)
     void onClickWebsiteButton()
     {
-        String url = restaurantFinal.getWebsite();
-        if(!url.startsWith("https://") && !url.startsWith("http://"))
+        if (restaurantFinal.getWebsite() != null)
         {
-            url = "http://" + url;
-        }
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            String url = restaurantFinal.getWebsite();
+            if(!url.startsWith("https://") && !url.startsWith("http://"))
+            {
+                url = "http://" + url;
+            }
+            Uri uri = Uri.parse(url);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
-        if (intent.resolveActivity(Objects.requireNonNull(getActivity()).getPackageManager()) != null)
-        {
-            startActivity(intent);
+            if (intent.resolveActivity(Objects.requireNonNull(getActivity()).getPackageManager()) != null)
+            {
+                startActivity(intent);
+            }
+            else
+            {
+                Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_website_no_application_found), Toast.LENGTH_LONG).show();
+            }
         }
         else
         {
-            Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_website_no_application_found), Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_no_website), Toast.LENGTH_LONG).show();
         }
+
+
     }
 
     @OnClick(R.id.details_fragment_choose_button)

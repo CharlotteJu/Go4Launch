@@ -137,25 +137,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.getCurrentUser();
     }
 
-
-
     private void getCurrentUser()
     {
         String uid = FirebaseAuth.getInstance().getUid();
-        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uid).observe(this, new Observer<User>()
-        {
-            @Override
-            public void onChanged(User user)
-            {
-                updateNavigationHeader(user);
-                currentUser = user;
+        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uid).observe(this, user -> {
+            updateNavigationHeader(user);
+            currentUser = user;
 
-            }
         });
-
     }
-
-
 
     ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
 

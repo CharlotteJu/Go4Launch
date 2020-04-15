@@ -133,13 +133,13 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private void getRestaurantListFromFirebase()
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
-            List<Restaurant> listRestaurantsTemp = restaurantList;
 
-            for (int i = 0; i < listRestaurantsTemp.size(); i ++)
+            for (int i = 0; i < restaurantList.size(); i ++)
             {
-                if (listRestaurantsTemp.get(i).getUserList().size() > 0)
+                Restaurant restaurantTemp = restaurantList.get(i);
+                if (restaurantList.get(i).getUserList().size() > 0)
                 {
-                    restaurantListWithWorkmates.add(listRestaurantsTemp.get(i));
+                    restaurantListWithWorkmates.add(restaurantList.get(i));
                     setMarker();
                 }
             }

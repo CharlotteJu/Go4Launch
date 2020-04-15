@@ -37,6 +37,8 @@
     <string name="details_fragment_restaurant_added_favorites">Restaurant added to favorites</string>
     <string name="details_fragment_restaurant_removed_favorites">Restaurant removed to favorites</string>
     <string name="details_fragment_website_no_application_found">No corresponding application found</string>
+    <string name="details_fragment_no_website">This restaurant does not have website</string>
+    <string name="details_fragment_no_phone">This restaurant does not have phone number</string>
 
     <!-- MAP VIEW FRAGMENT -->
     <string name="map_view_fragment_my_position">My position</string>
