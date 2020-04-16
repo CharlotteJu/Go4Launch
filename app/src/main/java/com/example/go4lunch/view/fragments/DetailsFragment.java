@@ -148,7 +148,12 @@ public class DetailsFragment extends Fragment {
 
                     this.workmatesList = restaurant.getUserList();
                     restaurantFinal.setUserList(workmatesList);
-                    this.configRecyclerView();
+                    if (adapter == null)
+                    {
+                        this.configRecyclerView();
+                    }
+
+
         });
     }
 
@@ -280,6 +285,7 @@ public class DetailsFragment extends Fragment {
         this.viewModelGo4Lunch.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
         this.viewModelGo4Lunch.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
         this.viewModelGo4Lunch.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
+        this.adapter.notifyDataSetChanged();
 
     }
 

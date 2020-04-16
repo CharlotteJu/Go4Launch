@@ -85,6 +85,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return v;
     }
 
+
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
     private void configViewModel()

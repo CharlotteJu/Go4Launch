@@ -115,6 +115,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private void getRestaurantListFromFirebase()
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
+
             for (int i = 0; i < restaurantList.size(); i++)
             {
                 Restaurant restaurant = restaurantList.get(i);
@@ -123,7 +124,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                 {
                     if (restaurantListFromPlaces.contains(restaurant))
                     {
-                        restaurantListFromPlaces.get(i).setUserList(restaurant.getUserList());
+                        int index = restaurantListFromPlaces.indexOf(restaurant);
+                        restaurantListFromPlaces.get(index).setUserList(restaurant.getUserList());
                     }
                 }
             }

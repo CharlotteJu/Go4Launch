@@ -61,7 +61,6 @@ public class NotificationsService extends FirebaseMessagingService
 
     private void getCurrentRestaurant(String message)
     {
-        currentRestaurant = StaticFields.RESTAURANT_CHOOSE_BY_CURRENT_USER;
         String name = currentRestaurant.getName();
         String address = currentRestaurant.getAddress();
         List<User> listWorkmates = currentRestaurant.getUserList();

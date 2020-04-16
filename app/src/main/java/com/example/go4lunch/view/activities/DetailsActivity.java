@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.example.go4lunch.R;
 import com.example.go4lunch.view.fragments.DetailsFragment;
@@ -17,6 +18,7 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class DetailsActivity extends AppCompatActivity {
 
@@ -45,10 +47,11 @@ public class DetailsActivity extends AppCompatActivity {
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setHomeButtonEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationIcon(R.drawable.ic_return);
     }
+
+
 
     /**
      * Display a fragment
@@ -71,4 +74,9 @@ public class DetailsActivity extends AppCompatActivity {
         return this.detailsFragment;
     }
 
+   /* @Override
+    public boolean onSupportNavigateUp() {
+        this.onBackPressed();
+        return true;
+    }*/
 }
