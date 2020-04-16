@@ -2,9 +2,7 @@ package com.example.go4lunch.view.adapters;
 
 import android.app.Activity;
 import android.content.Context;
-import android.media.Image;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,34 +15,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.view.fragments.DetailsFragment;
-import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
-import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
-import com.firebase.ui.firestore.FirestoreRecyclerOptions;
-import com.google.firebase.auth.FirebaseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWorkmatesAdapter.ListWorkmatesViewHolder>
+public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdapter.ListWorkmatesViewHolder>   //FirestoreRecyclerAdapter<User, ListWorkmatesAdapter.ListWorkmatesViewHolder>
 {
 
     private RequestManager glide;
     private Context context;
     private Activity activity;
+    private List<User> usersList;
 
 
-    public ListWorkmatesAdapter(@NonNull FirestoreRecyclerOptions<User> options, RequestManager glide, Activity activity )
+    public ListWorkmatesAdapter(RequestManager glide, Activity activity)
     {
-        super(options);
         this.glide = glide;
         this.activity = activity;
+        this.usersList = new ArrayList<>();
     }
-
 
     @NonNull
     @Override
@@ -53,15 +46,26 @@ public class ListWorkmatesAdapter extends FirestoreRecyclerAdapter<User, ListWor
         this.context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_workmates, parent, false);
-        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, activity);
+        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, this.activity);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull ListWorkmatesViewHolder viewHolder, int i, @NonNull User user)
+    public void onBindViewHolder(@NonNull ListWorkmatesViewHolder holder, int position)
     {
-        viewHolder.updateUI(user, glide, context);
+        holder.updateUI(this.usersList.get(position), this.glide, this.context);
     }
 
+    @Override
+    public int getItemCount()
+    {
+        return this.usersList.size();
+    }
+
+    public void updateList(List<User> userList)
+    {
+        this.usersList = userList;
+        this.notifyDataSetChanged();
+    }
 
     static class ListWorkmatesViewHolder extends RecyclerView.ViewHolder
     {

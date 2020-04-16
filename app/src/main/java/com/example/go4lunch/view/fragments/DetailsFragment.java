@@ -105,13 +105,7 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, v);
-
         this.configViewModel();
-        //placeId = DetailsActivity.placeId;
-        //currentUser = StaticFields.CURRENT_USER;
-        //uidUser = StaticFields.IUD_USER;
-        //this.restaurantFinal = stream(placeId);
-
         return v;
     }
 
@@ -122,9 +116,6 @@ public class DetailsFragment extends Fragment {
         ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
         viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
         this.getRestaurantFromPlaces();
-       // this.getRestaurantFinalFromFirebase();
-        //this.getCurrentUser();
-       // this.getRestaurantListFromFirebase();
     }
 
     private void getRestaurantFromPlaces()
@@ -138,20 +129,14 @@ public class DetailsFragment extends Fragment {
                         {
                             restaurantFinal = restaurant;
                             getRestaurantListFromFirebase();
-                           // updateRestaurant(restaurantFinal);
+                            getRestaurantFinalFromFirebase();
                         }
 
                         @Override
-                        public void onError(Throwable e)
-                        {
-                            String error;
-                        }
+                        public void onError(Throwable e) {}
 
                         @Override
-                        public void onComplete()
-                        {
-                            String complete;
-                        }
+                        public void onComplete() {}
                     });
         });
     }
@@ -160,27 +145,10 @@ public class DetailsFragment extends Fragment {
     {
         this.viewModelGo4Lunch.getRestaurantFirebaseMutableLiveData(restaurantFinal)
                 .observe(this, restaurant -> {
-                    // S'il n'est pas dans la liste, est-ce que j'arrive ici ?
-                    String test;
-                    this.workmatesList = restaurant.getUserList();
 
+                    this.workmatesList = restaurant.getUserList();
                     restaurantFinal.setUserList(workmatesList);
                     this.configRecyclerView();
-
-
-                    /*if (restaurant.getUserList() == null)
-                    {
-                        restaurantFinal.setUserList(new ArrayList<>());
-                    }
-                    else
-                    {
-                        restaurantFinal.setUserList(restaurant.getUserList());
-                    }*/
-
-                    //initFirebaseRestaurant();
-                    getCurrentUser();
-                    //updateRestaurant(restaurantFinal);
-
         });
     }
 
@@ -188,43 +156,22 @@ public class DetailsFragment extends Fragment {
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
             restaurantsListFromFirebase = restaurantList;
-            if (!restaurantsListFromFirebase.contains(restaurantFinal)) {
-                this.workmatesList = new ArrayList<>();
-                this.viewModelGo4Lunch.createRestaurant(placeId, workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
-                //this.configRecyclerView();
-                //restaurantFinal.setUserList(workmatesList);
+            if (!restaurantsListFromFirebase.contains(restaurantFinal))
+            {
+                workmatesList = new ArrayList<>();
+                viewModelGo4Lunch.createRestaurant(restaurantFinal.getPlaceId(),workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
             }
-            this.getRestaurantFinalFromFirebase();
-
+            this.getCurrentUser();
         });
     }
-
-    private void initFirebaseRestaurant()
-    {
-        if (restaurantsListFromFirebase.contains(restaurantFinal))
-        {
-            this.workmatesList = restaurantFinal.getUserList();
-            this.configRecyclerView();
-        }
-        else
-        {
-            this.workmatesList = new ArrayList<>();
-            //this.viewModelGo4Lunch.createRestaurant(placeId, workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
-        }
-    }
-
 
 
     private void getCurrentUser()
     {
         uidUser = FirebaseAuth.getInstance().getUid();
-        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uidUser).observe(this, new Observer<User>() {
-            @Override
-            public void onChanged(User user)
-            {
-                currentUser = user;
-                updateRestaurant(restaurantFinal);
-            }
+        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uidUser).observe(this, user -> {
+            currentUser = user;
+            updateRestaurant(restaurantFinal);
         });
 
     }
@@ -253,9 +200,6 @@ public class DetailsFragment extends Fragment {
         {
             Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_no_phone), Toast.LENGTH_LONG).show();
         }
-
-
-
     }
 
     @OnClick(R.id.details_fragment_like_button)
@@ -270,7 +214,6 @@ public class DetailsFragment extends Fragment {
         {
             restaurantList = currentUser.getRestaurantListFavorites();
         }
-
         if (!currentUser.getRestaurantListFavorites().contains(restaurantFinal))
         {
             restaurantList.add(restaurantFinal);
@@ -279,25 +222,8 @@ public class DetailsFragment extends Fragment {
         {
             restaurantList.remove(restaurantFinal);
         }
-
         this.viewModelGo4Lunch.updateUserRestaurantListFavorites(uidUser, restaurantList);
         this.updateLike();
-
-        // Update data in Firebase
-       /* if (!currentUser.getRestaurantListFavorites().contains(restaurantFinal))
-        {
-            restaurantList.add(restaurantFinal);
-            UserFirebaseRepository.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener
-                    (aVoid -> Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_restaurant_added_favorites), Toast.LENGTH_SHORT).show());
-        }
-        else
-        {
-            restaurantList.remove(restaurantFinal);
-            UserFirebaseRepository.updateUserRestaurantListFavorites(uidUser, restaurantList).addOnSuccessListener
-                    (aVoid -> Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_restaurant_removed_favorites), Toast.LENGTH_SHORT).show());
-        }*/
-
-
     }
 
     @OnClick(R.id.details_fragment_website_button)
@@ -333,42 +259,27 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_choose_button)
     void onClickChooseButton()
     {
-
+        User UserPushOnFirebase = new User(currentUser.getName(), currentUser.getIllustration());
         if(!this.currentUser.isChooseRestaurant() || !this.currentUser.getRestaurantChoose().equals(restaurantFinal))
         {
             if (this.currentUser.isChooseRestaurant())
             {
                 this.updateOtherRestaurantInFirebase(currentUser.getRestaurantChoose());
             }
-
             this.currentUser.setRestaurantChoose(this.restaurantFinal);
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
-
-            //UserFirebaseRepository.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
-            //UserFirebaseRepository.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
-            workmatesList.add(currentUser);
-            //RestaurantFirebaseRepository.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
-
-            //StaticFields.RESTAURANT_CHOOSE_BY_CURRENT_USER = restaurantFinal;
-            //StaticFields.RESTAURANT_CHOOSE_BY_CURRENT_USER.setUserList(workmatesList);
+            workmatesList.add(UserPushOnFirebase);
         }
         else
         {
             this.currentUser.unSetRestaurantChoose();
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
-            //UserFirebaseRepository.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
-            //UserFirebaseRepository.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
-
-            workmatesList.remove(currentUser);
-
-            //RestaurantFirebaseRepository.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
+            workmatesList.remove(UserPushOnFirebase);
         }
 
         this.viewModelGo4Lunch.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
         this.viewModelGo4Lunch.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
         this.viewModelGo4Lunch.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
-
-        //this.getFirebaseRestaurant();
 
     }
 
@@ -376,9 +287,11 @@ public class DetailsFragment extends Fragment {
     {
         if (restaurantsListFromFirebase.contains(restaurant))
         {
+            User UserPushOnFirebase = new User(currentUser.getName(), currentUser.getIllustration());
+
             int index = restaurantsListFromFirebase.indexOf(restaurant);
             List<User> tempListWorkmates = restaurantsListFromFirebase.get(index).getUserList();
-            tempListWorkmates.remove(currentUser);
+            tempListWorkmates.remove(UserPushOnFirebase);
             this.viewModelGo4Lunch.updateRestaurantUserList(restaurant.getPlaceId(), tempListWorkmates);
         }
     }
@@ -486,133 +399,5 @@ public class DetailsFragment extends Fragment {
         super.onDestroy();
         this.unsubscribe();
     }
-
-    ////////////////////////////////////////// ANCIENNES METHODES ///////////////////////////////////////////
-
-    /*private void getCurrentUser()
-    {
-        uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        UserHelper.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
-            currentUser = documentSnapshot.toObject(User.class);
-            updateRestaurant(restaurantFinal);
-        });
-    }*/
-
-    /*private void updateOtherRestaurantInFirebase(Restaurant restaurant)
-    {
-        if (restaurantsListFromFirebase.contains(restaurant))
-        {
-            int index = restaurantsListFromFirebase.indexOf(restaurant);
-            List<User> tempListWorkmates = restaurantsListFromFirebase.get(index).getUserList();
-            tempListWorkmates.remove(currentUser);
-            this.viewModelGo4Lunch.updateRestaurantUserList(restaurant.getPlaceId(), tempListWorkmates);
-        }
-
-       /* RestaurantFirebaseRepository.getRestaurant(restaurant.getPlaceId()).addOnSuccessListener(documentSnapshot ->
-        {
-            if(documentSnapshot.exists())
-            {
-                List<User> tempWorkmatesList = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList();
-
-                tempWorkmatesList.remove(currentUser);
-
-                RestaurantFirebaseRepository.updateRestaurantUserList(restaurant.getPlaceId(),tempWorkmatesList);
-            }
-        });*/
-
-
-        ////////////////////////////// METHODE UPDATE LISTE AVEC SNAPSHOT LISTENER //////////////////////////////
-
-        /*RestaurantHelper.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) -> {
-            if (queryDocumentSnapshots != null)
-            {
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                {
-                    if (Objects.equals(queryDocumentSnapshots.getDocuments().get(i).get("placeId"), restaurant.getPlaceId()))
-                    {
-                        String debug1 = (String) queryDocumentSnapshots.getDocuments().get(i).get("placeId");
-                        String debug2 = restaurant.getPlaceId();
-
-                        String uid = queryDocumentSnapshots.getDocuments().get(i).getId();
-                        RestaurantHelper.getRestaurant(uid).addOnSuccessListener(documentSnapshot -> {
-
-                            List<User> tempWorkmatesList = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList();
-
-                            tempWorkmatesList.remove(currentUser);
-
-                            RestaurantHelper.updateRestaurantUserList(uid,tempWorkmatesList);
-                        });
-                        break;
-                    }
-                }
-            }
-        });*/
-
-        /*private Restaurant stream (String placeId)
-    {
-        String key = BuildConfig.google_maps_key;
-
-        /*this.disposable = RestaurantPlacesRepository.streamDetailRestaurantToRestaurant(placeId, key).subscribeWith(new DisposableObserver<Restaurant>() {
-            @Override
-            public void onNext(Restaurant restaurant)
-            {
-                restaurantFinal = restaurant;
-                updateRestaurant(restaurantFinal);
-                //getCurrentUser();
-            }
-
-            @Override
-            public void onError(Throwable e) {}
-
-            @Override
-            public void onComplete() {}
-        });
-
-        return restaurantFinal;
-    }*/
-
-        /*private void getFirebaseRestaurant ()
-    {
-        RestaurantFirebaseRepository.getRestaurant(restaurantFinal.getPlaceId()).addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists())
-            {
-                workmatesList = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList();
-                configRecyclerView();
-            }
-            else
-            {
-                workmatesList = new ArrayList<>();
-                RestaurantFirebaseRepository.createRestaurant(restaurantFinal.getPlaceId(), restaurantFinal.getPlaceId(), workmatesList, restaurantFinal.getName(), restaurantFinal.getAddress());
-            }
-        });*/
-
-
-
-        /*RestaurantHelper.getListRestaurants().addSnapshotListener(Objects.requireNonNull(getActivity()), (queryDocumentSnapshots, e) -> {
-            if (queryDocumentSnapshots != null)
-            {
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                {
-                    if (Objects.equals(queryDocumentSnapshots.getDocuments().get(i).get("placeId"), restaurantFinal.getPlaceId()))
-                    {
-                        uidRestaurant = queryDocumentSnapshots.getDocuments().get(i).getId();
-                        restaurantExistsInFirebase = true;
-                        RestaurantHelper.getRestaurant(uidRestaurant).addOnSuccessListener(documentSnapshot -> {
-                            workmatesList = Objects.requireNonNull(documentSnapshot.toObject(Restaurant.class)).getUserList();
-                            configRecyclerView();
-                        });
-                        break;
-                    }
-                }
-
-                if (!restaurantExistsInFirebase)
-                {
-                    //uidRestaurant = UUID.randomUUID().toString();
-                    RestaurantHelper.createRestaurant(restaurantFinal.getPlaceId(), restaurantFinal.getPlaceId(), new ArrayList<User>(), restaurantFinal.getName());
-                }
-            }
-        });
-    }*/
-
 
 }

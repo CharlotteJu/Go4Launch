@@ -56,13 +56,9 @@ public class AuthActivity extends AppCompatActivity {
 
     private void getUsersList()
     {
-        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, new Observer<List<User>>() {
-            @Override
-            public void onChanged(List<User> userList)
-            {
-                usersList = userList;
-                connectUser();
-            }
+        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList -> {
+            usersList = userList;
+            connectUser();
         });
     }
 
@@ -104,71 +100,7 @@ public class AuthActivity extends AppCompatActivity {
 
                 viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
                 this.lunchMainActivity();
-
-                        /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
-                                .addOnSuccessListener(aVoid -> lunchMainActivity())
-                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
-                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());*/
             }
-
-            /*viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList ->
-            {
-                for (int i = 0; i < userList.size(); i ++)
-                {
-                    if (userList.get(i).getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
-                    {
-                        userExists = true;
-                        break;
-                    }
-                }
-                if (userExists)
-                {
-                    lunchMainActivity();
-                }
-                else
-                {
-                    String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-                    String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-                    String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
-
-                    viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
-
-                        /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
-                                .addOnSuccessListener(aVoid -> lunchMainActivity())
-                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
-                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());
-                }
-            });*
-
-            /*UserFirebaseRepository.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
-                if (queryDocumentSnapshots != null)
-                {
-                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                    {
-                        if (queryDocumentSnapshots.getDocuments().get(i).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                            userExists = true;
-                            break;
-                        }
-                    }
-                    if (userExists)
-                    {
-                        lunchMainActivity();
-                    }
-                    else
-                    {
-                        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-                        String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-                        String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
-
-                        viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
-
-                        /*UserFirebaseRepository.createUser(uid, email, name, urlPicture)
-                                .addOnSuccessListener(aVoid -> lunchMainActivity())
-                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
-                                        getResources().getString(R.string.auth_activity_connection_canceled), Toast.LENGTH_SHORT).show());
-                    }
-                }
-            });*/
         }
     }
 
@@ -215,7 +147,6 @@ public class AuthActivity extends AppCompatActivity {
             {
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.response_sign_in_success),Toast.LENGTH_SHORT ).show();
                 this.connectUser();
-                this.lunchMainActivity();
             }
             else
             {

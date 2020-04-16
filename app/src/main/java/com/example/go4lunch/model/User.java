@@ -32,6 +32,12 @@ public class User
 
     }
 
+    public User (String name, String illustration)
+    {
+        this.name = name;
+        this.illustration = illustration;
+    }
+
     //////// GETTERS ////////
 
     public String getName() {

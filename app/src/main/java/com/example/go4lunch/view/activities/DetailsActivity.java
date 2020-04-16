@@ -1,11 +1,14 @@
 package com.example.go4lunch.view.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.example.go4lunch.R;
 import com.example.go4lunch.view.fragments.DetailsFragment;

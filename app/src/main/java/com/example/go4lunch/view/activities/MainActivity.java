@@ -10,7 +10,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
@@ -19,6 +18,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,17 +31,12 @@ import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
-import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
-import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
-import com.example.go4lunch.view_model.repositories.RestaurantPlacesRepository;
 import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
-import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
 import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
 import com.example.go4lunch.view.fragments.MapViewFragment;
@@ -68,9 +64,7 @@ import java.util.Objects;
 import butterknife.BindView;
 
 import butterknife.ButterKnife;
-import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -99,12 +93,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private User currentUser;
 
-
-    //private List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
-    //private List<Restaurant> restaurantsFromPlaces = new ArrayList<>();
-
-    private static final int REQUEST_CODE = 101;
-    private int AUTOCOMPLETE_REQUEST_CODE = 15;
+    private static final int LOCATION_REQUEST_CODE = 101;
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 15;
     private static final String NOTIFICATIONS_SHARED_PREFERENCES = "PREF_NOTIF";
     private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
 
@@ -119,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.fetchLocation();
         this.configViewModel();
 
-        this.displayFragment(displayMapViewFragment());
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
@@ -234,10 +223,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         emailUser = headerView.findViewById(R.id.nav_header_email_txt);
         illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
 
-        //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        //String userName = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? getString(R.string.navigation_header_name) : firebaseUser.getDisplayName();
-        //String userEmail = TextUtils.isEmpty(firebaseUser.getEmail()) ? getString(R.string.navigation_header_name) : firebaseUser.getEmail();
-
         nameUser.setText(currentUser.getName());
         emailUser.setText(currentUser.getEmail());
 
@@ -266,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (this.mapViewFragment == null)
         {
-            this.mapViewFragment = MapViewFragment.newInstance();
+            this.mapViewFragment = MapViewFragment.newInstance(currentLocation);
         }
         return this.mapViewFragment;
     }
@@ -278,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (this.listRestaurantsFragment == null)
         {
-            this.listRestaurantsFragment = ListRestaurantsFragment.newInstance();
+            this.listRestaurantsFragment = ListRestaurantsFragment.newInstance(currentLocation);
         }
         return this.listRestaurantsFragment;
     }
@@ -330,18 +315,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             return;
         }
+
+
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {
-            if (location != null) {
-                StaticFields.CURRENT_LOCATION = location;
+            if (location != null)
+            {
                 currentLocation = location;
+                displayFragment(displayMapViewFragment());
+            }
+            else
+            {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location)
+                    {
+                        currentLocation = location;
+                        if (mapViewFragment == null)
+                        {
+                            displayFragment(displayMapViewFragment());
+                        }
+                    }
 
-               // this.streamRestaurantsFromPlaces(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String provider) {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String provider) {
+
+                    }
+                });
             }
         });
+
     }
 
     /**
@@ -427,13 +444,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             if (resultCode == RESULT_OK)
             {
-                assert data != null;
-                Place place = Autocomplete.getPlaceFromIntent(data);
-                String placeId = place.getId();
-                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                intent.putExtra("placeId", placeId);
-                startActivity(intent);
-
+                if (data != null)
+                {
+                    Place place = Autocomplete.getPlaceFromIntent(data);
+                    String placeId = place.getId();
+                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    intent.putExtra("placeId", placeId);
+                    startActivity(intent);
+                }
             }
             else if (resultCode == AutocompleteActivity.RESULT_ERROR)
             {
@@ -526,126 +544,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
         editor.commit();
     }
-
-
-    ///////////////////////////////////ANCIENNES METHODES///////////////////////////////////
-
-    /**
-     * Get the current User {@link UserFirebaseRepository} {@link User}
-     * Set a value to the static fields CURRENT_USER and IUD USER
-     * We can update the NavigationHeader when we have user
-     */
-   /* private void getCurrentUser()
-    {
-        String uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        viewModelGo4Lunch.setUserCurrentMutableLiveData(uidUser);
-
-        /*UserFirebaseRepository.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
-            StaticFields.CURRENT_USER = documentSnapshot.toObject(User.class);
-            StaticFields.IUD_USER = uidUser;
-            updateNavigationHeader();
-        });
-    }*/
-
-     /*private void getRestaurantsListPlaces ()
-    {
-        String key = BuildConfig.google_maps_key;
-        viewModelGo4Lunch.getsetRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), 500, key)
-                .observe(this, listObservable ->
-                        disposable = listObservable.subscribeWith(new DisposableObserver<List<Restaurant>>() {
-            @Override
-            public void onNext(List<Restaurant> restaurantList)
-            {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        }));
-    }*/
-
-    /**
-     * Recover the List<Restaurant> with the HTTP Request
-     * @param lat double with latitude of the current User
-     * @param lng double with longitude of the current User
-     * @param radius double to define the distance around the current User
-     */
-    /*private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
-    {
-            String key = BuildConfig.google_maps_key;
-
-            this.disposable = RestaurantPlacesRepository.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
-                @Override
-                public void onNext(List<Restaurant> restaurantList)
-                {
-                    StaticFields.RESTAURANTS_LIST = restaurantList;
-                    getRestaurantListWithWorkmates();
-                    displayFragment(displayMapViewFragment());
-                }
-
-                @Override
-                public void onError(Throwable e) {}
-
-                @Override
-                public void onComplete() {}
-            });
-
-    }*/
-
-    /*private void getRestaurantListWithWorkmates()
-    {
-
-        viewModelGo4Lunch.restaurantsListFirebaseMutableLiveData.observe(this, new Observer<List<Restaurant>>() {
-            @Override
-            public void onChanged(List<Restaurant> restaurantList)
-            {
-                List<Restaurant> listTemp = restaurantList;
-
-                for (int i = 0; i < listTemp.size(); i ++)
-                {
-                    if (listTemp.get(i).getUserList().size() > 0)
-                    {
-                        restaurantsWithWorkmates.add(listTemp.get(i));
-                    }
-                }
-            }
-        });
-
-        /*RestaurantFirebaseRepository.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
-        {
-            if (queryDocumentSnapshots != null)
-            {
-                List<Restaurant> restaurantListFromFirebase = queryDocumentSnapshots.toObjects(Restaurant.class);
-
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
-                {
-                    Restaurant restaurantTemp = restaurantListFromFirebase.get(i);
-
-                    if (StaticFields.RESTAURANTS_LIST.contains(restaurantTemp))
-                    {
-                        if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
-                        {
-                            restaurantsWithWorkmates.add(restaurantTemp);
-                        }
-                    }
-
-                }
-
-                StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
-            }
-
-        });
-
-
-    }*/
-
-
-
 }

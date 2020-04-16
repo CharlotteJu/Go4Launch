@@ -60,7 +60,7 @@ public class ListWorkmatesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_workmates, container, false);
         ButterKnife.bind(this, v);
-        //configRecyclerView();
+        configRecyclerView();
         return v;
 
     }
@@ -79,31 +79,16 @@ public class ListWorkmatesFragment extends Fragment {
         this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList ->
         {
             this.usersList = userList;
-            adapter.notifyDataSetChanged();
+            adapter.updateList(usersList);
         });
     }
 
-    /**
-     * Generate options for the FirestoreRecycler adapter with a query
-     * @param query
-     * @return
-     */
-    private FirestoreRecyclerOptions<User> generateOptionsForAdapter(Query query)
+    private void configRecyclerView()
     {
-        return new FirestoreRecyclerOptions.Builder<User>()
-                .setQuery(query, User.class)
-                .setLifecycleOwner(this)
-                .build();
-    }
-
-    /*private void configRecyclerView()
-    {
-        ListWorkmatesAdapter adapter = new ListWorkmatesAdapter(generateOptionsForAdapter(test.usersListMutableLiveData), Glide.with(this),
-                getActivity());
-
+        adapter = new ListWorkmatesAdapter(Glide.with(this), getActivity());
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-    }*/
+    }
 }
 
