@@ -70,7 +70,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         Places.initialize(Objects.requireNonNull(getContext()), key);
         restaurantListFromPlaces = new ArrayList<>();
         restaurantListWithWorkmates = new ArrayList<>();
-        this.configViewModel();
+        //this.configViewModel();
     }
 
     @Override
@@ -85,6 +85,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         return v;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.configViewModel();
+    }
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
@@ -128,15 +133,19 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                 if (restaurantList.get(i).getUserList().size() > 0)
                 {
                     restaurantListWithWorkmates.add(restaurantList.get(i));
-                    setMarker();
+
                 }
             }
+            setMarker();
         });
     }
 
     private void setMarker()
     {
-        //this.googleMap.clear();
+        if (this.googleMap != null)
+        {
+            this.googleMap.clear();
+        }
 
         for (int i = 0; i < restaurantListFromPlaces.size(); i ++)
         {
@@ -159,11 +168,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             this.googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
 
-        /*LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
         float zoom = 16;
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        this.googleMap.addMarker(markerOptions);*/
+        this.googleMap.addMarker(markerOptions);
 
     }
 
@@ -175,11 +184,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(Objects.requireNonNull(getContext()), R.raw.google_style);
         this.googleMap.setMapStyle(mapStyleOptions);
 
-        LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        /*LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
         float zoom = 16;
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        this.googleMap.addMarker(markerOptions);
+        this.googleMap.addMarker(markerOptions);*/
     }
 
     //////////// A VOIR SI UTILE

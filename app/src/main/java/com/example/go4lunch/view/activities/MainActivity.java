@@ -11,6 +11,11 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import android.Manifest;
 import android.content.Context;
@@ -33,6 +38,8 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
+import com.example.go4lunch.utils.work_manager.NotificationWorker;
+import com.example.go4lunch.utils.work_manager.WorkerNotificationController;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
@@ -60,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 
@@ -92,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Disposable disposable;
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private User currentUser;
+    private String uidUser;
 
     private static final int LOCATION_REQUEST_CODE = 101;
     private static final int AUTOCOMPLETE_REQUEST_CODE = 15;
@@ -113,7 +122,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.configureToolbar();
         this.configureDrawerLayout();
         this.configureNavigationView();
+
+        this.getSharedPreferences();
+
     }
+
 
 
 
@@ -128,11 +141,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void getCurrentUser()
     {
-        String uid = FirebaseAuth.getInstance().getUid();
-        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uid).observe(this, user -> {
+        this.uidUser = FirebaseAuth.getInstance().getUid();
+        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uidUser).observe(this, user -> {
             updateNavigationHeader(user);
             currentUser = user;
-
         });
     }
 
@@ -525,9 +537,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setTitle(getResources().getString(R.string.main_activity_pop_up_notifications_title));
         builder.setMessage(getResources().getString(R.string.main_activity_pop_up_notifications_message));
         builder.setPositiveButton(getResources().getString(R.string.main_activity_pop_up_yes),
-                (dialogInterface, i) -> updateSharedPreferences(true));
+                (dialogInterface, i) -> /*WorkerNotificationController.startWorkRequest(getApplicationContext())*/updateSharedPreferences(true));
         builder.setNegativeButton(getResources().getString(R.string.main_activity_pop_up_no),
-                (dialog, which) -> updateSharedPreferences(false));
+                (dialog, which) -> /*WorkerNotificationController.stopWorkRequest(getApplicationContext())*/updateSharedPreferences(false));
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -543,5 +555,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
         editor.commit();
+
+        this.getSharedPreferences();
+    }
+
+    private void getSharedPreferences()
+    {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        boolean isAuthorized = sharedPreferences.getBoolean(NOTIFICATIONS_BOOLEAN, true);
+
+        if (isAuthorized)
+        {
+            WorkerNotificationController.startWorkRequest(getApplicationContext());
+        }
+        else
+        {
+            WorkerNotificationController.stopWorkRequest(getApplicationContext());
+        }
     }
 }

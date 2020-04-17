@@ -8,27 +8,27 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.os.Build;
-import android.util.Log;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
-import com.example.go4lunch.view.activities.MainActivity;
-import com.firebase.ui.auth.AuthUI;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
+import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
+import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class NotificationsService extends FirebaseMessagingService
 {
@@ -39,27 +39,59 @@ public class NotificationsService extends FirebaseMessagingService
 
     private User currentUser;
     private Restaurant currentRestaurant;
+    private String message;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         if (remoteMessage.getNotification() != null) {
-            String message = remoteMessage.getNotification().getBody();
+            message = remoteMessage.getNotification().getBody();
 
             if (getSharePreferences())
             {
-                currentUser = StaticFields.CURRENT_USER;
-
-                if (currentUser.isChooseRestaurant())
-                {
-                    getCurrentRestaurant(message);
-                }
-
+               getCurrentUserFromFirebase();
             }
         }
     }
 
+    //private ViewModelGo4Lunch viewModelGo4Lunch;
+    private UserFirebaseRepository userFirebaseRepository = new UserFirebaseRepository();
+    private RestaurantFirebaseRepository restaurantFirebaseRepository = new RestaurantFirebaseRepository();
 
-    private void getCurrentRestaurant(String message)
+    /*private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        //viewModelGo4Lunch= ViewModelProviders.of(getApplicationContext(), viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        //this.getCurrentUser();
+    }*/
+
+    private void getCurrentUserFromFirebase()
+    {
+        String uid = FirebaseAuth.getInstance().getUid();
+        this.userFirebaseRepository.getUser(uid).addOnSuccessListener(documentSnapshot ->
+        {
+            currentUser = documentSnapshot.toObject(User.class);
+            if (Objects.requireNonNull(currentUser).isChooseRestaurant())
+            {
+                getCurrentRestaurantFromFirebase(currentUser.getRestaurantChoose().getPlaceId());
+            }
+
+        });
+    }
+
+    private void getCurrentRestaurantFromFirebase(String placeId)
+    {
+        this.restaurantFirebaseRepository.getRestaurant(placeId).addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot)
+            {
+                currentRestaurant = documentSnapshot.toObject(Restaurant.class);
+                getCurrentRestaurant();
+            }
+        });
+    }
+
+
+    private void getCurrentRestaurant()
     {
         String name = currentRestaurant.getName();
         String address = currentRestaurant.getAddress();
