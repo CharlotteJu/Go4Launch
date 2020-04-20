@@ -180,7 +180,7 @@ public class Restaurant
         this.distanceCurrentUser = distanceCurrentUser;
     }
 
-
+    //TODO : TESTS UNITAIRES ?
     @Override
     public boolean equals(@Nullable Object obj)
     {

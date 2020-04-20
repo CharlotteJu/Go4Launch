@@ -146,6 +146,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
+    //TODO : TESTS UNITAIRES POUR LES TRIS ? UTILS ?
+
     @OnClick(R.id.fragment_list_restaurants_near_me_fab)
     void triProximity() {
         Collections.sort(restaurantListFromPlaces, (o1, o2) -> {
@@ -187,6 +189,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         this.adapter.notifyDataSetChanged();
     }
 
+    //TODO : TESTS UNITAIRES ?
     /**
      * Update the attribute DistanceCurrentUser for each restaurant
      */

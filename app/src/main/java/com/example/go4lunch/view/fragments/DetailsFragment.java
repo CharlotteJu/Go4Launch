@@ -60,7 +60,7 @@ public class DetailsFragment extends Fragment {
     private List<Restaurant> restaurantsListFromFirebase;
     private ViewModelGo4Lunch viewModelGo4Lunch;
 
-    private final static int REQUEST_CODE = 13;
+    private final static int REQUEST_CODE_CALL = 13;
 
     @BindView(R.id.details_fragment_name_restaurant_txt)
     TextView name;
@@ -76,8 +76,6 @@ public class DetailsFragment extends Fragment {
     ImageView star3;
     @BindView(R.id.details_fragment_like_button)
     ImageView likeButton;
-    @BindView(R.id.details_fragment_call_txt)
-    TextView testCall;
     @BindView(R.id.details_fragment_workmates_recycler_view)
     RecyclerView workmatesRecyclerView;
     @BindView(R.id.details_fragment_choose_button)
@@ -93,8 +91,7 @@ public class DetailsFragment extends Fragment {
 
     public static DetailsFragment newInstance(String placeId)
     {
-        DetailsFragment detailsFragment = new DetailsFragment(placeId);
-        return detailsFragment;
+        return new DetailsFragment(placeId);
     }
 
 
@@ -192,7 +189,7 @@ public class DetailsFragment extends Fragment {
 
             if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED)
             {
-                ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE);
+                ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CODE_CALL);
             }
             else
             {
@@ -234,6 +231,7 @@ public class DetailsFragment extends Fragment {
     {
         if (restaurantFinal.getWebsite() != null)
         {
+            //TODO : TESTS UNITAIRES ?
             String url = restaurantFinal.getWebsite();
             if(!url.startsWith("https://") && !url.startsWith("http://"))
             {
@@ -325,6 +323,7 @@ public class DetailsFragment extends Fragment {
     private void updateRating(Restaurant restaurant)
     {
 
+        //TODO : UTILS ?
         double rating = restaurant.getRating();
 
         if (rating > 3.75)

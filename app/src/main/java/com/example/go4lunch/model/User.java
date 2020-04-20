@@ -11,7 +11,7 @@ public class User
     private String name;
     private String email;
     private String illustration;
-    private boolean chooseRestaurant = false;
+    private boolean chooseRestaurant;
     private Restaurant restaurantChoose;
     private List<Restaurant> restaurantListFavorites;
 
@@ -83,11 +83,13 @@ public class User
         this.restaurantListFavorites = restaurantListFavorites;
     }
 
+    //TODO : TESTS UNITAIRES
     public void setRestaurantChoose(Restaurant restaurantChoose) {
         this.restaurantChoose = restaurantChoose;
         this.chooseRestaurant = true;
     }
 
+    //TODO : TESTS UNITAIRES
     public void unSetRestaurantChoose()
     {
         this.restaurantChoose = null;
@@ -100,6 +102,7 @@ public class User
         return Objects.hash(getEmail());
     }
 
+    //TODO : TESTS UNITAIRES ?
     @Override
     public boolean equals(@Nullable Object obj)
     {

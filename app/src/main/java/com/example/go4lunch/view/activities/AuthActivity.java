@@ -141,6 +141,7 @@ public class AuthActivity extends AppCompatActivity {
     private void responseSignIn(int requestCode, int resultCode, Intent data)
     {
         IdpResponse response = IdpResponse.fromResultIntent(data);
+        //TODO : FAIRE UN TRUC DE RESPONSE ?
         if (requestCode == FIREBASE_UI)
         {
             if (resultCode == RESULT_OK)

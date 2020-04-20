@@ -11,11 +11,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.work.Constraints;
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 
 import android.Manifest;
 import android.content.Context;
@@ -38,8 +33,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.utils.work_manager.NotificationWorker;
-import com.example.go4lunch.utils.work_manager.WorkerNotificationController;
+import com.example.go4lunch.notifications.WorkerNotificationController;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
@@ -67,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 
@@ -126,9 +119,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.getSharedPreferences();
 
     }
-
-
-
 
     ///////////////////////////////////VIEW MODEL///////////////////////////////////
 
@@ -194,7 +184,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureNavigationView()
     {
         navigationView.setNavigationItemSelectedListener(this);
-        //updateNavigationHeader();
     }
 
     /**
@@ -295,6 +284,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     //// A VOIR SI UTILE
+    //TODO : TESTS UNITAIRES ?
     private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
     {
         List<LatLng> list = new ArrayList<>();
@@ -330,7 +320,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             return;
         }
-
 
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {

@@ -1,0 +1,86 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name">Go4Lunch</string>
+
+    <!-- AUTH ACTIVITY -->
+    <string name="auth_activity_subtitle">Trouve un restaurant sympa et invite tes collègues pour déjeûner!</string>
+    <string name="auth_activity_button_facebook">Connexion avec Facebook</string>
+    <string name="auth_activity_button_google">Connexion avec Google</string>
+    <string name="auth_activity_connection_canceled">Echec de la connexion</string>
+
+    <!-- MAIN ACTIVITY -->
+    <string name="main_activity_no_choose_restaurant">Vous n\'avez pas sélectionné de restaurant</string>
+    <string name="main_activity_success_sign_out">Déconnexion réussie</string>
+    <string name="main_activity_pop_up_log_out_title">DECONNEXION</string>
+    <string name="main_activity_pop_up_log_out_message">Êtes-vous sûr de vouloir vous déconnecter ?</string>
+    <string name="main_activity_pop_up_yes">OUI</string>
+    <string name="main_activity_pop_up_no">NON</string>
+    <string name="main_activity_pop_up_notifications_title">NOTIFICATIONS</string>
+    <string name="main_activity_pop_up_notifications_message">Voulez-vous activer les notifications ?</string>
+
+
+    <!-- ITEM LIST RESTAURANTS -->
+    <string name="item_list_restaurants_restaurant">Restaurant</string>
+    <string name="item_list_restaurants_address">Adresse</string>
+    <string name="item_list_restaurants_hours">Horaires</string>
+    <string name="item_list_restaurants_distance">Distance</string>
+    <string name="item_list_restaurants_number_workmates">(1)</string>
+
+    <!-- DETAILS FRAGMENT -->
+    <string name="details_fragment_restaurant">Restaurant</string>
+    <string name="details_fragment_address">Adresse</string>
+    <string name="details_fragment_call">TELEPHONE</string>
+    <string name="details_fragment_like">LIKE</string>
+    <string name="details_fragment_website">SITE WEB</string>
+    <string name="details_fragment_restaurant_added_favorites">Restaurant ajouté aux favoris</string>
+    <string name="details_fragment_restaurant_removed_favorites">Restaurant supprimé des favoris</string>
+    <string name="details_fragment_website_no_application_found">Aucune application correspondante trouvée</string>
+    <string name="details_fragment_no_website">Ce restaurant ne possède pas de site web</string>
+    <string name="details_fragment_no_phone">Ce restaurant ne possède pas de numéro de téléphone</string>
+
+    <!-- MAP VIEW FRAGMENT -->
+    <string name="map_view_fragment_my_position">My position</string>
+
+
+    <!-- NAVIGATION HEADER -->
+    <string name="navigation_header_name">Nom</string>
+    <string name="navigation_header_email">Email</string>
+
+
+    <!-- BOTTOM NAVIGATION VIEW -->
+    <string name="bottom_navigation_menu_mapview">Map View</string>
+    <string name="bottom_navigation_menu_listview">List View</string>
+    <string name="bottom_navigation_menu_workmates">Workmates</string>
+
+    <!-- RESPONSE SIGN IN -->
+    <string name="response_sign_in_success">Connexion réussie</string>
+    <string name="response_sign_in_error">Echec de la connexion</string>
+
+
+    <!-- FACEBOOK PURPOSE -->
+    <string name="facebook_application_id" translatable="false">233929610966007</string>
+    <string name="facebook_login_protocol_scheme" translatable="false" tools:ignore="UnusedResources">fb233929610966007</string>
+
+
+    <!-- NAVIGATION DRAWER MENU -->
+    <string name="navigation_drawer_your_lunch">VOTRE DEJEUNER</string>
+    <string name="navigation_drawer_settings">PARAMETRES</string>
+    <string name="navigation_drawer_logout">DECONNEXION</string>
+
+    <!-- Used in NavigationDrawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- LIST WORKMATES ADAPTER -->
+    <string name="list_workmates_adapter_is_eating"> mange (</string>
+    <string name="list_workmates_adapter_parenthesis">)</string>
+    <string name="list_workmates_adapter_hasnt_decided_yed"> n\'a pas encore décidé</string>
+    <string name="list_workmates_adapter_is_joining">vient aussi!</string>
+
+    <!-- LIST RESTAURANTS ADAPTER -->
+    <string name="list_restaurants_adapter_open_now">Ouvert</string>
+    <string name="list_restaurants_adapter_close_now">Fermé</string>
+
+    <!-- NOTIFICATION SERVICE -->
+    <string name="notification_title">"Déjeûner : "</string>
+    <string name="notification_message">"Vous avez une déjeûner de prévu"</string>
+    <string name="notification_workmates_with">"Avec"</string></resources>

@@ -1,10 +1,8 @@
-package com.example.go4lunch.utils.work_manager;
+package com.example.go4lunch.notifications;
 
 import android.content.Context;
 
-import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
-import androidx.work.Data;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
@@ -20,11 +18,10 @@ public abstract class WorkerNotificationController
     private static final String WORK_REQUEST_NAME = "WORK_REQUEST_NAME_Go4Lunch";
     private static final String WORK_REQUEST_TAG = "WORK_REQUEST_TAG_Go4Lunch";
 
-    private static final int NOTIFICATION_HOUR = 15;
-    private static final int NOTIFICATION_MINUTE = 40;
+    private static final int NOTIFICATION_HOUR = 10;
+    private static final int NOTIFICATION_MINUTE = 43;
     private static final int NOTIFICATION_FREQUENCY_DAY = 1;
 
-    private static final String DATA_UID_CURRENT_USER = "UID_CURRENT_USER";
 
     public static void startWorkRequest(Context context)
     {
@@ -37,6 +34,7 @@ public abstract class WorkerNotificationController
         WorkManager.getInstance(context).cancelAllWorkByTag(WORK_REQUEST_TAG);
     }
 
+    //TODO : TESTS UNITAIRES ?
     private static PeriodicWorkRequest configureWorkRequest()
     {
         // InitialDelay
@@ -72,4 +70,6 @@ public abstract class WorkerNotificationController
                 .addTag(WORK_REQUEST_TAG)
                 .build();
     }
+
+
 }

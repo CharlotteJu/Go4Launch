@@ -53,8 +53,6 @@ public class DetailsActivity extends AppCompatActivity {
 
     }
 
-
-
     /**
      * Display a fragment
      * @param fragment

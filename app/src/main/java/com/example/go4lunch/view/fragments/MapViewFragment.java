@@ -191,7 +191,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         this.googleMap.addMarker(markerOptions);*/
     }
 
-    //////////// A VOIR SI UTILE
+    //////////// TODO : A VOIR SI UTILE
     private int calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
     {
         // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran
