@@ -22,18 +22,20 @@
 
         <activity
             android:name=".view.activities.DetailsActivity"
+            android:screenOrientation="portrait"
             android:parentActivityName=".view.activities.MainActivity">
         </activity>
 
-        <activity android:name=".view.activities.AuthActivity">
+        <activity android:name=".view.activities.AuthActivity"
+            android:screenOrientation="portrait">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
         </activity>
 
-        <activity android:name=".view.activities.MainActivity">
-        </activity>
+        <activity android:name=".view.activities.MainActivity"
+            android:screenOrientation="portrait"/>
 
         <receiver android:name=".notifications.NotificationWorker">
             <intent-filter>

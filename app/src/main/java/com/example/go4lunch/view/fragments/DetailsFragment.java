@@ -26,6 +26,7 @@ import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
+import com.example.go4lunch.utils.Utils;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
@@ -316,44 +317,10 @@ public class DetailsFragment extends Fragment {
         Glide.with(this).load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
         address.setText(restaurant.getAddress());
         this.configButton();
-        this.updateRating(restaurant);
         this.updateLike();
+        Utils.updateRating(star1, star2, star3, restaurant);
     }
 
-    private void updateRating(Restaurant restaurant)
-    {
-
-        //TODO : UTILS ?
-        double rating = restaurant.getRating();
-
-        if (rating > 3.75)
-        {
-            star1.setVisibility(View.VISIBLE);
-            star2.setVisibility(View.VISIBLE);
-            star3.setVisibility(View.VISIBLE);
-
-        }
-        else if (rating > 2.5)
-        {
-            star1.setVisibility(View.VISIBLE);
-            star2.setVisibility(View.VISIBLE);
-            star3.setVisibility(View.INVISIBLE);
-
-        }
-        else if (rating > 1.25)
-        {
-            star1.setVisibility(View.VISIBLE);
-            star2.setVisibility(View.INVISIBLE);
-            star3.setVisibility(View.INVISIBLE);
-        }
-        else
-        {
-            star1.setVisibility(View.INVISIBLE);
-            star2.setVisibility(View.INVISIBLE);
-            star3.setVisibility(View.INVISIBLE);
-        }
-
-    }
 
     private void updateLike()
     {

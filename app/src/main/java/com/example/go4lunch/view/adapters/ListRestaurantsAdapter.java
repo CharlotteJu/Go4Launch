@@ -16,6 +16,7 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.utils.Utils;
 import com.example.go4lunch.view.fragments.OnClickListener;
 
 import java.util.ArrayList;
@@ -115,10 +116,10 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
 
             this.displayWorkmates();
-            this.updateRating(restaurant);
             this.updateHours(restaurant);
             this.updateNumberWorkmates(restaurant);
             this.updateDistance(restaurant);
+            Utils.updateRating(star1, star2, star3, restaurant);
         }
 
         private void updateDistance(Restaurant restaurant)
@@ -141,44 +142,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            {
                hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_close_now));
            }
-        }
-
-        /**
-         * Update star's visibility with rating
-         * @param restaurant
-         */
-        private void updateRating(Restaurant restaurant)
-        {
-            //TODO : UTILS ?
-            double rating = restaurant.getRating();
-
-            if (rating > 3.75)
-            {
-                star1.setVisibility(View.VISIBLE);
-                star2.setVisibility(View.VISIBLE);
-                star3.setVisibility(View.VISIBLE);
-
-            }
-            else if (rating > 2.5)
-            {
-                star1.setVisibility(View.VISIBLE);
-                star2.setVisibility(View.VISIBLE);
-                star3.setVisibility(View.INVISIBLE);
-
-            }
-            else if (rating > 1.25)
-            {
-                star1.setVisibility(View.VISIBLE);
-                star2.setVisibility(View.INVISIBLE);
-                star3.setVisibility(View.INVISIBLE);
-            }
-            else
-            {
-                star1.setVisibility(View.INVISIBLE);
-                star2.setVisibility(View.INVISIBLE);
-                star3.setVisibility(View.INVISIBLE);
-            }
-
         }
 
         /**

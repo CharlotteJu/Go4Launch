@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.utils.Utils;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
@@ -25,7 +26,6 @@ import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -98,7 +98,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                             @Override
                             public void onNext(List<Restaurant> restaurantList) {
                                 restaurantListFromPlaces = restaurantList;
-                                updateDistanceToCurrentLocation();
+                                Utils.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
+                               // updateDistanceToCurrentLocation();
                                 getRestaurantListFromFirebase();
                             }
 
@@ -146,65 +147,23 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
 
-    //TODO : TESTS UNITAIRES POUR LES TRIS ? UTILS ?
-
     @OnClick(R.id.fragment_list_restaurants_near_me_fab)
     void triProximity() {
-        Collections.sort(restaurantListFromPlaces, (o1, o2) -> {
-            Integer restau1 = o1.getDistanceCurrentUser();
-            Integer restau2 = o2.getDistanceCurrentUser();
-
-            return restau1.compareTo(restau2);
-
-        });
+        Utils.triProximity(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
-
     }
 
     @OnClick(R.id.fragment_list_restaurants_rating_fab)
     void triRate() {
-        Collections.sort(restaurantListFromPlaces, (o1, o2) -> {
-            Double restau1 = o1.getRating();
-            Double restau2 = o2.getRating();
-
-            return restau1.compareTo(restau2);
-        });
-
-        Collections.reverse(restaurantListFromPlaces);
-
+        Utils.triRatingReverse(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
     }
 
 
     @OnClick(R.id.fragment_list_restaurants_name_fab)
     void triName() {
-        Collections.sort(restaurantListFromPlaces, (o1, o2) -> {
-
-            String restaurant1 = o1.getName();
-            String restaurant2 = o2.getName();
-
-            return restaurant1.compareTo(restaurant2);
-        });
-
+        Utils.triName(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
-    }
-
-    //TODO : TESTS UNITAIRES ?
-    /**
-     * Update the attribute DistanceCurrentUser for each restaurant
-     */
-    private void updateDistanceToCurrentLocation() {
-        Location restaurantLocation = new Location("fusedLocationProvider");
-
-        for (int i = 0; i < restaurantListFromPlaces.size(); i++) {
-            //Get the restaurant's location
-            restaurantLocation.setLatitude(restaurantListFromPlaces.get(i).getLocation().getLat());
-            restaurantLocation.setLongitude(restaurantListFromPlaces.get(i).getLocation().getLng());
-            //Get the distance between currentLocation and restaurantLocation
-            int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
-
-            restaurantListFromPlaces.get(i).setDistanceCurrentUser(distanceLocation);
-        }
     }
 
     /**
