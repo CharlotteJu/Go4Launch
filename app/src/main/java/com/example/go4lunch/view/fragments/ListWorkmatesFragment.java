@@ -49,7 +49,6 @@ public class ListWorkmatesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.configViewModel();
     }
 
     @Override
@@ -60,6 +59,12 @@ public class ListWorkmatesFragment extends Fragment {
         configRecyclerView();
         return v;
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.configViewModel();
     }
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////

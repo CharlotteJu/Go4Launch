@@ -195,7 +195,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         float zoom = 16;
         this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
         this.googleMap.addMarker(markerOptions);
-        this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
+        //this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
     }
 
     /**

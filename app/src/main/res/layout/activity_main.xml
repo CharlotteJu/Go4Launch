@@ -58,7 +58,7 @@
 
             <ImageView
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="@dimen/main_activity_height_image_logo"
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

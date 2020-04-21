@@ -14,11 +14,10 @@
             android:id="@+id/details_fragment_illustration_image"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintDimensionRatio="1.8:1"
             android:src="@drawable/image_restaurant_bis"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintStart_toEndOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/details_fragment_guideline_1"
             android:contentDescription="@null"
             />
@@ -36,13 +35,12 @@
                 android:id="@+id/details_fragment_name_restaurant_txt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginStart="@dimen/details_fragment_margin_txt"
+                android:layout_marginTop="@dimen/details_fragment_margin_txt"
                 android:text="@string/details_fragment_restaurant"
                 android:textColor="@color/colorAccentWhite"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
 
             <TextView
                 android:id="@+id/details_fragment_address_txt"
@@ -50,6 +48,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/details_fragment_address"
                 android:textColor="@color/colorAccentWhite"
+                android:textSize="@dimen/details_fragment_size_address"
                 app:layout_constraintStart_toStartOf="@id/details_fragment_name_restaurant_txt"
                 app:layout_constraintTop_toBottomOf="@id/details_fragment_name_restaurant_txt"
                 app:layout_constraintBottom_toBottomOf="parent"/>
@@ -58,7 +57,7 @@
                 android:id="@+id/details_fragment_star_1_image"
                 android:layout_width="@dimen/item_list_restaurant_width_image"
                 android:layout_height="@dimen/item_list_restaurant_width_image"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="@dimen/details_fragment_margin_image_star_1"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_star_2"
                 app:layout_constraintBottom_toBottomOf="@id/details_fragment_name_restaurant_txt"
@@ -70,7 +69,7 @@
                 android:id="@+id/details_fragment_star_2_image"
                 android:layout_width="@dimen/item_list_restaurant_width_image"
                 android:layout_height="@dimen/item_list_restaurant_width_image"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="@dimen/details_fragment_margin_image_star_2_3"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_star_2"
                 app:layout_constraintBottom_toBottomOf="@id/details_fragment_name_restaurant_txt"
@@ -82,7 +81,7 @@
                 android:id="@+id/details_fragment_star_3_image"
                 android:layout_width="@dimen/item_list_restaurant_width_image"
                 android:layout_height="@dimen/item_list_restaurant_width_image"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="@dimen/details_fragment_margin_image_star_2_3"
                 android:contentDescription="@null"
                 android:src="@drawable/ic_star_2"
                 app:layout_constraintBottom_toBottomOf="@id/details_fragment_name_restaurant_txt"
@@ -90,26 +89,25 @@
                 app:layout_constraintStart_toEndOf="@id/details_fragment_star_2_image"
                 app:layout_constraintTop_toTopOf="@id/details_fragment_star_1_image" />
 
-
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageButton
             android:id="@+id/details_fragment_call_button"
             android:layout_width="0dp"
-            android:layout_height="32dp"
+            android:layout_height="@dimen/details_fragment_height_image_call_like"
             app:layout_constraintDimensionRatio="1:1"
             android:src="@drawable/ic_call_black_24dp"
             android:background="@color/fui_transparent"
             app:layout_constraintTop_toTopOf="@id/details_fragment_guideline_2"
+            app:layout_constraintBottom_toBottomOf="@id/details_fragment_guideline_2_bis"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="48dp"/>
+
+            android:layout_marginStart="@dimen/details_fragment_margin_image_orange"/>
 
         <ImageButton
             android:id="@+id/details_fragment_like_button"
             android:layout_width="0dp"
-            android:layout_height="32dp"
+            android:layout_height="@dimen/details_fragment_height_image_call_like"
             app:layout_constraintDimensionRatio="1:1"
             android:src="@drawable/ic_star_orange_24dp"
             android:background="@color/fui_transparent"
@@ -121,36 +119,32 @@
         <ImageButton
             android:id="@+id/details_fragment_website_button"
             android:layout_width="0dp"
-            android:layout_height="28dp"
+            android:layout_height="@dimen/details_fragment_height_image_call_like"
             app:layout_constraintDimensionRatio="1:1"
             android:src="@drawable/ic_world"
             android:background="@color/fui_transparent"
             app:layout_constraintTop_toTopOf="@id/details_fragment_call_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/details_fragment_call_button"
-            android:layout_marginEnd="48dp"/>
+            android:layout_marginEnd="@dimen/details_fragment_margin_image_orange"/>
 
         <TextView
             android:id="@+id/details_fragment_call_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/details_fragment_call"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/details_fragment_call_button"
+            style="@style/details_txt_orange"
+            app:layout_constraintTop_toTopOf="@id/details_fragment_guideline_2_bis"
+            app:layout_constraintBottom_toBottomOf="@id/details_fragment_guideline_3"
             app:layout_constraintStart_toStartOf="@id/details_fragment_call_button"
-            app:layout_constraintEnd_toEndOf="@id/details_fragment_call_button"
-            android:layout_marginTop="12dp"/>
+            app:layout_constraintEnd_toEndOf="@id/details_fragment_call_button" />
 
         <TextView
             android:id="@+id/details_fragment_like_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/details_fragment_like"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
-            android:textSize="16sp"
+            style="@style/details_txt_orange"
             app:layout_constraintTop_toTopOf="@id/details_fragment_call_txt"
             app:layout_constraintStart_toStartOf="@id/details_fragment_like_button"
             app:layout_constraintEnd_toEndOf="@id/details_fragment_like_button" />
@@ -160,9 +154,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/details_fragment_website"
-            android:textColor="@color/colorPrimary"
-            android:textStyle="bold"
-            android:textSize="16sp"
+            style="@style/details_txt_orange"
             app:layout_constraintTop_toTopOf="@id/details_fragment_call_txt"
             app:layout_constraintStart_toStartOf="@id/details_fragment_website_button"
             app:layout_constraintEnd_toEndOf="@id/details_fragment_website_button" />
@@ -190,6 +182,13 @@
             app:layout_constraintGuide_percent="0.45"/>
 
         <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/details_fragment_guideline_2_bis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.525"/>
+
+        <androidx.constraintlayout.widget.Guideline
             android:id="@+id/details_fragment_guideline_3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -203,16 +202,10 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/details_fragment_guideline_1"
             app:layout_constraintTop_toBottomOf="@+id/details_fragment_guideline_1"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="@dimen/details_fragment_margin_fab"
             android:src="@drawable/ic_choose_not_restaurant"
-            app:backgroundTint="@color/colorAccentWhite"
-            android:layout_marginTop="20dp" />
-
-
-
-
+            app:backgroundTint="@color/colorAccentWhite"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 </FrameLayout>

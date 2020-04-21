@@ -2,14 +2,14 @@
 <resources>
 
     <!-- AUTH ACTIVITY -->
-    <dimen name="auth_activity_size_title">70sp</dimen>
+    <dimen name="auth_activity_size_title">60sp</dimen>
     <dimen name="auth_activity_size_subtitle">12sp</dimen>
     <dimen name="auth_activity_size_text_button">18sp</dimen>
     <dimen name="auth_activity_margin_start">60dp</dimen>
     <dimen name="auth_activity_padding_button">10dp</dimen>
-    <dimen name="auth_activity_width_image">250dp</dimen>
-    <dimen name="auth_activity_height_image">180dp</dimen>
-    <dimen name="auth_activity_margin_top_image">48dp</dimen>
+    <dimen name="auth_activity_width_image">208dp</dimen>
+    <dimen name="auth_activity_height_image">160dp</dimen>
+    <dimen name="auth_activity_margin_top_image">32dp</dimen>
     <dimen name="auth_activity_margin_button">32dp</dimen>
 
     <!-- MAIN ACTIVITY -->
