@@ -15,9 +15,16 @@ public class User
     private Restaurant restaurantChoose;
     private List<Restaurant> restaurantListFavorites;
 
-    //////// CONSTRUCTOR ////////
+    //////// CONSTRUCTORS ////////
 
+    /**
+     * Empty constructor for Firebase
+     */
+    public User() {}
 
+    /**
+     * Constructor to create an User in Firebase
+     */
     public User(String email, String name,  String illustration) {
         this.name = name;
         this.email = email;
@@ -27,11 +34,9 @@ public class User
         this.restaurantListFavorites = new ArrayList<>();
     }
 
-    public User()
-    {
-
-    }
-
+    /**
+     * Constructor to add or remove an User in the Restaurant's WorkmatesList
+     */
     public User (String name, String illustration)
     {
         this.name = name;
@@ -69,18 +74,6 @@ public class User
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setIllustration(String illustration) {
-        this.illustration = illustration;
-    }
-
-    public void setRestaurantListFavorites(List<Restaurant> restaurantListFavorites) {
-        this.restaurantListFavorites = restaurantListFavorites;
     }
 
     public void setRestaurantChoose(Restaurant restaurantChoose) {

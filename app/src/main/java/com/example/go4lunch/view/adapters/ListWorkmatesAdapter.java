@@ -31,7 +31,6 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
     private Activity activity;
     private List<User> usersList;
 
-
     public ListWorkmatesAdapter(RequestManager glide, Activity activity)
     {
         this.glide = glide;
@@ -73,7 +72,6 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
         ImageView imageView;
         @BindView(R.id.item_list_workmates_txt)
         TextView textView;
-
         private Activity activity;
 
         private ListWorkmatesViewHolder(@NonNull View itemView, Activity activity) {
@@ -85,14 +83,10 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
         /**
          * Update textView with information from Firebase
          * If the user chose a restaurant, textView is bold
-         * @param user
-         * @param glide
-         * @param context
          */
         private void updateUI(User user, RequestManager glide, Context context)
         {
             glide.load(user.getIllustration()).apply(RequestOptions.circleCropTransform()).into(imageView);
-
             String textString;
             String finalText;
             String firstName = user.getName().split(" ")[0];
@@ -111,11 +105,11 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
                 } else {
                     textView.setTextAppearance(R.style.item_list_workmates_choose_txt);
                 }
-            } else {
-
+            }
+            else
+            {
                 textString = " " + activity.getResources().getString(R.string.list_workmates_adapter_hasnt_decided_yed);
                 finalText = firstName + textString;
-
                 textView.setText(finalText);
 
                 if (Build.VERSION.SDK_INT < 23) {
@@ -124,8 +118,6 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
                     textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
                 }
             }
-
-
         }
     }
 }

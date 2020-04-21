@@ -78,22 +78,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     @BindView(R.id.navigation_drawer_nav_view)
     NavigationView navigationView;
-
-    TextView nameUser;
-    TextView emailUser;
-    ImageView illustrationUser;
+    private MapViewFragment mapViewFragment;
+    private ListRestaurantsFragment listRestaurantsFragment;
+    private ListWorkmatesFragment listWorkmatesFragment;
 
     //FOR DATA
-    MapViewFragment mapViewFragment;
-    ListRestaurantsFragment listRestaurantsFragment;
-    ListWorkmatesFragment listWorkmatesFragment;
-
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
-    private Disposable disposable;
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private User currentUser;
-    private String uidUser;
 
     private static final int LOCATION_REQUEST_CODE = 101;
     private static final int AUTOCOMPLETE_REQUEST_CODE = 15;
@@ -105,19 +98,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
-
         this.fetchLocation();
         this.configViewModel();
-
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
         this.configureNavigationView();
-
         this.getSharedPreferences();
-
     }
 
     ///////////////////////////////////VIEW MODEL///////////////////////////////////
@@ -131,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void getCurrentUser()
     {
-        this.uidUser = FirebaseAuth.getInstance().getUid();
+        String uidUser = FirebaseAuth.getInstance().getUid();
         this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uidUser).observe(this, user -> {
             updateNavigationHeader(user);
             currentUser = user;
@@ -146,25 +134,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
-
-    }
-
-    /**
-     * Configure the toolbar search with {@link Autocomplete}
-     */
-    private void configureAutocompleteSearchToolbar()
-    {
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
-
-        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
-        RectangularBounds rectangularBounds = RectangularBounds.newInstance
-                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
-
-        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-                .setLocationRestriction(rectangularBounds)
-                .setTypeFilter(TypeFilter.ESTABLISHMENT)
-                .build(getApplicationContext());
-        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
     }
 
     /**
@@ -209,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 default:
                     return false;
             }
-
         });
     }
 
@@ -219,14 +187,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void updateNavigationHeader(User currentUser)
     {
         final View headerView = navigationView.getHeaderView(0);
-
-        nameUser = headerView.findViewById(R.id.nav_header_name_txt);
-        emailUser = headerView.findViewById(R.id.nav_header_email_txt);
-        illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
-
+        TextView nameUser = headerView.findViewById(R.id.nav_header_name_txt);
+        TextView emailUser = headerView.findViewById(R.id.nav_header_email_txt);
+        ImageView illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
         nameUser.setText(currentUser.getName());
         emailUser.setText(currentUser.getEmail());
-
         if (currentUser.getIllustration() != null)
         {
             Glide.with(this).load(currentUser.getIllustration()).circleCrop().into(illustrationUser);
@@ -235,14 +200,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * Display a fragment
-     * @param fragment
      */
     private void displayFragment(Fragment fragment)
     {
-        //TODO : Vérifier l'ajout à la backstack
-
         getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).addToBackStack("backstack").commit();
-
     }
 
     /**
@@ -281,6 +242,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return listWorkmatesFragment;
     }
 
+    /**
+     * Configure the toolbar search with {@link Autocomplete}
+     */
+    private void configureAutocompleteSearchToolbar()
+    {
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
+        RectangularBounds rectangularBounds = RectangularBounds.newInstance
+                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
+
+        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                .setLocationRestriction(rectangularBounds)
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .build(getApplicationContext());
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+    }
 
 
     //// A VOIR SI UTILE
@@ -304,13 +282,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return list;
     }
 
-    ///////////////////////////////////GET CURRENT INFORMATION///////////////////////////////////
-
-
-
     /**
      * Fetch the current location {@link ActivityCompat} {@link Location}
-     * Set a value to the static field CURRENT_LOCATION
+     * If getLastLocation is available, use it
+     * Else use GPS
      * We can display 1st fragment when we have the location
      */
     private void fetchLocation() {
@@ -320,7 +295,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             return;
         }
-
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {
             if (location != null)
@@ -341,128 +315,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             displayFragment(displayMapViewFragment());
                         }
                     }
-
                     @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                    }
-
+                    public void onStatusChanged(String provider, int status, Bundle extras) {}
                     @Override
-                    public void onProviderEnabled(String provider) {
-
-                    }
-
+                    public void onProviderEnabled(String provider) {}
                     @Override
-                    public void onProviderDisabled(String provider) {
-
-                    }
+                    public void onProviderDisabled(String provider) {}
                 });
             }
         });
 
-    }
-
-    /**
-     * Unsubscribe of the HTTP Request
-     */
-    private void unsubscribe()
-    {
-        if (this.disposable != null && !this.disposable.isDisposed())
-        {
-            this.disposable.dispose();
-        }
-    }
-
-
-
-    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        this.unsubscribe();
-    }
-
-    @Override
-    public void onBackPressed() {
-
-        if(this.drawerLayout.isDrawerOpen(GravityCompat.START))
-        {
-            this.drawerLayout.closeDrawer(GravityCompat.START);
-        }
-
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id)
-        {
-            case R.id.menu_drawer_lunch :
-                this.showLunch();
-                break;
-            case R.id.menu_drawer_settings :
-                this.createAndShowPopUpSettings();
-                break;
-            case R.id.menu_drawer_logout :
-                this.createAndShowPopUpLogOut();
-                break;
-        }
-
-        this.drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.toolbar_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (item.getItemId() == R.id.toolbar_menu_search)
-        {
-            configureAutocompleteSearchToolbar();
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        if (requestCode == AUTOCOMPLETE_REQUEST_CODE)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                if (data != null)
-                {
-                    Place place = Autocomplete.getPlaceFromIntent(data);
-                    String placeId = place.getId();
-                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                    intent.putExtra("placeId", placeId);
-                    startActivity(intent);
-                }
-            }
-            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
-            {
-                assert data != null;
-                Status status = Autocomplete.getStatusFromIntent(data);
-            }
-        }
-
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
@@ -526,9 +388,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setTitle(getResources().getString(R.string.main_activity_pop_up_notifications_title));
         builder.setMessage(getResources().getString(R.string.main_activity_pop_up_notifications_message));
         builder.setPositiveButton(getResources().getString(R.string.main_activity_pop_up_yes),
-                (dialogInterface, i) -> /*WorkerNotificationController.startWorkRequest(getApplicationContext())*/updateSharedPreferences(true));
+                (dialogInterface, i) -> updateSharedPreferences(true));
         builder.setNegativeButton(getResources().getString(R.string.main_activity_pop_up_no),
-                (dialog, which) -> /*WorkerNotificationController.stopWorkRequest(getApplicationContext())*/updateSharedPreferences(false));
+                (dialog, which) -> updateSharedPreferences(false));
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -536,7 +398,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * Update SharedPreferences for notifications {@link SharedPreferences}
-     * @param notificationsAuthorized
      */
     private void updateSharedPreferences(boolean notificationsAuthorized)
     {
@@ -561,5 +422,80 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             WorkerNotificationController.stopWorkRequest(getApplicationContext());
         }
+    }
+
+    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
+
+    @Override
+    public void onBackPressed()
+    {
+        if(this.drawerLayout.isDrawerOpen(GravityCompat.START))
+        {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case R.id.menu_drawer_lunch :
+                this.showLunch();
+                break;
+            case R.id.menu_drawer_settings :
+                this.createAndShowPopUpSettings();
+                break;
+            case R.id.menu_drawer_logout :
+                this.createAndShowPopUpLogOut();
+                break;
+        }
+        this.drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        if (item.getItemId() == R.id.toolbar_menu_search)
+        {
+            configureAutocompleteSearchToolbar();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE)
+        {
+            if (resultCode == RESULT_OK)
+            {
+                if (data != null)
+                {
+                    Place place = Autocomplete.getPlaceFromIntent(data);
+                    String placeId = place.getId();
+                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    intent.putExtra("placeId", placeId);
+                    startActivity(intent);
+                }
+            }
+            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
+            {
+                assert data != null;
+                //TODO : FAIRE QUELQUE CHOSE ?
+                Status status = Autocomplete.getStatusFromIntent(data);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -6,7 +6,6 @@ import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.User;
 
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -76,7 +75,7 @@ public class UtilsTest
     @Test
     public void triProximity_Success()
     {
-        Utils.triProximity(restaurantList);
+        Utils.sortProximity(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant2.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant3.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant1.getName());
@@ -86,7 +85,7 @@ public class UtilsTest
     @Test
     public void triName_Success()
     {
-        Utils.triName(restaurantList);
+        Utils.sortName(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant1.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant4.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant2.getName());
@@ -96,7 +95,7 @@ public class UtilsTest
     @Test
     public void triRatingReverse_Success()
     {
-        Utils.triRatingReverse(restaurantList);
+        Utils.sortRatingReverse(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant1.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant3.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant2.getName());

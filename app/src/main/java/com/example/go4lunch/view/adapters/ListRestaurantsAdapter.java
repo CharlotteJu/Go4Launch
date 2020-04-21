@@ -2,7 +2,6 @@ package com.example.go4lunch.view.adapters;
 
 import android.app.Activity;
 import android.content.Context;
-import android.location.Location;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +16,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.Utils;
-import com.example.go4lunch.view.fragments.OnClickListener;
+import com.example.go4lunch.view.fragments.OnClickListenerRestaurantList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +29,15 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 {
 
     // FOR DATA
-    private OnClickListener onClickListener;
+    private OnClickListenerRestaurantList onClickListenerRestaurantList;
     private List<Restaurant> restaurantsFromPlaces;
     private RequestManager glide;
     private Activity activity;
 
-    public ListRestaurantsAdapter(RequestManager glide, OnClickListener onClickListener, Activity activity)
+    public ListRestaurantsAdapter(RequestManager glide, OnClickListenerRestaurantList onClickListenerRestaurantList, Activity activity)
     {
         this.glide = glide;
-        this.onClickListener = onClickListener;
+        this.onClickListenerRestaurantList = onClickListenerRestaurantList;
         this.activity = activity;
         this.restaurantsFromPlaces = new ArrayList<>();
     }
@@ -50,8 +49,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         Context context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
-
-        return new ListRestaurantsViewHolder(v, this.onClickListener, this.activity);
+        return new ListRestaurantsViewHolder(v, this.onClickListenerRestaurantList, this.activity);
     }
 
     @Override
@@ -70,7 +68,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
     {
         this.restaurantsFromPlaces = restaurantList;
         this.notifyDataSetChanged();
-
     }
 
     static class ListRestaurantsViewHolder extends RecyclerView.ViewHolder
@@ -96,25 +93,22 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         @BindView(R.id.item_list_restaurant_illustration_image)
         ImageView illustration;
 
-        private OnClickListener onClickListener;
+        private OnClickListenerRestaurantList onClickListenerRestaurantList;
         private Activity activity;
         private int numberWorkmates = 0;
 
-
-        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListener onClickListener, Activity activity) {
+        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListenerRestaurantList onClickListenerRestaurantList, Activity activity) {
             super(itemView);
             ButterKnife.bind(this,itemView);
-            this.onClickListener = onClickListener;
+            this.onClickListenerRestaurantList = onClickListenerRestaurantList;
             this.activity = activity;
         }
-
 
         private void updateUI(Restaurant restaurant, RequestManager glide)
         {
             name.setText(restaurant.getName());
             address.setText(restaurant.getAddress());
             glide.load(restaurant.getIllustration()).apply(RequestOptions.centerCropTransform()).into(illustration);
-
             this.displayWorkmates();
             this.updateHours(restaurant);
             this.updateNumberWorkmates(restaurant);
@@ -130,7 +124,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 
         /**
          * Update hours with restaurant's boolean getOpenNow()
-         * @param restaurant
          */
         private void updateHours(Restaurant restaurant)
         {
@@ -144,9 +137,9 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            }
         }
 
+        //TODO : Pas moyen de faire 1 ELSE pour les 2 ?
         /**
          * Update the workmate's number with documentSnapshot from Firebase
-         * @param restaurant
          */
         private void updateNumberWorkmates (Restaurant restaurant)
         {
@@ -170,7 +163,6 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
                 numberWorkmates = 0;
                 displayWorkmates();
             }
-
         }
 
         /**
@@ -190,13 +182,11 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             }
         }
 
-
         @OnClick(R.id.item_list_restaurant_card_view)
         void onClickItem()
         {
-            onClickListener.onClickListener(getAdapterPosition());
+            onClickListenerRestaurantList.onClickListener(getAdapterPosition());
         }
-
     }
 }
 

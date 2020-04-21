@@ -38,14 +38,15 @@ public class AuthActivity extends AppCompatActivity {
     private List<User> usersList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
         this.configViewModel();
     }
 
+    ///////////////////////////////////VIEW MODEL///////////////////////////////////
 
     private void configViewModel()
     {
@@ -62,6 +63,7 @@ public class AuthActivity extends AppCompatActivity {
         });
     }
 
+    ///////////////////////////////////ON CLICK///////////////////////////////////
 
     @OnClick(R.id.auth_activity_google_button)
     void onClickGoogleButton()
@@ -75,6 +77,47 @@ public class AuthActivity extends AppCompatActivity {
         this.startSignInWithFacebook();
     }
 
+    ///////////////////////////////////SIGN IN///////////////////////////////////
+
+    /**
+     * Sign in With Google
+     */
+    private void startSignInWithGoogle()
+    {
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(
+                                Arrays.asList(
+                                        new AuthUI.IdpConfig.GoogleBuilder().build()))
+                        .setIsSmartLockEnabled(false, true)
+
+                        .build(),FIREBASE_UI);
+    }
+
+    /**
+     * Sign in With Facebook
+     */
+    private void startSignInWithFacebook()
+    {
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(
+                                Arrays.asList(
+                                        new AuthUI.IdpConfig.FacebookBuilder().build()))
+                        .setIsSmartLockEnabled(false, true)
+
+                        .build(),FIREBASE_UI);
+    }
+
+    ///////////////////////////////////UI///////////////////////////////////
+
+    /**
+     * Connect the User
+     * If he exists in Firebase, just connect
+     * If he not exists in Firebase, create him
+     */
     private void connectUser()
     {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
@@ -110,34 +153,6 @@ public class AuthActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    //UI
-
-    private void startSignInWithGoogle()
-    {
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(
-                                Arrays.asList(
-                                        new AuthUI.IdpConfig.GoogleBuilder().build()))
-                        .setIsSmartLockEnabled(false, true)
-
-                        .build(),FIREBASE_UI);
-    }
-
-    private void startSignInWithFacebook()
-    {
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(
-                                Arrays.asList(
-                                        new AuthUI.IdpConfig.FacebookBuilder().build()))
-                        .setIsSmartLockEnabled(false, true)
-
-                        .build(),FIREBASE_UI);
-    }
-
     private void responseSignIn(int requestCode, int resultCode, Intent data)
     {
         IdpResponse response = IdpResponse.fromResultIntent(data);
@@ -162,6 +177,9 @@ public class AuthActivity extends AppCompatActivity {
         this.responseSignIn(requestCode, resultCode, data);
     }
 
+    /**
+     * Suppress super because we don't want that the User can press Back
+     */
     @Override
     public void onBackPressed() {}
 }

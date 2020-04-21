@@ -49,13 +49,10 @@ public class DetailsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationIcon(R.drawable.ic_return);
-
-
     }
 
     /**
      * Display a fragment
-     * @param fragment
      */
     private void displayFragment(Fragment fragment)
     {
@@ -74,9 +71,9 @@ public class DetailsActivity extends AppCompatActivity {
         return this.detailsFragment;
     }
 
-   /* @Override
+   @Override
     public boolean onSupportNavigateUp() {
         this.onBackPressed();
         return true;
-    }*/
+    }
 }

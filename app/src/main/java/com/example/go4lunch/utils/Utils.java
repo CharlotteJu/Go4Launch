@@ -13,8 +13,7 @@ public abstract class Utils
 {
 
     /**
-     * Update star's visibility with rating
-     * @param restaurant
+     * Update star's visibility with Restaurant's rating
      */
     public static void updateRating(ImageView star1, ImageView star2, ImageView star3, Restaurant restaurant)
     {
@@ -49,7 +48,10 @@ public abstract class Utils
 
     }
 
-    public static void triProximity (List<Restaurant> restaurantList)
+    /**
+     * Sort the restaurants according to their distance from the CurrentUser
+     */
+    public static void sortProximity(List<Restaurant> restaurantList)
     {
         Collections.sort(restaurantList, (o1, o2) -> {
             Integer o1DistanceCurrentUser = o1.getDistanceCurrentUser();
@@ -59,7 +61,10 @@ public abstract class Utils
         });
     }
 
-    public static void triRatingReverse(List<Restaurant> restaurantList)
+    /**
+     * Sort the restaurants according to their rating
+     */
+    public static void sortRatingReverse(List<Restaurant> restaurantList)
     {
         Collections.sort(restaurantList, (o1, o2) -> {
             Double o1Rating = o1.getRating();
@@ -71,7 +76,10 @@ public abstract class Utils
         Collections.reverse(restaurantList);
     }
 
-    public static void triName (List<Restaurant> restaurantList)
+    /**
+     * Sort the restaurants according to their name
+     */
+    public static void sortName(List<Restaurant> restaurantList)
     {
         Collections.sort(restaurantList, (o1, o2) -> {
             String o1Name = o1.getName();
@@ -86,9 +94,7 @@ public abstract class Utils
      */
     public static void updateDistanceToCurrentLocation(Location currentLocation, List<Restaurant> restaurantList)
     {
-
         Location restaurantLocation = new Location("fusedLocationProvider");
-
         for (int i = 0; i < restaurantList.size(); i++)
         {
             //Get the restaurant's location

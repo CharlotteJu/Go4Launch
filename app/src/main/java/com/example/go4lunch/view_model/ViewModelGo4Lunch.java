@@ -41,8 +41,6 @@ public class ViewModelGo4Lunch extends ViewModel
     private MutableLiveData<Observable<Restaurant>> restaurantDetailPlacesMutableLiveData= new MutableLiveData<>();
 
     /////////////////////// USER FIREBASE ///////////////////////
-    //-----------------------
-
 
     public MutableLiveData<User> getUserCurrentMutableLiveData(String uid)
     {
@@ -120,7 +118,6 @@ public class ViewModelGo4Lunch extends ViewModel
     }
 
     /////////////////////// RESTAURANT FIREBASE ///////////////////////
-    //-----------------------
 
     public MutableLiveData<Restaurant> getRestaurantFirebaseMutableLiveData(Restaurant restaurant)
     {
@@ -187,7 +184,6 @@ public class ViewModelGo4Lunch extends ViewModel
     }
 
     /////////////////////// RESTAURANT PLACES ///////////////////////
-    //-----------------------
 
     public MutableLiveData<Observable<List<Restaurant>>> getRestaurantsListPlacesMutableLiveData(double lat, double lng, int radius, String key)
     {

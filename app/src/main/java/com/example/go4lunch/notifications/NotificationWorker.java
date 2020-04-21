@@ -31,13 +31,12 @@ public class NotificationWorker extends Worker
 
     private UserFirebaseRepository userFirebaseRepository;
     private RestaurantFirebaseRepository restaurantFirebaseRepository;
-
     private User currentUser;
     private Restaurant currentRestaurant;
-
     private Context context;
 
-    public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+    public NotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams)
+    {
         super(context, workerParams);
         this.context = context;
         this.userFirebaseRepository = new UserFirebaseRepository();
@@ -46,10 +45,9 @@ public class NotificationWorker extends Worker
 
     @NonNull
     @Override
-    public Result doWork() {
-
+    public Result doWork()
+    {
         this.getCurrentUserFromFirebase();
-
         return Result.success();
     }
 
@@ -70,12 +68,16 @@ public class NotificationWorker extends Worker
     {
         this.restaurantFirebaseRepository.getRestaurant(placeId).addOnSuccessListener(documentSnapshot -> {
             currentRestaurant = documentSnapshot.toObject(Restaurant.class);
-            getCurrentRestaurant();
+            createMessageWithRestaurantChoose();
         });
     }
 
     //TODO : TESTS UNITAIRES ?
-    private void getCurrentRestaurant()
+
+    /**
+     * Create the Message with information of RestaurantChoose
+     */
+    private void createMessageWithRestaurantChoose()
     {
         List<String> stringForNotification = new ArrayList<>();
         StringBuilder workmatesListString = new StringBuilder();
@@ -108,6 +110,10 @@ public class NotificationWorker extends Worker
         showNotification(stringForNotification);
     }
 
+    /**
+     * Build the notification
+     * @param listWorkmatesString List<String> with the RestaurantChoose's names of Workmates
+     */
     private void showNotification(List<String> listWorkmatesString)
     {
         // 1 - Create an Intent that will be shown when user will click on the Notification
@@ -128,6 +134,7 @@ public class NotificationWorker extends Worker
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);
 
+        // 4 - Display the workmatesList or not
         if (listWorkmatesString.size() == 2)
         {
             builder.setStyle(new NotificationCompat.InboxStyle()
@@ -143,11 +150,11 @@ public class NotificationWorker extends Worker
 
         }
 
-        // 4 - Add the Notification to the Notification Manager and show it
+        // 5 - Add the Notification to the Notification Manager and show it
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
 
-        // 5 - Support Version >= Android 8
+        // 6 - Support Version >= Android 8
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);

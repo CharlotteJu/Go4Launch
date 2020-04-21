@@ -14,7 +14,6 @@ public class Injection
         return new RestaurantFirebaseRepository();
     }
 
-
     private static UserFirebaseRepository createUserFirebaseRepository ()
     {
         return new UserFirebaseRepository();

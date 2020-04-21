@@ -1,6 +1,5 @@
 package com.example.go4lunch.view.fragments;
 
-
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -34,8 +33,7 @@ import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-
-public class ListRestaurantsFragment extends Fragment implements OnClickListener {
+public class ListRestaurantsFragment extends Fragment implements OnClickListenerRestaurantList {
 
     private List<Restaurant> restaurantListFromPlaces;
     private ListRestaurantsAdapter adapter;
@@ -43,30 +41,25 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private Disposable disposable;
 
-
     @BindView(R.id.fragment_list_restaurants_recycler_view)
     RecyclerView recyclerView;
 
+    public ListRestaurantsFragment() {}
 
-    public ListRestaurantsFragment() {
-        // Required empty public constructor
-    }
-
-    public ListRestaurantsFragment(Location location)
+    private ListRestaurantsFragment(Location location)
     {
         this.currentLocation = location;
     }
 
-    public static ListRestaurantsFragment newInstance(Location location) {
-        ListRestaurantsFragment fragment = new ListRestaurantsFragment(location);
-        return fragment;
+    public static ListRestaurantsFragment newInstance(Location location)
+    {
+        return new ListRestaurantsFragment(location);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         restaurantListFromPlaces = new ArrayList<>();
-        this.configViewModel();
     }
 
     @Override
@@ -76,9 +69,13 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         ButterKnife.bind(this, v);
         this.configRecyclerView();
         return v;
-
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.configViewModel();
+    }
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
@@ -99,17 +96,12 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                             public void onNext(List<Restaurant> restaurantList) {
                                 restaurantListFromPlaces = restaurantList;
                                 Utils.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
-                               // updateDistanceToCurrentLocation();
                                 getRestaurantListFromFirebase();
                             }
-
                             @Override
-                            public void onError(Throwable e) {
-                            }
-
+                            public void onError(Throwable e) {}
                             @Override
-                            public void onComplete() {
-                            }
+                            public void onComplete() {}
                         }));
     }
 
@@ -120,7 +112,6 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
             for (int i = 0; i < restaurantList.size(); i++)
             {
                 Restaurant restaurant = restaurantList.get(i);
-
                 if (restaurant.getUserList().size() > 0)
                 {
                     if (restaurantListFromPlaces.contains(restaurant))
@@ -134,10 +125,28 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         });
     }
 
+    ////////////////////////////////////////// ON CLICK  ///////////////////////////////////////////
+
+    @OnClick(R.id.fragment_list_restaurants_near_me_fab)
+    void triProximity() {
+        Utils.sortProximity(restaurantListFromPlaces);
+        this.adapter.notifyDataSetChanged();
+    }
+
+    @OnClick(R.id.fragment_list_restaurants_rating_fab)
+    void triRate() {
+        Utils.sortRatingReverse(restaurantListFromPlaces);
+        this.adapter.notifyDataSetChanged();
+    }
+
+
+    @OnClick(R.id.fragment_list_restaurants_name_fab)
+    void triName() {
+        Utils.sortName(restaurantListFromPlaces);
+        this.adapter.notifyDataSetChanged();
+    }
 
     ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
-
-
     /**
      * Configure the RecyclerView
      */
@@ -145,25 +154,6 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         this.adapter = new ListRestaurantsAdapter(Glide.with(this), this, getActivity());
         this.recyclerView.setAdapter(adapter);
         this.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-    }
-
-    @OnClick(R.id.fragment_list_restaurants_near_me_fab)
-    void triProximity() {
-        Utils.triProximity(restaurantListFromPlaces);
-        this.adapter.notifyDataSetChanged();
-    }
-
-    @OnClick(R.id.fragment_list_restaurants_rating_fab)
-    void triRate() {
-        Utils.triRatingReverse(restaurantListFromPlaces);
-        this.adapter.notifyDataSetChanged();
-    }
-
-
-    @OnClick(R.id.fragment_list_restaurants_name_fab)
-    void triName() {
-        Utils.triName(restaurantListFromPlaces);
-        this.adapter.notifyDataSetChanged();
     }
 
     /**

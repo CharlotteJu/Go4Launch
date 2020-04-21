@@ -39,14 +39,11 @@ public class ListWorkmatesFragment extends Fragment {
     private List<User> usersList;
     private ListWorkmatesAdapter adapter;
 
+    public ListWorkmatesFragment() {}
 
-    public ListWorkmatesFragment() {
-        // Required empty public constructor
-    }
-
-    public static ListWorkmatesFragment newInstance() {
-        ListWorkmatesFragment fragment = new ListWorkmatesFragment();
-        return fragment;
+    public static ListWorkmatesFragment newInstance()
+    {
+        return new ListWorkmatesFragment();
     }
 
     @Override
@@ -82,6 +79,8 @@ public class ListWorkmatesFragment extends Fragment {
             adapter.updateList(usersList);
         });
     }
+
+    ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
 
     private void configRecyclerView()
     {

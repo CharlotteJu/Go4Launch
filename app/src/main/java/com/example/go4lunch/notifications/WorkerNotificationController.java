@@ -13,13 +13,10 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class WorkerNotificationController
 {
-    // FIELDS --------------------------------------------------------------------------------------
-
     private static final String WORK_REQUEST_NAME = "WORK_REQUEST_NAME_Go4Lunch";
     private static final String WORK_REQUEST_TAG = "WORK_REQUEST_TAG_Go4Lunch";
-
-    private static final int NOTIFICATION_HOUR = 10;
-    private static final int NOTIFICATION_MINUTE = 43;
+    private static final int NOTIFICATION_HOUR = 12;
+    private static final int NOTIFICATION_MINUTE = 0;
     private static final int NOTIFICATION_FREQUENCY_DAY = 1;
 
 
@@ -35,6 +32,10 @@ public abstract class WorkerNotificationController
     }
 
     //TODO : TESTS UNITAIRES ?
+    /**
+     * Build a PeriodicWorkRequest with Delay and Constraints
+     * @return the PeriodicWorkRequest for the notification
+     */
     private static PeriodicWorkRequest configureWorkRequest()
     {
         // InitialDelay
@@ -44,7 +45,8 @@ public abstract class WorkerNotificationController
 
         //  NOTIFICATION_HOUR = 12 & NOTIFICATION_MINUTE = 0
         //  if Now >= 12h00 -> + 1 day
-        if (calendar.get(Calendar.HOUR_OF_DAY) > NOTIFICATION_HOUR || (calendar.get(Calendar.HOUR_OF_DAY) == NOTIFICATION_HOUR && calendar.get(Calendar.MINUTE) > NOTIFICATION_MINUTE))
+        if (calendar.get(Calendar.HOUR_OF_DAY) > NOTIFICATION_HOUR
+                || (calendar.get(Calendar.HOUR_OF_DAY) == NOTIFICATION_HOUR && calendar.get(Calendar.MINUTE) > NOTIFICATION_MINUTE))
         {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
