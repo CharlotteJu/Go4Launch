@@ -7,7 +7,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -81,6 +84,13 @@ public class DetailsFragment extends Fragment {
     RecyclerView workmatesRecyclerView;
     @BindView(R.id.details_fragment_choose_button)
     FloatingActionButton floatingActionButton;
+    /*@BindView(R.id.progress_bar)
+    ContentLoadingProgressBar progressBar;*/
+
+    // TODO : Pas moyen de faire autrement ?
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
+
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -101,6 +111,8 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, v);
+        this.progressBarLayout.setVisibility(View.VISIBLE);
+        this.floatingActionButton.setVisibility(View.INVISIBLE);
         this.configViewModel();
         return v;
     }
@@ -319,6 +331,8 @@ public class DetailsFragment extends Fragment {
         this.configButton();
         this.updateLike();
         Utils.updateRating(star1, star2, star3, restaurant);
+        this.progressBarLayout.setVisibility(View.INVISIBLE);
+        this.floatingActionButton.setVisibility(View.VISIBLE);
     }
 
 

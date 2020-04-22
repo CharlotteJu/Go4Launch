@@ -4,12 +4,15 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
@@ -36,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -48,6 +53,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private GoogleMap googleMap;
     private int radius;
+
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
 
     public MapViewFragment() {}
 
@@ -75,6 +83,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
+        ButterKnife.bind(this, v);
+        this.progressBarLayout.setVisibility(View.VISIBLE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (supportMapFragment != null)
         {
@@ -123,7 +133,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList ->
         {
-            for (int i = 0; i < restaurantList.size(); i++)
+            int size = restaurantList.size();
+            for (int i = 0; i < size; i++)
             {
                 Restaurant restaurant = restaurantList.get(i);
 
@@ -136,6 +147,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     }
                 }
             }
+            this.progressBarLayout.setVisibility(View.INVISIBLE);
             setMarker();
         });
     }
@@ -168,7 +180,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             this.googleMap.clear();
         }
 
-        for (int i = 0; i < restaurantListFromPlaces.size(); i ++)
+        int size = restaurantListFromPlaces.size();
+        for (int i = 0; i < size; i ++)
         {
             Restaurant restaurantTemp = restaurantListFromPlaces.get(i);
             LatLng tempLatLng = new LatLng(restaurantTemp.getLocation().getLat(), restaurantTemp.getLocation().getLng());

@@ -82,8 +82,8 @@ public class ViewModelGo4Lunch extends ViewModel
             {
                 List<DocumentSnapshot> userList = queryDocumentSnapshots.getDocuments();
                 List<User> users = new ArrayList<>();
-
-                for (int i = 0; i < userList.size(); i ++)
+                int size = userList.size();
+                for (int i = 0; i < size; i ++)
                 {
                     User user = userList.get(i).toObject(User.class);
                     users.add(user);
@@ -160,8 +160,8 @@ public class ViewModelGo4Lunch extends ViewModel
                 List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
 
                 List<Restaurant> restaurantList = new ArrayList<>();
-
-                for (int i = 0; i < documents.size(); i ++)
+                int size = documents.size();
+                for (int i = 0; i < size; i ++)
                 {
                     Restaurant restaurant = documents.get(i).toObject(Restaurant.class);
                     restaurantList.add(restaurant);

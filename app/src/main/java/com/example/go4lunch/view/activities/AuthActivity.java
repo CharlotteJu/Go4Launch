@@ -2,11 +2,14 @@ package com.example.go4lunch.view.activities;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.go4lunch.R;
@@ -21,7 +24,9 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -37,12 +42,22 @@ public class AuthActivity extends AppCompatActivity {
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private List<User> usersList;
 
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
+    @BindView(R.id.auth_activity_facebook_button)
+    Button facebookButton;
+    @BindView(R.id.auth_activity_google_button)
+    Button googleButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
+        this.progressBarLayout.setVisibility(View.VISIBLE);
+        this.facebookButton.setVisibility(View.INVISIBLE);
+        this.googleButton.setVisibility(View.INVISIBLE);
         this.configViewModel();
     }
 
@@ -123,27 +138,37 @@ public class AuthActivity extends AppCompatActivity {
         if (FirebaseAuth.getInstance().getCurrentUser() != null)
         {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            for (int i = 0; i < usersList.size(); i ++)
+            if(usersList != null)
             {
-                if (usersList.get(i).getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
+                int size = usersList.size();
+                for (int i = 0; i < size; i ++)
                 {
-                    userExists = true;
-                    break;
+                    if (usersList.get(i).getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
+                    {
+                        userExists = true;
+                        break;
+                    }
+                }
+                if (userExists)
+                {
+                    lunchMainActivity();
+                }
+                else
+                {
+                    String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                    String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                    String urlPicture = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()).toString();
+
+                    viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
+                    this.lunchMainActivity();
                 }
             }
-            if (userExists)
-            {
-                lunchMainActivity();
-            }
-            else
-            {
-                String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-                String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-                String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
-
-                viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
-                this.lunchMainActivity();
-            }
+        }
+        else
+        {
+            this.progressBarLayout.setVisibility(View.INVISIBLE);
+            this.facebookButton.setVisibility(View.VISIBLE);
+            this.googleButton.setVisibility(View.VISIBLE);
         }
     }
 

@@ -16,12 +16,14 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
+import com.example.go4lunch.view.fragments.OnClickListenerItemList;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdapter.ListWorkmatesViewHolder>   //FirestoreRecyclerAdapter<User, ListWorkmatesAdapter.ListWorkmatesViewHolder>
 {
@@ -30,11 +32,13 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
     private Context context;
     private Activity activity;
     private List<User> usersList;
+    private OnClickListenerItemList onClickListenerItemList;
 
-    public ListWorkmatesAdapter(RequestManager glide, Activity activity)
+    public ListWorkmatesAdapter(RequestManager glide, Activity activity, OnClickListenerItemList onClickListenerItemList)
     {
         this.glide = glide;
         this.activity = activity;
+        this.onClickListenerItemList = onClickListenerItemList;
         this.usersList = new ArrayList<>();
     }
 
@@ -45,7 +49,7 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
         this.context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_workmates, parent, false);
-        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, this.activity);
+        return new ListWorkmatesAdapter.ListWorkmatesViewHolder(v, this.activity, this.onClickListenerItemList);
     }
 
     @Override
@@ -73,11 +77,14 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
         @BindView(R.id.item_list_workmates_txt)
         TextView textView;
         private Activity activity;
+        private OnClickListenerItemList onClickListenerItemList;
 
-        private ListWorkmatesViewHolder(@NonNull View itemView, Activity activity) {
+        private ListWorkmatesViewHolder(@NonNull View itemView, Activity activity, OnClickListenerItemList onClickListenerItemList)
+        {
             super(itemView);
             ButterKnife.bind(this,itemView);
             this.activity = activity;
+            this.onClickListenerItemList = onClickListenerItemList;
         }
 
         /**
@@ -118,6 +125,12 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
                     textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
                 }
             }
+
+
         }
+
+        @OnClick(R.id.item_list_workmates_card_view)
+        void onClickItem() { onClickListenerItemList.onClickListener(getAdapterPosition());}
+
     }
 }

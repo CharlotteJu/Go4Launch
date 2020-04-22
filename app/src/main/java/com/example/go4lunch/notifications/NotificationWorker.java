@@ -92,7 +92,8 @@ public class NotificationWorker extends Worker
         if (listWorkmates.size() > 1)
         {
             workmatesListString.append(context.getResources().getString(R.string.notification_workmates_with));
-            for (int i = 0; i < listWorkmates.size(); i ++)
+            int size = listWorkmates.size();
+            for (int i = 0; i < size; i ++)
             {
                 User userToCompare = listWorkmates.get(i);
                 //Remove current user from the list of workmates in Notification

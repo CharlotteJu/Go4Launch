@@ -69,8 +69,8 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
 
                     restaurants = new ArrayList<>();
                     List<RestaurantPOJO.Result> res = restaurantPOJO.getResults();
-
-                    for (int i = 0; i < res.size(); i ++)
+                    int size = res.size();
+                    for (int i = 0; i < size; i ++)
                     {
                         String name = res.get(i).getName();
                         String address = res.get(i).getVicinity();

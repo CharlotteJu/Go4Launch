@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,6 +24,7 @@ import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
+import com.github.clans.fab.FloatingActionMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,7 @@ import butterknife.OnClick;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
-public class ListRestaurantsFragment extends Fragment implements OnClickListenerRestaurantList {
+public class ListRestaurantsFragment extends Fragment implements OnClickListenerItemList {
 
     private List<Restaurant> restaurantListFromPlaces;
     private ListRestaurantsAdapter adapter;
@@ -43,6 +45,11 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
     @BindView(R.id.fragment_list_restaurants_recycler_view)
     RecyclerView recyclerView;
+
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
+    @BindView(R.id.fragment_list_restaurants_menu_fab)
+    FloatingActionMenu floatingActionButton;
 
     public ListRestaurantsFragment() {}
 
@@ -67,6 +74,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
+        this.progressBarLayout.setVisibility(View.VISIBLE);
+        this.floatingActionButton.setVisibility(View.INVISIBLE);
         this.configRecyclerView();
         return v;
     }
@@ -109,7 +118,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
 
-            for (int i = 0; i < restaurantList.size(); i++)
+            int size = restaurantList.size();
+            for (int i = 0; i < size; i++)
             {
                 Restaurant restaurant = restaurantList.get(i);
                 if (restaurant.getUserList().size() > 0)
@@ -122,6 +132,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                 }
             }
             adapter.updateList(restaurantListFromPlaces);
+            this.progressBarLayout.setVisibility(View.INVISIBLE);
+            this.floatingActionButton.setVisibility(View.VISIBLE);
         });
     }
 

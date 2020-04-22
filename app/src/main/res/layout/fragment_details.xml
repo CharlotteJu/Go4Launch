@@ -206,6 +206,9 @@
             android:src="@drawable/ic_choose_not_restaurant"
             app:backgroundTint="@color/colorAccentWhite"/>
 
+        <include
+            layout="@layout/progress_bar"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

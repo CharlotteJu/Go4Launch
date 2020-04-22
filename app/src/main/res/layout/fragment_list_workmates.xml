@@ -11,4 +11,7 @@
         android:layout_height="match_parent"
         tools:listitem="@layout/item_list_workmates"/>
 
+    <include
+        layout="@layout/progress_bar"/>
+
 </FrameLayout>

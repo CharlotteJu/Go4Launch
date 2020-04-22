@@ -95,7 +95,8 @@ public abstract class Utils
     public static void updateDistanceToCurrentLocation(Location currentLocation, List<Restaurant> restaurantList)
     {
         Location restaurantLocation = new Location("fusedLocationProvider");
-        for (int i = 0; i < restaurantList.size(); i++)
+        int size = restaurantList.size();
+        for (int i = 0; i < size; i++)
         {
             //Get the restaurant's location
             restaurantLocation.setLatitude(restaurantList.get(i).getLocation().getLat());

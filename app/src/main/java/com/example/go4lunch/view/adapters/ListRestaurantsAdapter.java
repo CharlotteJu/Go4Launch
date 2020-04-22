@@ -2,6 +2,7 @@ package com.example.go4lunch.view.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.Utils;
-import com.example.go4lunch.view.fragments.OnClickListenerRestaurantList;
+import com.example.go4lunch.view.fragments.OnClickListenerItemList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,15 +30,15 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
 {
 
     // FOR DATA
-    private OnClickListenerRestaurantList onClickListenerRestaurantList;
+    private OnClickListenerItemList onClickListenerItemList;
     private List<Restaurant> restaurantsFromPlaces;
     private RequestManager glide;
     private Activity activity;
 
-    public ListRestaurantsAdapter(RequestManager glide, OnClickListenerRestaurantList onClickListenerRestaurantList, Activity activity)
+    public ListRestaurantsAdapter(RequestManager glide, OnClickListenerItemList onClickListenerItemList, Activity activity)
     {
         this.glide = glide;
-        this.onClickListenerRestaurantList = onClickListenerRestaurantList;
+        this.onClickListenerItemList = onClickListenerItemList;
         this.activity = activity;
         this.restaurantsFromPlaces = new ArrayList<>();
     }
@@ -49,7 +50,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         Context context = parent.getContext();
         LayoutInflater layoutInflater = LayoutInflater.from(context);
         View v = layoutInflater.inflate(R.layout.item_list_restaurants, parent, false);
-        return new ListRestaurantsViewHolder(v, this.onClickListenerRestaurantList, this.activity);
+        return new ListRestaurantsViewHolder(v, this.onClickListenerItemList, this.activity);
     }
 
     @Override
@@ -93,14 +94,14 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         @BindView(R.id.item_list_restaurant_illustration_image)
         ImageView illustration;
 
-        private OnClickListenerRestaurantList onClickListenerRestaurantList;
+        private OnClickListenerItemList onClickListenerItemList;
         private Activity activity;
         private int numberWorkmates = 0;
 
-        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListenerRestaurantList onClickListenerRestaurantList, Activity activity) {
+        private ListRestaurantsViewHolder(@NonNull View itemView, OnClickListenerItemList onClickListenerItemList, Activity activity) {
             super(itemView);
             ButterKnife.bind(this,itemView);
-            this.onClickListenerRestaurantList = onClickListenerRestaurantList;
+            this.onClickListenerItemList = onClickListenerItemList;
             this.activity = activity;
         }
 
@@ -130,10 +131,20 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            if (restaurant.getOpenNow())
            {
                hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_open_now));
+               if (Build.VERSION.SDK_INT < 23) {
+                   hours.setTextAppearance(activity.getApplicationContext(), R.style.item_list_restaurant_hours_open_txt);
+               } else {
+                   hours.setTextAppearance(R.style.item_list_restaurant_hours_open_txt);
+               }
            }
            else
            {
                hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_close_now));
+               if (Build.VERSION.SDK_INT < 23) {
+                   hours.setTextAppearance(activity.getApplicationContext(), R.style.item_list_restaurant_hours_close_txt);
+               } else {
+                   hours.setTextAppearance(R.style.item_list_restaurant_hours_close_txt);
+               }
            }
         }
 
@@ -185,7 +196,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
         @OnClick(R.id.item_list_restaurant_card_view)
         void onClickItem()
         {
-            onClickListenerRestaurantList.onClickListener(getAdapterPosition());
+            onClickListenerItemList.onClickListener(getAdapterPosition());
         }
     }
 }
