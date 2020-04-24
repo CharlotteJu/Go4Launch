@@ -55,9 +55,7 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
-        this.progressBarLayout.setVisibility(View.VISIBLE);
-        this.facebookButton.setVisibility(View.INVISIBLE);
-        this.googleButton.setVisibility(View.INVISIBLE);
+        this.showProgressBar();
         this.configViewModel();
     }
 
@@ -74,6 +72,7 @@ public class AuthActivity extends AppCompatActivity {
     {
         this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList -> {
             usersList = userList;
+
             connectUser();
         });
     }
@@ -108,6 +107,7 @@ public class AuthActivity extends AppCompatActivity {
                         .setIsSmartLockEnabled(false, true)
 
                         .build(),FIREBASE_UI);
+        this.getUsersList();
     }
 
     /**
@@ -124,9 +124,20 @@ public class AuthActivity extends AppCompatActivity {
                         .setIsSmartLockEnabled(false, true)
 
                         .build(),FIREBASE_UI);
+        this.getUsersList();
     }
 
     ///////////////////////////////////UI///////////////////////////////////
+
+    private void showProgressBar()
+    {
+        if(FirebaseAuth.getInstance().getCurrentUser() != null)
+        {
+            this.progressBarLayout.setVisibility(View.VISIBLE);
+            this.facebookButton.setVisibility(View.INVISIBLE);
+            this.googleButton.setVisibility(View.INVISIBLE);
+        }
+    }
 
     /**
      * Connect the User
