@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
 import android.content.Context;
@@ -17,6 +18,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,14 +31,13 @@ import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
-import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.model.api.RestaurantHelper;
-import com.example.go4lunch.model.api.RestaurantStreams;
-import com.example.go4lunch.model.api.UserHelper;
-import com.example.go4lunch.utils.StaticFields;
+import com.example.go4lunch.notifications.WorkerNotificationController;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
+import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
 import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
 import com.example.go4lunch.view.fragments.MapViewFragment;
@@ -54,9 +56,6 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,7 +66,6 @@ import butterknife.BindView;
 
 import butterknife.ButterKnife;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -80,22 +78,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     @BindView(R.id.navigation_drawer_nav_view)
     NavigationView navigationView;
-
-    TextView nameUser;
-    TextView emailUser;
-    ImageView illustrationUser;
+    private MapViewFragment mapViewFragment;
+    private ListRestaurantsFragment listRestaurantsFragment;
+    private ListWorkmatesFragment listWorkmatesFragment;
 
     //FOR DATA
-    MapViewFragment mapViewFragment;
-    ListRestaurantsFragment listRestaurantsFragment;
-    ListWorkmatesFragment listWorkmatesFragment;
-    private User currentUser;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
-    private Disposable disposable;
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private User currentUser;
 
-    private static final int REQUEST_CODE = 101;
-    private int AUTOCOMPLETE_REQUEST_CODE = 15;
+    private static final int LOCATION_REQUEST_CODE = 101;
+    private static final int AUTOCOMPLETE_REQUEST_CODE = 15;
     private static final String NOTIFICATIONS_SHARED_PREFERENCES = "PREF_NOTIF";
     private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
 
@@ -104,26 +98,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
-
-
         this.fetchLocation();
-        this.getCurrentUser();
-        this.getRestaurantListWithWorkmates();
-
-
-        //this.displayFragment(displayMapViewFragment());
+        this.configViewModel();
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
         this.configureNavigationView();
+        this.getSharedPreferences();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        this.unsubscribe();
+    ///////////////////////////////////VIEW MODEL///////////////////////////////////
+
+    private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch= ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        this.getCurrentUser();
+    }
+
+    private void getCurrentUser()
+    {
+        String uidUser = FirebaseAuth.getInstance().getUid();
+        this.viewModelGo4Lunch.getUserCurrentMutableLiveData(uidUser).observe(this, user -> {
+            updateNavigationHeader(user);
+            currentUser = user;
+        });
     }
 
     ///////////////////////////////////CONFIGURE METHODS///////////////////////////////////
@@ -134,25 +134,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
-
-    }
-
-    /**
-     * Configure the toolbar search with {@link Autocomplete}
-     */
-    private void configureAutocompleteSearchToolbar()
-    {
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
-
-        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
-        RectangularBounds rectangularBounds = RectangularBounds.newInstance
-                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
-
-        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
-                .setLocationRestriction(rectangularBounds)
-                .setTypeFilter(TypeFilter.ESTABLISHMENT)
-                .build(getApplicationContext());
-        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
     }
 
     /**
@@ -172,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureNavigationView()
     {
         navigationView.setNavigationItemSelectedListener(this);
-        //updateNavigationHeader();
     }
 
     /**
@@ -198,41 +178,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 default:
                     return false;
             }
-
         });
     }
 
     /**
      * Update the NavigationView's info {@link NavigationView}
      */
-    private void updateNavigationHeader()
+    private void updateNavigationHeader(User currentUser)
     {
         final View headerView = navigationView.getHeaderView(0);
-
-        nameUser = headerView.findViewById(R.id.nav_header_name_txt);
-        emailUser = headerView.findViewById(R.id.nav_header_email_txt);
-        illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
-
-        //FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        //String userName = TextUtils.isEmpty(firebaseUser.getDisplayName()) ? getString(R.string.navigation_header_name) : firebaseUser.getDisplayName();
-        //String userEmail = TextUtils.isEmpty(firebaseUser.getEmail()) ? getString(R.string.navigation_header_name) : firebaseUser.getEmail();
-
-        nameUser.setText(StaticFields.CURRENT_USER.getName());
-        emailUser.setText(StaticFields.CURRENT_USER.getEmail());
-
-        if (StaticFields.CURRENT_USER.getIllustration() != null)
+        TextView nameUser = headerView.findViewById(R.id.nav_header_name_txt);
+        TextView emailUser = headerView.findViewById(R.id.nav_header_email_txt);
+        ImageView illustrationUser = headerView.findViewById(R.id.nav_header_image_view);
+        nameUser.setText(currentUser.getName());
+        emailUser.setText(currentUser.getEmail());
+        if (currentUser.getIllustration() != null)
         {
-            Glide.with(this).load(StaticFields.CURRENT_USER.getIllustration()).circleCrop().into(illustrationUser);
+            Glide.with(this).load(currentUser.getIllustration()).circleCrop().into(illustrationUser);
         }
     }
 
     /**
      * Display a fragment
-     * @param fragment
      */
     private void displayFragment(Fragment fragment)
     {
-        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).addToBackStack("backstack").commit();
     }
 
     /**
@@ -242,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (this.mapViewFragment == null)
         {
-            this.mapViewFragment = MapViewFragment.newInstance();
+            this.mapViewFragment = MapViewFragment.newInstance(currentLocation);
         }
         return this.mapViewFragment;
     }
@@ -254,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (this.listRestaurantsFragment == null)
         {
-            this.listRestaurantsFragment = ListRestaurantsFragment.newInstance();
+            this.listRestaurantsFragment = ListRestaurantsFragment.newInstance(currentLocation);
         }
         return this.listRestaurantsFragment;
     }
@@ -271,9 +242,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return listWorkmatesFragment;
     }
 
+    /**
+     * Configure the toolbar search with {@link Autocomplete}
+     */
+    private void configureAutocompleteSearchToolbar()
+    {
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+
+        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
+        RectangularBounds rectangularBounds = RectangularBounds.newInstance
+                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
+
+        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                .setLocationRestriction(rectangularBounds)
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .build(getApplicationContext());
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
+    }
 
 
     //// A VOIR SI UTILE
+    //TODO : TESTS UNITAIRES ?
     private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
     {
         List<LatLng> list = new ArrayList<>();
@@ -293,220 +282,69 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return list;
     }
 
-    ///////////////////////////////////GET CURRENT INFORMATION///////////////////////////////////
-
-    /**
-     * Get the current User {@link UserHelper} {@link User}
-     * Set a value to the static fields CURRENT_USER and IUD USER
-     * We can update the NavigationHeader when we have user
-     */
-    private void getCurrentUser()
-    {
-        String uidUser = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        UserHelper.getUser(uidUser).addOnSuccessListener(documentSnapshot -> {
-            StaticFields.CURRENT_USER = documentSnapshot.toObject(User.class);
-            StaticFields.IUD_USER = uidUser;
-            updateNavigationHeader();
-        });
-    }
-
     /**
      * Fetch the current location {@link ActivityCompat} {@link Location}
-     * Set a value to the static field CURRENT_LOCATION
+     * If getLastLocation is available, use it
+     * Else use GPS
      * We can display 1st fragment when we have the location
      */
     private void fetchLocation() {
         if (ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
             return;
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {
-            if (location != null) {
-                StaticFields.CURRENT_LOCATION = location;
-                currentLocation = location;
-
-                this.streamRestaurantsFromPlaces(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-            }
-        });
-    }
-
-    /**
-     * Recover the List<Restaurant> with the HTTP Request
-     * @param lat double with latitude of the current User
-     * @param lng double with longitude of the current User
-     * @param radius double to define the distance around the current User
-     */
-    private void streamRestaurantsFromPlaces(double lat, double lng, int radius)
-    {
-            String key = BuildConfig.google_maps_key;
-
-            this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
-                @Override
-                public void onNext(List<Restaurant> restaurantList)
-                {
-                    StaticFields.RESTAURANTS_LIST = restaurantList;
-                    getRestaurantListWithWorkmates();
-                    displayFragment(displayMapViewFragment());
-                }
-
-                @Override
-                public void onError(Throwable e) {}
-
-                @Override
-                public void onComplete() {}
-            });
-
-    }
-
-    /**
-     * Unsubscribe of the HTTP Request
-     */
-    private void unsubscribe()
-    {
-        if (this.disposable != null && !this.disposable.isDisposed())
-        {
-            this.disposable.dispose();
-        }
-    }
-
-    private void getRestaurantListWithWorkmates()
-    {
-        List<Restaurant> restaurantsWithWorkmates = new ArrayList<>();
-
-        RestaurantHelper.getListRestaurants().addSnapshotListener((queryDocumentSnapshots, e) ->
-        {
-            if (queryDocumentSnapshots != null)
+            if (location != null)
             {
-                List<Restaurant> restaurantListFromFirebase = queryDocumentSnapshots.toObjects(Restaurant.class);
-
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
-                {
-                    Restaurant restaurantTemp = restaurantListFromFirebase.get(i);
-
-                    if (StaticFields.RESTAURANTS_LIST.contains(restaurantTemp))
+                currentLocation = location;
+                displayFragment(displayMapViewFragment());
+            }
+            else
+            {
+                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                    @Override
+                    public void onLocationChanged(Location location)
                     {
-                        if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
+                        currentLocation = location;
+                        if (mapViewFragment == null)
                         {
-                            restaurantsWithWorkmates.add(restaurantTemp);
+                            displayFragment(displayMapViewFragment());
                         }
                     }
-
-                }
-
-                StaticFields.RESTAURANTS_LIST_WITH_WORKMATES = restaurantsWithWorkmates;
+                    @Override
+                    public void onStatusChanged(String provider, int status, Bundle extras) {}
+                    @Override
+                    public void onProviderEnabled(String provider) {}
+                    @Override
+                    public void onProviderDisabled(String provider) {}
+                });
             }
-
-
-
         });
 
-
-    }
-
-    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
-
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onBackPressed() {
-
-        if(this.drawerLayout.isDrawerOpen(GravityCompat.START))
-        {
-            this.drawerLayout.closeDrawer(GravityCompat.START);
-        }
-
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id)
-        {
-            case R.id.menu_drawer_lunch :
-                this.showLunch();
-                break;
-            case R.id.menu_drawer_settings :
-                this.createAndShowPopUpSettings();
-                break;
-            case R.id.menu_drawer_logout :
-                this.createAndShowPopUpLogOut();
-                break;
-        }
-
-        this.drawerLayout.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.toolbar_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (item.getItemId() == R.id.toolbar_menu_search)
-        {
-            configureAutocompleteSearchToolbar();
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
-    {
-        if (requestCode == AUTOCOMPLETE_REQUEST_CODE)
-        {
-            if (resultCode == RESULT_OK)
-            {
-                assert data != null;
-                Place place = Autocomplete.getPlaceFromIntent(data);
-                String placeId = place.getId();
-                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                intent.putExtra("placeId", placeId);
-                startActivity(intent);
-
-            }
-            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
-            {
-                assert data != null;
-                Status status = Autocomplete.getStatusFromIntent(data);
-            }
-        }
-
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
 
     /**
-     * Find current User {@link UserHelper}
+     * Find current User {@link UserFirebaseRepository}
      * Check Boolean isChooseRestaurant {@link User}
      * Display a Toast or launch Details Activity
      */
     private void showLunch()
     {
-        if (StaticFields.CURRENT_USER.isChooseRestaurant()  /*currentUser.isChooseRestaurant()*/)
+        if (currentUser.isChooseRestaurant())
         {
             Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-            intent.putExtra("placeId", StaticFields.CURRENT_USER.getRestaurantChoose().getPlaceId()/*currentUser.getRestaurantChoose().getPlaceId()*/);
+            intent.putExtra("placeId", currentUser.getRestaurantChoose().getPlaceId());
             startActivity(intent);
         }
         else
         {
-            Toast.makeText(getApplicationContext(), R.string.main_activity_no_choose_restaurant, Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_no_choose_restaurant), Toast.LENGTH_LONG).show();
         }
     }
 
@@ -534,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             if (FirebaseAuth.getInstance().getCurrentUser() == null)
             {
-                Toast.makeText(getApplicationContext(), R.string.main_activity_success_sign_out, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_success_sign_out), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, AuthActivity.class);
                 startActivity(intent);
             }
@@ -560,7 +398,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     /**
      * Update SharedPreferences for notifications {@link SharedPreferences}
-     * @param notificationsAuthorized
      */
     private void updateSharedPreferences(boolean notificationsAuthorized)
     {
@@ -568,8 +405,97 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
         editor.commit();
+
+        this.getSharedPreferences();
     }
 
+    private void getSharedPreferences()
+    {
+        SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
+        boolean isAuthorized = sharedPreferences.getBoolean(NOTIFICATIONS_BOOLEAN, true);
 
+        if (isAuthorized)
+        {
+            WorkerNotificationController.startWorkRequest(getApplicationContext());
+        }
+        else
+        {
+            WorkerNotificationController.stopWorkRequest(getApplicationContext());
+        }
+    }
 
+    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
+
+    @Override
+    public void onBackPressed()
+    {
+        if(this.drawerLayout.isDrawerOpen(GravityCompat.START))
+        {
+            this.drawerLayout.closeDrawer(GravityCompat.START);
+        }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case R.id.menu_drawer_lunch :
+                this.showLunch();
+                break;
+            case R.id.menu_drawer_settings :
+                this.createAndShowPopUpSettings();
+                break;
+            case R.id.menu_drawer_logout :
+                this.createAndShowPopUpLogOut();
+                break;
+        }
+        this.drawerLayout.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        if (item.getItemId() == R.id.toolbar_menu_search)
+        {
+            configureAutocompleteSearchToolbar();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE)
+        {
+            if (resultCode == RESULT_OK)
+            {
+                if (data != null)
+                {
+                    Place place = Autocomplete.getPlaceFromIntent(data);
+                    String placeId = place.getId();
+                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    intent.putExtra("placeId", placeId);
+                    startActivity(intent);
+                }
+            }
+            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
+            {
+                assert data != null;
+                //TODO : FAIRE QUELQUE CHOSE ?
+                Status status = Autocomplete.getStatusFromIntent(data);
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 }

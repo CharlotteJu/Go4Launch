@@ -1,10 +1,8 @@
 package com.example.go4lunch.model;
 
-import android.location.Location;
 
 import androidx.annotation.Nullable;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +11,6 @@ public class Restaurant
 
     private String name;
     private String address;
-    private int numberReservation;
     private double rating;
     private String illustration;
     private String placeId;
@@ -25,7 +22,7 @@ public class Restaurant
     private RestaurantPOJO.Location location;
     private int distanceCurrentUser;
 
-    //////// CONSTRUCTOR ////////
+    //////// CONSTRUCTORS ////////
 
     public Restaurant(String name, String address, String illustration, String placeId, double rating,
                       DetailPOJO.OpeningHours openingHours, String phoneNumber, String website) {
@@ -42,11 +39,14 @@ public class Restaurant
 
     }
 
-    public Restaurant ()
-    {
-        this.openingHours = new DetailPOJO.OpeningHours();
-    }
+    /**
+     * Empty constructor for Firebase
+     */
+    public Restaurant () {}
 
+    /**
+     * Constructor for Places' Request
+     */
     public Restaurant(String name, String address, String illustration, String placeId, double rating, Boolean openNow, RestaurantPOJO.Location location)
     {
         this.name = name;
@@ -58,6 +58,9 @@ public class Restaurant
         this.location = location;
     }
 
+    /**
+     * Constructor to create a Restaurant in Firebase
+     */
     public Restaurant (String placeId, List<User> userList, String name, String address)
     {
         this.placeId = placeId;
@@ -75,10 +78,6 @@ public class Restaurant
 
     public String getAddress() {
         return address;
-    }
-
-    public int getNumberReservation() {
-        return numberReservation;
     }
 
     public double getRating() {
@@ -128,28 +127,12 @@ public class Restaurant
         this.name = name;
     }
 
-    public void setAdress(String address) {
-        this.address = address;
-    }
-
-    public void setNumberReservation(int numberRating) {
-        this.numberReservation = numberRating;
-    }
-
     public void setRating(double rating) {
         this.rating = rating;
     }
 
-    public void setIllustration(String illustration) {
-        this.illustration = illustration;
-    }
-
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
-    }
-
-    public void setOpeningHours(DetailPOJO.OpeningHours openingHours) {
-        this.openingHours = openingHours;
     }
 
     public void setAddress(String address) {
@@ -160,18 +143,6 @@ public class Restaurant
         this.userList = userList;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void setWebsite(String website) {
-        this.website = website;
-    }
-
-    public void setOpenNow(Boolean openNow) {
-        this.openNow = openNow;
-    }
-
     public void setLocation(RestaurantPOJO.Location location) {
         this.location = location;
     }
@@ -179,7 +150,6 @@ public class Restaurant
     public void setDistanceCurrentUser(int distanceCurrentUser) {
         this.distanceCurrentUser = distanceCurrentUser;
     }
-
 
     @Override
     public boolean equals(@Nullable Object obj)
@@ -195,8 +165,6 @@ public class Restaurant
         }
 
         return Objects.equals(this.getPlaceId(),((Restaurant) obj).getPlaceId());
-
-        //return this.getPlaceId().equals(((Restaurant) obj).getPlaceId());
     }
 
     @Override

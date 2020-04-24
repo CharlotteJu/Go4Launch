@@ -1,10 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Go4Lunch</string>
 
-    <string name="failure">An unknown error has occurred</string>
-
     <!-- AUTH ACTIVITY -->
-    <string name="auth_activity_title">Go4Lunch</string>
     <string name="auth_activity_subtitle">Find a nice restaurant and invite your co-workers for lunch!</string>
     <string name="auth_activity_button_facebook">Sign in with Facebook</string>
     <string name="auth_activity_button_google">Sign in with Google</string>
@@ -37,6 +34,8 @@
     <string name="details_fragment_restaurant_added_favorites">Restaurant added to favorites</string>
     <string name="details_fragment_restaurant_removed_favorites">Restaurant removed to favorites</string>
     <string name="details_fragment_website_no_application_found">No corresponding application found</string>
+    <string name="details_fragment_no_website">This restaurant does not have website</string>
+    <string name="details_fragment_no_phone">This restaurant does not have phone number</string>
 
     <!-- MAP VIEW FRAGMENT -->
     <string name="map_view_fragment_my_position">My position</string>
@@ -84,7 +83,9 @@
     <!-- NOTIFICATION SERVICE -->
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <string name="sdk_8_notification_channel_id" translatable="false">fcm_sdk_8_channel</string>
-    <string name="notification_title">"You've received a Go4Lunch's notification"</string>
+    <string name="notification_title">"Lunchtime : "</string>
+    <string name="notification_message">"You've a lunch scheduled"</string>
+    <string name="notification_workmates_with">"With"</string>
 
 
 

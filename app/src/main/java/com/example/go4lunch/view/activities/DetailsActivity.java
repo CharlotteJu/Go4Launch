@@ -1,11 +1,15 @@
 package com.example.go4lunch.view.activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 
 import com.example.go4lunch.R;
 import com.example.go4lunch.view.fragments.DetailsFragment;
@@ -14,10 +18,11 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class DetailsActivity extends AppCompatActivity {
 
-    public static String placeId;
+    private String placeId;
 
     DetailsFragment detailsFragment;
 
@@ -30,9 +35,10 @@ public class DetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_details);
         ButterKnife.bind(this);
         configureToolbar();
-        displayFragment(displayDetailsFragment());
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeId");
+        displayFragment(displayDetailsFragment());
+
     }
 
     /**
@@ -41,14 +47,12 @@ public class DetailsActivity extends AppCompatActivity {
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
-        //getSupportActionBar().setHomeButtonEnabled(true);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         toolbar.setNavigationIcon(R.drawable.ic_return);
     }
 
     /**
      * Display a fragment
-     * @param fragment
      */
     private void displayFragment(Fragment fragment)
     {
@@ -62,9 +66,14 @@ public class DetailsActivity extends AppCompatActivity {
     {
         if (this.detailsFragment == null)
         {
-            this.detailsFragment = DetailsFragment.newInstance();
+            this.detailsFragment = DetailsFragment.newInstance(placeId);
         }
         return this.detailsFragment;
     }
 
+   @Override
+    public boolean onSupportNavigateUp() {
+        this.onBackPressed();
+        return true;
+    }
 }

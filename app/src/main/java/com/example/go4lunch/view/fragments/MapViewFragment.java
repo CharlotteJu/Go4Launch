@@ -4,33 +4,43 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.api.RestaurantHelper;
-import com.example.go4lunch.model.api.RestaurantStreams;
-import com.example.go4lunch.utils.StaticFields;
 import com.example.go4lunch.view.activities.DetailsActivity;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.android.libraries.places.api.Places;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -38,151 +48,184 @@ import io.reactivex.observers.DisposableObserver;
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private Location currentLocation;
-    //private FusedLocationProviderClient fusedLocationProviderClient;
-    //private static final int REQUEST_CODE = 101;
-    private SupportMapFragment supportMapFragment;
-    private List<Restaurant> restaurantList;
+    private List<Restaurant> restaurantListFromPlaces;
     private Disposable disposable;
-    private List<Restaurant> restaurantsWithWorkmates;
-    //private String radiusStringEnter;
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private GoogleMap googleMap;
+    private int radius;
 
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
 
+    public MapViewFragment() {}
 
-    public MapViewFragment() {
-        // Required empty public constructor
+    private MapViewFragment (Location location)
+    {
+        this.currentLocation = location;
     }
 
-    public static MapViewFragment newInstance() {
-        return new MapViewFragment();
+    public static MapViewFragment newInstance(Location location)
+    {
+        return new MapViewFragment(location);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         String key = BuildConfig.google_maps_key;
         Places.initialize(Objects.requireNonNull(getContext()), key);
-
-        currentLocation = StaticFields.CURRENT_LOCATION;
-        restaurantList = StaticFields.RESTAURANTS_LIST;
-        restaurantsWithWorkmates = StaticFields.RESTAURANTS_LIST_WITH_WORKMATES;
-
-        //restaurantList = new ArrayList<>();
-        //restaurantsWithWorkmates = new ArrayList<>();
-        //this.stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-        //fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+        this.radius = 500;
+        restaurantListFromPlaces = new ArrayList<>();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
-        this.supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-
-        supportMapFragment.getMapAsync(MapViewFragment.this);
-        //fetchLocation();
+        ButterKnife.bind(this, v);
+        this.progressBarLayout.setVisibility(View.VISIBLE);
+        SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        if (supportMapFragment != null)
+        {
+            supportMapFragment.getMapAsync(MapViewFragment.this);
+        }
         return v;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.configViewModel();
+    }
 
+    ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
-    /*private void fetchLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return;
-        }
-        Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(location -> {
-            if (location != null) {
-                currentLocation = location;
-                restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), 500);
-            }
-        });
-    }*/
-
-    /**
-     * Update the workmate's number with documentSnapshot from Firebase
-     */
-    /*private void updateNumberWorkmates ()
+    private void configViewModel()
     {
-        restaurantsWithWorkmates.clear();
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        this.getRestaurantListFromPlaces();
+    }
 
-        RestaurantHelper.getListRestaurants().addSnapshotListener(Objects.requireNonNull(getActivity()), (queryDocumentSnapshots, e) ->
+    private void getRestaurantListFromPlaces()
+    {
+        String key = BuildConfig.google_maps_key;
+        this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), radius, key)
+                .observe(this, listObservable -> disposable = listObservable
+                        .subscribeWith(new DisposableObserver<List<Restaurant>>()
+                        {
+                            @Override
+                            public void onNext(List<Restaurant> restaurantList)
+                            {
+                                restaurantListFromPlaces = restaurantList;
+                                getRestaurantListFromFirebase();
+
+                            }
+                            @Override
+                            public void onError(Throwable e) {}
+                            @Override
+                            public void onComplete() {}
+                        }));
+    }
+
+    private void getRestaurantListFromFirebase()
+    {
+        this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList ->
         {
-            if (queryDocumentSnapshots != null)
+            int size = restaurantList.size();
+            for (int i = 0; i < size; i++)
             {
-                List<Restaurant> test = queryDocumentSnapshots.toObjects(Restaurant.class);
-                for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i++)
+                Restaurant restaurant = restaurantList.get(i);
+
+                if (restaurant.getUserList().size() > 0)
                 {
-                    if (test.get(i).getUserList() != null && test.get(i).getUserList().size() > 0)
+                    if (restaurantListFromPlaces.contains(restaurant))
                     {
-                        String placeId = (String) queryDocumentSnapshots.getDocuments().get(i).get("placeId");
-                        restaurantsWithWorkmates.add(placeId);
+                        int index = restaurantListFromPlaces.indexOf(restaurant);
+                        restaurantListFromPlaces.get(index).setUserList(restaurant.getUserList());
                     }
                 }
             }
-            supportMapFragment.getMapAsync(MapViewFragment.this);
+            this.progressBarLayout.setVisibility(View.INVISIBLE);
+            setMarker();
         });
-    }*/
+    }
 
-
+    ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-
+    public void onMapReady(GoogleMap googleMap)
+    {
+        this.googleMap = googleMap;
         MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(Objects.requireNonNull(getContext()), R.raw.google_style);
-        googleMap.setMapStyle(mapStyleOptions);
+        this.googleMap.setMapStyle(mapStyleOptions);
+    }
 
-        for (int i = 0; i < restaurantList.size(); i ++)
+    private void lunchDetailsActivity(Marker marker)
+    {
+        String placeId = (String) marker.getTag();
+        Intent intent = new Intent(getContext(), DetailsActivity.class);
+        intent.putExtra("placeId", placeId);
+        startActivity(intent);
+    }
+
+    /**
+     * Set the markers on GoogleMap
+     */
+    private void setMarker()
+    {
+        if (this.googleMap != null)
         {
-            Restaurant restaurantTemp = restaurantList.get(i);
+            this.googleMap.clear();
+        }
+
+        int size = restaurantListFromPlaces.size();
+        for (int i = 0; i < size; i ++)
+        {
+            Restaurant restaurantTemp = restaurantListFromPlaces.get(i);
             LatLng tempLatLng = new LatLng(restaurantTemp.getLocation().getLat(), restaurantTemp.getLocation().getLng());
             MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng).title(restaurantTemp.getName());
 
-            if (restaurantsWithWorkmates.contains(restaurantTemp))
+            if (restaurantTemp.getUserList() != null)
             {
-                tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
-
+                if (restaurantTemp.getUserList().size() > 0)
+                {
+                    tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
+                }
             }
-            else
+            if (tempMarker.getIcon() == null)
             {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_orange));
             }
 
             Marker markerFinal = googleMap.addMarker(tempMarker);
             markerFinal.setTag(restaurantTemp.getPlaceId());
-            googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
+            this.googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
-
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
         float zoom = 16;
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
-        googleMap.addMarker(markerOptions);
-
-
-
-       /*googleMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
-            @Override
-            public void onCameraIdle() {
-
-                Projection projection = googleMap.getProjection();
-                VisibleRegion visibleRegion = projection.getVisibleRegion();
-                LatLng farRight = visibleRegion.farRight;
-                LatLng farLeft = visibleRegion.farLeft;
-
-
-                int radiusUpdate = calculateRectangularBoundsSinceCurrentLocation(farRight, farLeft);
-                restaurants = stream(currentLocation.getLatitude(), currentLocation.getLongitude(), radiusUpdate);
-            }
-        });*/
-
-
-
+        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        this.googleMap.addMarker(markerOptions);
+        //this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
     }
 
-    //////////// A VOIR SI UTILE
+    /**
+     * Get Bounds according to the currentZoom
+     */
+    private void getBoundsZoom()
+    {
+        Projection projection = googleMap.getProjection();
+        VisibleRegion visibleRegion = projection.getVisibleRegion();
+        LatLng latLngRight = visibleRegion.farRight;
+        LatLng latLngLeft = visibleRegion.farLeft;
+
+        radius = calculateRectangularBoundsSinceCurrentLocation(latLngRight, latLngLeft);
+        //this.getRestaurantListFromPlaces();
+    }
+
+    //////////// TODO : A VOIR SI UTILE
     private int calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
     {
         // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran
@@ -235,61 +278,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
-
-   /* @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                fetchLocation();
-            }
-        }
-    }*/
-
-    private void lunchDetailsActivity(Marker marker)
-    {
-        String placeId = (String) marker.getTag();
-        Intent intent = new Intent(getContext(), DetailsActivity.class);
-        intent.putExtra("placeId", placeId);
-        startActivity(intent);
-    }
-
-    ////////////////////////////////////////// RXJAVA ///////////////////////////////////////////
-
-    /**
-     * Recover the List<Restaurant> with the HTTP Request
-     * @param lat double with latitude of the current User
-     * @param lng double with longitude of the current User
-     * @param radius double to define the distance around the current User
-     * @return a List<Restaurant>
-     */
-    /*private List<Restaurant> stream(double lat, double lng, int radius)
-    {
-        String key = BuildConfig.google_maps_key;
-        this.restaurantList.clear();
-
-        this.disposable = RestaurantStreams.streamFetchRestaurantInList(lat, lng, radius, key).subscribeWith(new DisposableObserver<List<Restaurant>>() {
-            @Override
-            public void onNext(List<Restaurant> restaurantList) {
-
-                MapViewFragment.this.restaurantList = restaurantList;
-                updateNumberWorkmates();
-            }
-
-            @Override
-            public void onError(Throwable e) {}
-
-            @Override
-            public void onComplete() {}
-        });
-
-        return restaurantList;
-    }
+    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
 
     /**
      * Unsubscribe of the HTTP Request
      */
-    /*private void unsubscribe()
+    private void unsubscribe()
     {
         if (this.disposable != null && !this.disposable.isDisposed())
         {
@@ -301,7 +295,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onDestroy() {
         super.onDestroy();
         this.unsubscribe();
-    }*/
+    }
+
 
 
 }

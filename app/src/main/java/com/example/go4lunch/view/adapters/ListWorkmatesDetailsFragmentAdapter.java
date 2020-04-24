@@ -23,7 +23,6 @@ import butterknife.ButterKnife;
 
 public class ListWorkmatesDetailsFragmentAdapter extends RecyclerView.Adapter<ListWorkmatesDetailsFragmentAdapter.ListWorkmatesViewHolder>
 {
-
     private RequestManager glide;
     private Activity activity;
     private List<User> userList;
@@ -55,13 +54,11 @@ public class ListWorkmatesDetailsFragmentAdapter extends RecyclerView.Adapter<Li
         return userList.size();
     }
 
-
     static class ListWorkmatesViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.item_list_workmates_image)
         ImageView imageView;
         @BindView(R.id.item_list_workmates_txt)
         TextView textView;
-
         private Activity activity;
 
         private ListWorkmatesViewHolder(@NonNull View itemView, Activity activity) {
@@ -73,12 +70,9 @@ public class ListWorkmatesDetailsFragmentAdapter extends RecyclerView.Adapter<Li
         private void updateUI(User user, RequestManager glide)
         {
             glide.load(user.getIllustration()).apply(RequestOptions.circleCropTransform()).into(imageView);
-
             String textString = activity.getResources().getString(R.string.list_workmates_adapter_is_joining);
             String finalText = user.getName().split(" ")[0] + " " + textString;
-
             textView.setText(finalText);
         }
-
     }
 }

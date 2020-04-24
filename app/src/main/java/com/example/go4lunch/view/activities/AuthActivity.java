@@ -1,26 +1,32 @@
 package com.example.go4lunch.view.activities;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.api.UserHelper;
+import com.example.go4lunch.model.User;
+import com.example.go4lunch.view_model.ViewModelGo4Lunch;
+import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
+import com.example.go4lunch.view_model.injection.Injection;
+import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -31,22 +37,48 @@ import butterknife.OnClick;
 public class AuthActivity extends AppCompatActivity {
 
     private final static int FIREBASE_UI = 100;
-    Boolean userExists = false;
+    private Boolean userExists = false;
+
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private List<User> usersList;
+
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
+    @BindView(R.id.auth_activity_facebook_button)
+    Button facebookButton;
+    @BindView(R.id.auth_activity_google_button)
+    Button googleButton;
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        this.connectUser();
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
+        this.progressBarLayout.setVisibility(View.VISIBLE);
+        this.facebookButton.setVisibility(View.INVISIBLE);
+        this.googleButton.setVisibility(View.INVISIBLE);
+        this.configViewModel();
     }
 
+    ///////////////////////////////////VIEW MODEL///////////////////////////////////
+
+    private void configViewModel()
+    {
+        ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
+        viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
+        this.getUsersList();
+    }
+
+    private void getUsersList()
+    {
+        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList -> {
+            usersList = userList;
+            connectUser();
+        });
+    }
+
+    ///////////////////////////////////ON CLICK///////////////////////////////////
 
     @OnClick(R.id.auth_activity_google_button)
     void onClickGoogleButton()
@@ -60,50 +92,11 @@ public class AuthActivity extends AppCompatActivity {
         this.startSignInWithFacebook();
     }
 
-    private void connectUser()
-    {
-        if (FirebaseAuth.getInstance().getCurrentUser() != null)
-        {
-            String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
-            String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-            String urlPicture = FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl().toString();
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    ///////////////////////////////////SIGN IN///////////////////////////////////
 
-
-            UserHelper.getListUsers().addSnapshotListener(this, (queryDocumentSnapshots, e) -> {
-                if (queryDocumentSnapshots != null)
-                {
-                    for (int i = 0; i < queryDocumentSnapshots.getDocuments().size(); i ++)
-                    {
-                        if (queryDocumentSnapshots.getDocuments().get(i).getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())) {
-                            userExists = true;
-                            break;
-                        }
-                    }
-                    if (userExists)
-                    {
-                        lunchMainActivity();
-                    }
-                    else
-                    {
-                        UserHelper.createUser(uid, email, name, urlPicture)
-                                .addOnSuccessListener(aVoid -> lunchMainActivity())
-                                .addOnFailureListener(e1 -> Toast.makeText(getApplicationContext(),
-                                        R.string.auth_activity_connection_canceled, Toast.LENGTH_SHORT).show());
-                    }
-                }
-            });
-        }
-    }
-
-    private void lunchMainActivity()
-    {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-    }
-
-    //UI
-
+    /**
+     * Sign in With Google
+     */
     private void startSignInWithGoogle()
     {
         startActivityForResult(
@@ -117,6 +110,9 @@ public class AuthActivity extends AppCompatActivity {
                         .build(),FIREBASE_UI);
     }
 
+    /**
+     * Sign in With Facebook
+     */
     private void startSignInWithFacebook()
     {
         startActivityForResult(
@@ -130,20 +126,72 @@ public class AuthActivity extends AppCompatActivity {
                         .build(),FIREBASE_UI);
     }
 
+    ///////////////////////////////////UI///////////////////////////////////
+
+    /**
+     * Connect the User
+     * If he exists in Firebase, just connect
+     * If he not exists in Firebase, create him
+     */
+    private void connectUser()
+    {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null)
+        {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            if(usersList != null)
+            {
+                int size = usersList.size();
+                for (int i = 0; i < size; i ++)
+                {
+                    if (usersList.get(i).getEmail().equals(FirebaseAuth.getInstance().getCurrentUser().getEmail()))
+                    {
+                        userExists = true;
+                        break;
+                    }
+                }
+                if (userExists)
+                {
+                    lunchMainActivity();
+                }
+                else
+                {
+                    String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+                    String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+                    String urlPicture = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()).toString();
+
+                    viewModelGo4Lunch.createUser(uid, email, name, urlPicture);
+                    this.lunchMainActivity();
+                }
+            }
+        }
+        else
+        {
+            this.progressBarLayout.setVisibility(View.INVISIBLE);
+            this.facebookButton.setVisibility(View.VISIBLE);
+            this.googleButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void lunchMainActivity()
+    {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     private void responseSignIn(int requestCode, int resultCode, Intent data)
     {
         IdpResponse response = IdpResponse.fromResultIntent(data);
+        //TODO : FAIRE UN TRUC DE RESPONSE ?
         if (requestCode == FIREBASE_UI)
         {
             if (resultCode == RESULT_OK)
             {
-                Toast.makeText(getApplicationContext(), R.string.response_sign_in_success,Toast.LENGTH_SHORT ).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.response_sign_in_success),Toast.LENGTH_SHORT ).show();
                 this.connectUser();
-                this.lunchMainActivity();
             }
             else
             {
-                Toast.makeText(getApplicationContext(), R.string.response_sign_in_error,Toast.LENGTH_SHORT ).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.response_sign_in_error),Toast.LENGTH_SHORT ).show();
             }
         }
     }
@@ -153,4 +201,10 @@ public class AuthActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         this.responseSignIn(requestCode, resultCode, data);
     }
+
+    /**
+     * Suppress super because we don't want that the User can press Back
+     */
+    @Override
+    public void onBackPressed() {}
 }
