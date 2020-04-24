@@ -96,7 +96,7 @@ public class DetailsFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public DetailsFragment(String placeId) {
+    private DetailsFragment(String placeId) {
         this.placeId = placeId;
     }
 
@@ -113,8 +113,14 @@ public class DetailsFragment extends Fragment {
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
         this.floatingActionButton.setVisibility(View.INVISIBLE);
-        this.configViewModel();
+
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.configViewModel();
     }
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
@@ -273,7 +279,7 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_choose_button)
     void onClickChooseButton()
     {
-        User UserPushOnFirebase = new User(currentUser.getName(), currentUser.getIllustration());
+        User UserPushOnFirebase = new User(currentUser.getEmail(),currentUser.getName(), currentUser.getIllustration());
         if(!this.currentUser.isChooseRestaurant() || !this.currentUser.getRestaurantChoose().equals(restaurantFinal))
         {
             if (this.currentUser.isChooseRestaurant())
@@ -302,7 +308,7 @@ public class DetailsFragment extends Fragment {
     {
         if (restaurantsListFromFirebase.contains(restaurant))
         {
-            User UserPushOnFirebase = new User(currentUser.getName(), currentUser.getIllustration());
+            User UserPushOnFirebase = new User(currentUser.getEmail(),currentUser.getName(), currentUser.getIllustration());
 
             int index = restaurantsListFromFirebase.indexOf(restaurant);
             List<User> tempListWorkmates = restaurantsListFromFirebase.get(index).getUserList();

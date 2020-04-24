@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         this.fetchLocation();
-        this.configViewModel();
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
@@ -425,6 +424,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        this.configViewModel();
+    }
 
     @Override
     public void onBackPressed()
