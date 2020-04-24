@@ -128,7 +128,7 @@ public class DetailsFragment extends Fragment {
 
     private void getRestaurantFromPlaces()
     {
-        String key = BuildConfig.google_maps_key;
+        String key = getResources().getString(R.string.google_maps_key);   //BuildConfig.google_maps_key;
         this.viewModelGo4Lunch.getRestaurantDetailPlacesMutableLiveData(placeId, key)
                 .observe(this, restaurantObservable -> {
                     disposable = restaurantObservable.subscribeWith(new DisposableObserver<Restaurant>() {

@@ -26,12 +26,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField("String", "google_maps_key", GOOGLE_MAPS_API_KEY)
-            resValue("string", "google_maps_key", GOOGLE_MAPS_API_KEY)
+            //buildConfigField("String", "google_maps_key", GOOGLE_MAPS_API_KEY)
+            //resValue("string", "google_maps_key", GOOGLE_MAPS_API_KEY)
         }
         debug {
-            buildConfigField("String", "google_maps_key", GOOGLE_MAPS_API_KEY)
-            resValue("string", "google_maps_key", GOOGLE_MAPS_API_KEY)
+            //buildConfigField("String", "google_maps_key", GOOGLE_MAPS_API_KEY)
+            //resValue("string", "google_maps_key", GOOGLE_MAPS_API_KEY)
         }
     }
 }
@@ -93,7 +93,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
 
-    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.multidex:multidex:2.0.0'
 
 
 }
