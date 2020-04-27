@@ -200,7 +200,7 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_call_button)
     void onClickCallButton()
     {
-        if (restaurantFinal.getPhoneNumber() != null)
+        if (!restaurantFinal.getPhoneNumber().equals(""))
         {
             String phone = restaurantFinal.getPhoneNumber();
             Uri uri = Uri.parse("tel:"+phone);
@@ -248,9 +248,8 @@ public class DetailsFragment extends Fragment {
     @OnClick(R.id.details_fragment_website_button)
     void onClickWebsiteButton()
     {
-        if (restaurantFinal.getWebsite() != null)
+        if (!restaurantFinal.getWebsite().equals(""))
         {
-            //TODO : TESTS UNITAIRES ?
             String url = restaurantFinal.getWebsite();
             if(!url.startsWith("https://") && !url.startsWith("http://"))
             {
@@ -272,8 +271,6 @@ public class DetailsFragment extends Fragment {
         {
             Toast.makeText(getContext(), getResources().getString(R.string.details_fragment_no_website), Toast.LENGTH_LONG).show();
         }
-
-
     }
 
     @OnClick(R.id.details_fragment_choose_button)

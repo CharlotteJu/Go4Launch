@@ -47,18 +47,18 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
     @Override
     public Observable<Restaurant> streamDetailRestaurantToRestaurant(String placeId, String key) {
         return streamDetailRestaurant(placeId, key)
-                .map(detailPOJO -> {
-                    String name = detailPOJO.getResult().getName();
-                    String address = detailPOJO.getResult().getVicinity();
-                    String photo = getPhoto(detailPOJO.getResult().getPhotos().get(0).getPhotoReference(), 400, key);
+                .map(detailPOJO ->
+                {
                     String placeId1 = detailPOJO.getResult().getPlaceId();
-                    double rating = detailPOJO.getResult().getRating();
-                    DetailPOJO.OpeningHours openingHours = detailPOJO.getResult().getOpeningHours();
-                    String phoneNumber = detailPOJO.getResult().getInternationalPhoneNumber();
-                    String website = detailPOJO.getResult().getWebsite();
 
-                    Restaurant restaurant = new Restaurant(name, address, photo, placeId1, rating, openingHours, phoneNumber, website);
-                    return restaurant;
+                    String name = (detailPOJO.getResult().getName() != null ? detailPOJO.getResult().getName() : "");
+                    String address = (detailPOJO.getResult().getVicinity() != null ? detailPOJO.getResult().getVicinity() : "");
+                    double rating = (detailPOJO.getResult().getRating() != null ? detailPOJO.getResult().getRating() : 0);
+                    String photo = (detailPOJO.getResult().getPhotos() != null ? getPhoto(detailPOJO.getResult().getPhotos().get(0).getPhotoReference(), 400, key) : "") ;
+                    String phoneNumber = (detailPOJO.getResult().getInternationalPhoneNumber() != null ? detailPOJO.getResult().getInternationalPhoneNumber() : "");
+                    String website = (detailPOJO.getResult().getWebsite() != null ? detailPOJO.getResult().getWebsite() : "");
+
+                    return new Restaurant(name, address, photo, placeId1, rating, phoneNumber, website);
                 });
     }
 
@@ -72,35 +72,20 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
                     int size = res.size();
                     for (int i = 0; i < size; i ++)
                     {
-                        String name = res.get(i).getName();
-                        String address = res.get(i).getVicinity();
-                        String photo;
                         String placeId = res.get(i).getPlaceId();
-                        double rating = res.get(i).getRating();
-                        Boolean openNow;
-                        RestaurantPOJO.Location location = res.get(i).getGeometry().getLocation();
 
-                        if (res.get(i).getPhotos() != null)
-                        {
-                            photo = getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key);
-                        }
-                        else
-                        {
-                            photo = "";
-                        }
+                        String name = (res.get(i).getName() != null ? res.get(i).getName() : "");
+                        String address = (res.get(i).getVicinity() != null ? res.get(i).getVicinity() : "");
+                        String photo = (res.get(i).getPhotos() != null ? getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key) : "") ;
+                        double rating = (res.get(i).getRating() != null ? res.get(i).getRating() : 0);
+                        Boolean openNow = (res.get(i).getOpeningHours() != null ? res.get(i).getOpeningHours().getOpenNow() : false);
 
-                        if (res.get(i).getOpeningHours() != null)
+                        if (res.get(i).getGeometry().getLocation() != null)
                         {
-                            openNow = res.get(i).getOpeningHours().getOpenNow();
+                            RestaurantPOJO.Location location = res.get(i).getGeometry().getLocation();
+                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow, location);
+                            restaurants.add(restaurant);
                         }
-                        else
-                        {
-                            openNow = false;
-                        }
-
-
-                        Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow, location);
-                        restaurants.add(restaurant);
                     }
 
                     return restaurants;

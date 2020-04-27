@@ -110,7 +110,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     private void getRestaurantListFromPlaces()
     {
-        String key = getResources().getString(R.string.google_maps_key);   //BuildConfig.google_maps_key;
+        String key = getResources().getString(R.string.google_maps_key);
         this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), radius, key)
                 .observe(this, listObservable -> disposable = listObservable
                         .subscribeWith(new DisposableObserver<List<Restaurant>>()

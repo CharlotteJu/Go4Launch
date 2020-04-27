@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         this.fetchLocation();
+        //this.testLocation();
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
@@ -280,7 +281,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return list;
     }
-
+    
     /**
      * Fetch the current location {@link ActivityCompat} {@link Location}
      * If getLastLocation is available, use it
@@ -288,11 +289,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * We can display 1st fragment when we have the location
      */
     private void fetchLocation() {
-        if (ActivityCompat.checkSelfPermission(
+        while (ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
-            return;
         }
         Task<Location> task = fusedLocationProviderClient.getLastLocation();
         task.addOnSuccessListener(location -> {

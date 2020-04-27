@@ -1,5 +1,6 @@
 package com.example.go4lunch.utils;
 
+import android.content.Context;
 import android.location.Location;
 
 import com.example.go4lunch.model.Restaurant;
@@ -22,6 +23,7 @@ public class UtilsTest
     private static final String placeIdTest = "placeId";
     private static final String addressTest = "Address";
     private static final List<User> userList = new ArrayList<>();
+    private User currentUser = new User("NameUser", "EmailUser", "IllustrationUser");
     private static Location currentLocation = new Location("My location");
 
     private static final String name1Test = "Name 1";
@@ -68,8 +70,6 @@ public class UtilsTest
         restaurant4.setDistanceCurrentUser(distance4Test);
         restaurant4.setRating(rating1Test);
         restaurantList.add(restaurant4);
-
-
     }
 
     @Test
@@ -117,5 +117,6 @@ public class UtilsTest
 
         assertEquals(restaurantList.get(0).getDistanceCurrentUser(), 0);
     }
+
 
 }

@@ -14,7 +14,7 @@ public class Restaurant
     private double rating;
     private String illustration;
     private String placeId;
-    private DetailPOJO.OpeningHours openingHours;
+
     private List<User> userList;
     private String phoneNumber;
     private String website;
@@ -25,14 +25,13 @@ public class Restaurant
     //////// CONSTRUCTORS ////////
 
     public Restaurant(String name, String address, String illustration, String placeId, double rating,
-                      DetailPOJO.OpeningHours openingHours, String phoneNumber, String website) {
+                      String phoneNumber, String website) {
 
         this.name = name;
         this.address = address;
         this.illustration = illustration;
         this.placeId = placeId;
         this.rating = rating;
-        this.openingHours = openingHours;
         this.phoneNumber = phoneNumber;
         this.website = website;
 
@@ -90,10 +89,6 @@ public class Restaurant
 
     public String getPlaceId() {
         return placeId;
-    }
-
-    public DetailPOJO.OpeningHours getOpeningHours() {
-        return openingHours;
     }
 
     public List<User> getUserList() {

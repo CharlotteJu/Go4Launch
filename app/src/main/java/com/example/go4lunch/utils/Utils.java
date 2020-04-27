@@ -1,11 +1,15 @@
 package com.example.go4lunch.utils;
 
+import android.content.Context;
 import android.location.Location;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.User;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -107,6 +111,7 @@ public abstract class Utils
             restaurantList.get(i).setDistanceCurrentUser(distanceLocation);
         }
     }
+
 
 
 }

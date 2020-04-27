@@ -31,7 +31,7 @@ public abstract class WorkerNotificationController
         WorkManager.getInstance(context).cancelAllWorkByTag(WORK_REQUEST_TAG);
     }
 
-    //TODO : TESTS UNITAIRES ?
+
     /**
      * Build a PeriodicWorkRequest with Delay and Constraints
      * @return the PeriodicWorkRequest for the notification
