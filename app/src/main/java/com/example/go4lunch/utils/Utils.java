@@ -98,18 +98,34 @@ public abstract class Utils
      */
     public static void updateDistanceToCurrentLocation(Location currentLocation, List<Restaurant> restaurantList)
     {
-        Location restaurantLocation = new Location("fusedLocationProvider");
+        //Location restaurantLocation = new Location("fusedLocationProvider");
         int size = restaurantList.size();
         for (int i = 0; i < size; i++)
         {
-            //Get the restaurant's location
+           //TODO : Obligé de passer par une méthode en dessous ? Pas plus de travail ?
+
+            updateDistanceForOneRestaurant(currentLocation, restaurantList.get(i));
+
+            /*//Get the restaurant's location
             restaurantLocation.setLatitude(restaurantList.get(i).getLocation().getLat());
             restaurantLocation.setLongitude(restaurantList.get(i).getLocation().getLng());
             //Get the distance between currentLocation and restaurantLocation
             int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
 
-            restaurantList.get(i).setDistanceCurrentUser(distanceLocation);
+            restaurantList.get(i).setDistanceCurrentUser(distanceLocation);*/
         }
+    }
+
+    public static float updateDistanceForOneRestaurant (Location currentLocation, Restaurant restaurant)
+    {
+        Location restaurantLocation = new Location("fusedLocationProvider");
+        //Get the restaurant's location
+        restaurantLocation.setLatitude(restaurant.getLocation().getLat());
+        restaurantLocation.setLongitude(restaurant.getLocation().getLng());
+        //Get the distance between currentLocation and restaurantLocation
+        int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
+
+        return distanceLocation;
     }
 
 

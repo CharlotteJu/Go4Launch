@@ -68,6 +68,10 @@ public class User
         this.name = name;
     }
 
+    public void setIllustration(String illustration) {
+        this.illustration = illustration;
+    }
+
     public void setRestaurantChoose(Restaurant restaurantChoose) {
         this.restaurantChoose = restaurantChoose;
         this.chooseRestaurant = true;

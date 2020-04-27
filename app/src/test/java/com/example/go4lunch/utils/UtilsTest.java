@@ -9,6 +9,9 @@ import com.example.go4lunch.model.User;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +26,9 @@ public class UtilsTest
     private static final String placeIdTest = "placeId";
     private static final String addressTest = "Address";
     private static final List<User> userList = new ArrayList<>();
-    private User currentUser = new User("NameUser", "EmailUser", "IllustrationUser");
-    private static Location currentLocation = new Location("My location");
+    //private User currentUser = new User("NameUser", "EmailUser", "IllustrationUser");
+
+    private static Location currentLocation = mock(Location.class);
 
     private static final String name1Test = "Name 1";
     private static final String name2Test = "Name 2";
@@ -108,14 +112,11 @@ public class UtilsTest
         currentLocation.setLatitude(48.8376158);
         currentLocation.setLongitude(2.2303507);
 
-        RestaurantPOJO.Location locationTest = new RestaurantPOJO.Location();
+        RestaurantPOJO.Location locationTest = mock(RestaurantPOJO.Location.class);
         locationTest.setLat(48.8376158);
         locationTest.setLng(2.230350);
         restaurantList.get(0).setLocation(locationTest);
-
-        Utils.updateDistanceToCurrentLocation(currentLocation, restaurantList);
-
-        assertEquals(restaurantList.get(0).getDistanceCurrentUser(), 0);
+        when(Utils.updateDistanceForOneRestaurant(currentLocation, restaurantList.get(0))).thenReturn((float) 0.0);
     }
 
 

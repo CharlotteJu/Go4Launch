@@ -65,7 +65,6 @@ import java.util.Objects;
 import butterknife.BindView;
 
 import butterknife.ButterKnife;
-import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -281,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return list;
     }
-    
+
     /**
      * Fetch the current location {@link ActivityCompat} {@link Location}
      * If getLastLocation is available, use it
@@ -372,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             if (FirebaseAuth.getInstance().getCurrentUser() == null)
             {
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_success_sign_out), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_success_log_out), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, AuthActivity.class);
                 startActivity(intent);
             }

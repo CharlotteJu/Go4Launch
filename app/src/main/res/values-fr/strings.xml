@@ -5,11 +5,11 @@
     <string name="auth_activity_subtitle">Trouve un restaurant sympa et invite tes collègues pour déjeûner!</string>
     <string name="auth_activity_button_facebook">Connexion avec Facebook</string>
     <string name="auth_activity_button_google">Connexion avec Google</string>
-    <string name="auth_activity_connection_canceled">Echec de la connexion</string>
+    <string name="auth_activity_connection_refused">Echec de la connexion</string>
 
     <!-- MAIN ACTIVITY -->
     <string name="main_activity_no_choose_restaurant">Vous n\'avez pas sélectionné de restaurant</string>
-    <string name="main_activity_success_sign_out">Déconnexion réussie</string>
+    <string name="main_activity_success_log_out">Déconnexion réussie</string>
     <string name="main_activity_pop_up_log_out_title">DECONNEXION</string>
     <string name="main_activity_pop_up_log_out_message">Êtes-vous sûr de vouloir vous déconnecter ?</string>
     <string name="main_activity_pop_up_yes">OUI</string>
@@ -47,9 +47,9 @@
 
 
     <!-- BOTTOM NAVIGATION VIEW -->
-    <string name="bottom_navigation_menu_mapview">Map View</string>
-    <string name="bottom_navigation_menu_listview">List View</string>
-    <string name="bottom_navigation_menu_workmates">Workmates</string>
+    <string name="bottom_navigation_menu_mapview">Carte</string>
+    <string name="bottom_navigation_menu_listview">Liste</string>
+    <string name="bottom_navigation_menu_workmates">Collègues</string>
 
     <!-- RESPONSE SIGN IN -->
     <string name="response_sign_in_success">Connexion réussie</string>
@@ -71,10 +71,10 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <!-- LIST WORKMATES ADAPTER -->
-    <string name="list_workmates_adapter_is_eating"> mange (</string>
+    <string name="list_workmates_adapter_is_eating">mange (</string>
     <string name="list_workmates_adapter_parenthesis">)</string>
-    <string name="list_workmates_adapter_hasnt_decided_yed"> n\'a pas encore décidé</string>
-    <string name="list_workmates_adapter_is_joining">vient aussi!</string>
+    <string name="list_workmates_adapter_hasnt_decided_yed">n\'a pas encore décidé</string>
+    <string name="list_workmates_adapter_is_joining">mange ici!</string>
 
     <!-- LIST RESTAURANTS ADAPTER -->
     <string name="list_restaurants_adapter_open_now">Ouvert</string>
