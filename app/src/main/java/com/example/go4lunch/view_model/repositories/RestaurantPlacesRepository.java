@@ -22,6 +22,7 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
     private static final String type = "restaurant";
     private static final Boolean openingHoursBoolean = true;
     private static List<Restaurant> restaurants = new ArrayList<>();
+    private static final String NO_RESTAURANT = "NO_RESTAURANT";
 
     @Override
     public Observable<RestaurantPOJO> streamFetchRestaurant(double lat, double lng, int radius, String key) {
@@ -49,6 +50,24 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
         return streamDetailRestaurant(placeId, key)
                 .map(detailPOJO ->
                 {
+                    // Verify is that is a Restaurant for Place Autocomplete
+                    List<String> types = detailPOJO.getResult().getTypes();
+                    boolean isRestaurant = false;
+                    int typesSize = types.size();
+                    for (int i = 0; i < typesSize; i ++)
+                    {
+                        if (types.get(i).equals(type))
+                        {
+                            isRestaurant = true;
+                            break;
+                        }
+                    }
+                    if (!isRestaurant)
+                    {
+                        return new Restaurant(NO_RESTAURANT);
+                    }
+
+                    // If it's a restaurant, configure an Object Restaurant
                     String placeId1 = detailPOJO.getResult().getPlaceId();
 
                     String name = (detailPOJO.getResult().getName() != null ? detailPOJO.getResult().getName() : "");

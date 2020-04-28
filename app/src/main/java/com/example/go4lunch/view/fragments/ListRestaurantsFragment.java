@@ -42,6 +42,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private Location currentLocation;
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private Disposable disposable;
+    private int radius;
 
     @BindView(R.id.fragment_list_restaurants_recycler_view)
     RecyclerView recyclerView;
@@ -67,6 +68,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         restaurantListFromPlaces = new ArrayList<>();
+        radius = 500;
     }
 
     @Override
@@ -98,7 +100,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private void getRestaurantListFromPlaces()
     {
         String key = getResources().getString(R.string.google_maps_key);
-        this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), 500, key)
+        this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), radius, key)
                 .observe(this, listObservable -> disposable = listObservable
                         .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                             @Override
@@ -112,6 +114,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                             @Override
                             public void onComplete() {}
                         }));
+
     }
 
     private void getRestaurantListFromFirebase()

@@ -104,7 +104,8 @@ public abstract class Utils
         {
            //TODO : Obligé de passer par une méthode en dessous ? Pas plus de travail ?
 
-            updateDistanceForOneRestaurant(currentLocation, restaurantList.get(i));
+            int distanceLocation = (int) updateDistanceForOneRestaurant(currentLocation, restaurantList.get(i));
+            restaurantList.get(i).setDistanceCurrentUser(distanceLocation);
 
             /*//Get the restaurant's location
             restaurantLocation.setLatitude(restaurantList.get(i).getLocation().getLat());

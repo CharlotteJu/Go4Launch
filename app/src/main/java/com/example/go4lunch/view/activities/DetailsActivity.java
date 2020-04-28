@@ -40,6 +40,8 @@ public class DetailsActivity extends AppCompatActivity {
         placeId = intent.getStringExtra("placeId");
         displayFragment(displayDetailsFragment());
 
+        // TODO : Vérifier ici si c'est un restaurant ??
+
     }
 
     /**

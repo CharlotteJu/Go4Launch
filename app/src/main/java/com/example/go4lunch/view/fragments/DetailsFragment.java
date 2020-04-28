@@ -65,6 +65,7 @@ public class DetailsFragment extends Fragment {
     private ViewModelGo4Lunch viewModelGo4Lunch;
 
     private final static int REQUEST_CODE_CALL = 13;
+    private static final String NO_RESTAURANT = "NO_RESTAURANT";
 
     @BindView(R.id.details_fragment_name_restaurant_txt)
     TextView name;
@@ -84,12 +85,10 @@ public class DetailsFragment extends Fragment {
     RecyclerView workmatesRecyclerView;
     @BindView(R.id.details_fragment_choose_button)
     FloatingActionButton floatingActionButton;
-    /*@BindView(R.id.progress_bar)
-    ContentLoadingProgressBar progressBar;*/
-
-    // TODO : Pas moyen de faire autrement ?
     @BindView(R.id.progress_bar_layout)
     ConstraintLayout progressBarLayout;
+    @BindView(R.id.details_fragment_no_restaurant_txt)
+    TextView noRestaurant;
 
 
     public DetailsFragment() {
@@ -112,6 +111,7 @@ public class DetailsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
+        this.noRestaurant.setVisibility(View.INVISIBLE);
         this.floatingActionButton.setVisibility(View.INVISIBLE);
 
         return v;
@@ -141,9 +141,18 @@ public class DetailsFragment extends Fragment {
                         @Override
                         public void onNext(Restaurant restaurant)
                         {
-                            restaurantFinal = restaurant;
-                            getRestaurantListFromFirebase();
-                            getRestaurantFinalFromFirebase();
+                            if (restaurant.getName().equals(NO_RESTAURANT))
+                            {
+                                progressBarLayout.setVisibility(View.INVISIBLE);
+                                noRestaurant.setVisibility(View.VISIBLE);
+                            }
+                            else
+                            {
+                                restaurantFinal = restaurant;
+                                getRestaurantListFromFirebase();
+                                getRestaurantFinalFromFirebase();
+                            }
+
                         }
 
                         @Override

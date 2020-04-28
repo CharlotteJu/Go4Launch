@@ -53,6 +53,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private GoogleMap googleMap;
     private int radius;
+    private float zoom;
 
     @BindView(R.id.progress_bar_layout)
     ConstraintLayout progressBarLayout;
@@ -73,9 +74,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        String key = getResources().getString(R.string.google_maps_key);   //BuildConfig.google_maps_key;
+        String key = getResources().getString(R.string.google_maps_key);
         Places.initialize(Objects.requireNonNull(getContext()), key);
         this.radius = 500;
+        this.zoom = 0;
         restaurantListFromPlaces = new ArrayList<>();
     }
 
@@ -99,6 +101,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         this.configViewModel();
     }
 
+    public int getRadius()
+    {
+        return this.radius;
+    }
+
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
     private void configViewModel()
@@ -107,6 +114,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
         this.getRestaurantListFromPlaces();
     }
+
 
     private void getRestaurantListFromPlaces()
     {
@@ -205,10 +213,14 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         }
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
-        float zoom = 16;
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        if (this.zoom == 0)
+        {
+            this.zoom = 16;
+            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+        }
+
         this.googleMap.addMarker(markerOptions);
-        //this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
+        this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
     }
 
     /**
@@ -221,11 +233,18 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         LatLng latLngRight = visibleRegion.farRight;
         LatLng latLngLeft = visibleRegion.farLeft;
 
+        int oldRadius = radius;
+
         radius = calculateRectangularBoundsSinceCurrentLocation(latLngRight, latLngLeft);
-        //this.getRestaurantListFromPlaces();
+
+        if (radius <= oldRadius - 100 || radius >= oldRadius + 100)
+        {
+            this.getRestaurantListFromPlaces();
+        }
+
     }
 
-    //////////// TODO : A VOIR SI UTILE
+    //////////// TODO : TEST UNITAIRES ?
     private int calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
     {
         // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran

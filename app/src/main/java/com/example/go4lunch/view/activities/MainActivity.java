@@ -99,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ButterKnife.bind(this);
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         this.fetchLocation();
-        //this.testLocation();
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
@@ -244,13 +243,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /**
      * Configure the toolbar search with {@link Autocomplete}
      */
-    private void configureAutocompleteSearchToolbar()
+    private void configureAutocompleteSearchToolbar(double radius)
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
 
-        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
+        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(radius);
         RectangularBounds rectangularBounds = RectangularBounds.newInstance
                 (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
+
+
 
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                 .setLocationRestriction(rectangularBounds)
@@ -260,7 +261,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    //// A VOIR SI UTILE
     //TODO : TESTS UNITAIRES ?
     private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
     {
@@ -403,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
-        editor.commit();
+        editor.apply();
 
         this.getSharedPreferences();
     }
@@ -474,7 +474,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (item.getItemId() == R.id.toolbar_menu_search)
         {
-            configureAutocompleteSearchToolbar();
+            double radius = mapViewFragment.getRadius()/1000.00;
+            configureAutocompleteSearchToolbar(radius);
         }
         return super.onOptionsItemSelected(item);
     }

@@ -36,6 +36,7 @@
     <string name="details_fragment_website_no_application_found">No corresponding application found</string>
     <string name="details_fragment_no_website">This restaurant does not have a website</string>
     <string name="details_fragment_no_phone">This restaurant does not have a phone number</string>
+    <string name="details_fragment_no_restaurant">OOPS, IT SEEMS THIS IS NOT A RESTAURANT</string>
 
     <!-- MAP VIEW FRAGMENT -->
     <string name="map_view_fragment_my_position">My position</string>
