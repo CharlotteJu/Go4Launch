@@ -1,6 +1,5 @@
 package com.example.go4lunch.utils;
 
-import android.content.Context;
 import android.location.Location;
 
 import com.example.go4lunch.model.Restaurant;
@@ -9,7 +8,6 @@ import com.example.go4lunch.model.User;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.mockito.Mockito.*;
 
@@ -20,7 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class UtilsTest
+public class UtilsListRestaurantTest
 {
     private static List<Restaurant> restaurantList = new ArrayList<>();
     private static final String placeIdTest = "placeId";
@@ -79,7 +77,7 @@ public class UtilsTest
     @Test
     public void triProximity_Success()
     {
-        Utils.sortProximity(restaurantList);
+        UtilsListRestaurant.sortProximity(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant2.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant3.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant1.getName());
@@ -89,7 +87,7 @@ public class UtilsTest
     @Test
     public void triName_Success()
     {
-        Utils.sortName(restaurantList);
+        UtilsListRestaurant.sortName(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant1.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant4.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant2.getName());
@@ -99,7 +97,7 @@ public class UtilsTest
     @Test
     public void triRatingReverse_Success()
     {
-        Utils.sortRatingReverse(restaurantList);
+        UtilsListRestaurant.sortRatingReverse(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant1.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant3.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant2.getName());
@@ -116,7 +114,7 @@ public class UtilsTest
         locationTest.setLat(48.8376158);
         locationTest.setLng(2.230350);
         restaurantList.get(0).setLocation(locationTest);
-        when(Utils.updateDistanceForOneRestaurant(currentLocation, restaurantList.get(0))).thenReturn((float) 0.0);
+        when(UtilsListRestaurant.updateDistanceForOneRestaurant(currentLocation, restaurantList.get(0))).thenReturn((float) 0.0);
     }
 
 

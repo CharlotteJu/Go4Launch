@@ -15,10 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
-import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.utils.Utils;
+import com.example.go4lunch.utils.UtilsListRestaurant;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
@@ -106,7 +105,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                             @Override
                             public void onNext(List<Restaurant> restaurantList) {
                                 restaurantListFromPlaces = restaurantList;
-                                Utils.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
+                                UtilsListRestaurant.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
                                 getRestaurantListFromFirebase();
                             }
                             @Override
@@ -144,20 +143,20 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
     @OnClick(R.id.fragment_list_restaurants_near_me_fab)
     void triProximity() {
-        Utils.sortProximity(restaurantListFromPlaces);
+        UtilsListRestaurant.sortProximity(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
     }
 
     @OnClick(R.id.fragment_list_restaurants_rating_fab)
     void triRate() {
-        Utils.sortRatingReverse(restaurantListFromPlaces);
+        UtilsListRestaurant.sortRatingReverse(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
     }
 
 
     @OnClick(R.id.fragment_list_restaurants_name_fab)
     void triName() {
-        Utils.sortName(restaurantListFromPlaces);
+        UtilsListRestaurant.sortName(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
     }
 

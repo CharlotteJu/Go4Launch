@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class Utils
+public abstract class UtilsListRestaurant
 {
 
     /**
@@ -124,9 +124,7 @@ public abstract class Utils
         restaurantLocation.setLatitude(restaurant.getLocation().getLat());
         restaurantLocation.setLongitude(restaurant.getLocation().getLng());
         //Get the distance between currentLocation and restaurantLocation
-        int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
-
-        return distanceLocation;
+        return (int) currentLocation.distanceTo(restaurantLocation);
     }
 
 

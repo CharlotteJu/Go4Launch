@@ -9,7 +9,6 @@ import android.os.Bundle;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,17 +18,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.utils.Utils;
+import com.example.go4lunch.utils.UtilsListRestaurant;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
@@ -342,7 +339,7 @@ public class DetailsFragment extends Fragment {
         address.setText(restaurant.getAddress());
         this.configButton();
         this.updateLike();
-        Utils.updateRating(star1, star2, star3, restaurant);
+        UtilsListRestaurant.updateRating(star1, star2, star3, restaurant);
         this.progressBarLayout.setVisibility(View.INVISIBLE);
         this.floatingActionButton.setVisibility(View.VISIBLE);
     }

@@ -16,7 +16,7 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.utils.Utils;
+import com.example.go4lunch.utils.UtilsListRestaurant;
 import com.example.go4lunch.view.fragments.OnClickListenerItemList;
 
 import java.util.ArrayList;
@@ -114,7 +114,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             this.updateHours(restaurant);
             this.updateNumberWorkmates(restaurant);
             this.updateDistance(restaurant);
-            Utils.updateRating(star1, star2, star3, restaurant);
+            UtilsListRestaurant.updateRating(star1, star2, star3, restaurant);
         }
 
         private void updateDistance(Restaurant restaurant)

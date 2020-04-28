@@ -5,18 +5,16 @@ import android.location.Location;
 import android.os.Bundle;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.widget.ContentLoadingProgressBar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 
-import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.utils.UtilsCalcul;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
@@ -27,7 +25,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
@@ -235,7 +232,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         int oldRadius = radius;
 
-        radius = calculateRectangularBoundsSinceCurrentLocation(latLngRight, latLngLeft);
+        radius = calculateRadiusSinceCurrentLocation(latLngRight, latLngLeft);
 
         if (radius <= oldRadius - 100 || radius >= oldRadius + 100)
         {
@@ -245,8 +242,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     //////////// TODO : TEST UNITAIRES ?
-    private int calculateRectangularBoundsSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
+    private int calculateRadiusSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
     {
+        double test = UtilsCalcul.calculateRadiusSinceCurrentLocation(latLngRight, latLngLeft, currentLocation);
+        return (int) test;
+
+        /*
         // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran
 
         // ------------------------------------------------------------------------------------------------------------------
@@ -293,7 +294,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         else
         {
             return (int) dist_PositionCourante_CoinHautGauche;
-        }
+        }*/
 
     }
 

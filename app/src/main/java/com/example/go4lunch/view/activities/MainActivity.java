@@ -34,6 +34,7 @@ import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.notifications.WorkerNotificationController;
+import com.example.go4lunch.utils.UtilsCalcul;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
@@ -264,7 +265,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //TODO : TESTS UNITAIRES ?
     private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
     {
-        List<LatLng> list = new ArrayList<>();
+        List<LatLng> test = UtilsCalcul.calculateRectangularBoundsSinceCurrentLocation(radius, currentLocation);
+        return test;
+
+
+        /*List<LatLng> list = new ArrayList<>();
 
         double latA = currentLocation.getLatitude() - (radius/111);
         double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
@@ -278,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         LatLng pointB = new LatLng(latB, lngB);
         list.add(pointB);
 
-        return list;
+        return list;*/
     }
 
     /**
