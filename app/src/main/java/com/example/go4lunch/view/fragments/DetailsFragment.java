@@ -50,20 +50,7 @@ import io.reactivex.observers.DisposableObserver;
  */
 public class DetailsFragment extends Fragment {
 
-    // FOR DATA
-    private String placeId;
-    private Restaurant restaurantFinal;
-    private Disposable disposable;
-    private User currentUser;
-    private String uidUser;
-    private ListWorkmatesDetailsFragmentAdapter adapter;
-    private List<User> workmatesList;
-    private List<Restaurant> restaurantsListFromFirebase;
-    private ViewModelGo4Lunch viewModelGo4Lunch;
-
-    private final static int REQUEST_CODE_CALL = 13;
-    private static final String NO_RESTAURANT = "NO_RESTAURANT";
-
+    //FOR DESIGN
     @BindView(R.id.details_fragment_name_restaurant_txt)
     TextView name;
     @BindView(R.id.details_fragment_illustration_image)
@@ -87,10 +74,21 @@ public class DetailsFragment extends Fragment {
     @BindView(R.id.details_fragment_no_restaurant_txt)
     TextView noRestaurant;
 
+    // FOR DATA
+    private String placeId;
+    private Restaurant restaurantFinal;
+    private Disposable disposable;
+    private User currentUser;
+    private String uidUser;
+    private ListWorkmatesDetailsFragmentAdapter adapter;
+    private List<User> workmatesList;
+    private List<Restaurant> restaurantsListFromFirebase;
+    private ViewModelGo4Lunch viewModelGo4Lunch;
 
-    public DetailsFragment() {
-        // Required empty public constructor
-    }
+    private final static int REQUEST_CODE_CALL = 13;
+    private static final String NO_RESTAURANT = "NO_RESTAURANT";
+
+    public DetailsFragment() {}
 
     private DetailsFragment(String placeId) {
         this.placeId = placeId;
@@ -101,21 +99,20 @@ public class DetailsFragment extends Fragment {
         return new DetailsFragment(placeId);
     }
 
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View v = inflater.inflate(R.layout.fragment_details, container, false);
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
         this.noRestaurant.setVisibility(View.INVISIBLE);
         this.floatingActionButton.setVisibility(View.INVISIBLE);
-
         return v;
     }
 
     @Override
-    public void onResume() {
+    public void onResume()
+    {
         super.onResume();
         this.configViewModel();
     }
@@ -131,7 +128,7 @@ public class DetailsFragment extends Fragment {
 
     private void getRestaurantFromPlaces()
     {
-        String key = getResources().getString(R.string.google_maps_key);   //BuildConfig.google_maps_key;
+        String key = getResources().getString(R.string.google_maps_key);
         this.viewModelGo4Lunch.getRestaurantDetailPlacesMutableLiveData(placeId, key)
                 .observe(this, restaurantObservable -> {
                     disposable = restaurantObservable.subscribeWith(new DisposableObserver<Restaurant>() {
@@ -149,12 +146,9 @@ public class DetailsFragment extends Fragment {
                                 getRestaurantListFromFirebase();
                                 getRestaurantFinalFromFirebase();
                             }
-
                         }
-
                         @Override
                         public void onError(Throwable e) {}
-
                         @Override
                         public void onComplete() {}
                     });
@@ -172,8 +166,6 @@ public class DetailsFragment extends Fragment {
                     {
                         this.configRecyclerView();
                     }
-
-
         });
     }
 
@@ -190,7 +182,6 @@ public class DetailsFragment extends Fragment {
         });
     }
 
-
     private void getCurrentUser()
     {
         uidUser = FirebaseAuth.getInstance().getUid();
@@ -198,7 +189,6 @@ public class DetailsFragment extends Fragment {
             currentUser = user;
             updateRestaurant(restaurantFinal);
         });
-
     }
 
     ////////////////////////////////////////// ONCLICK ///////////////////////////////////////////
@@ -299,39 +289,18 @@ public class DetailsFragment extends Fragment {
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
             workmatesList.remove(UserPushOnFirebase);
         }
-
         this.viewModelGo4Lunch.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
         this.viewModelGo4Lunch.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
         this.viewModelGo4Lunch.updateUserIsChooseRestaurant(uidUser, currentUser.isChooseRestaurant());
         this.adapter.notifyDataSetChanged();
-
     }
 
-    private void updateOtherRestaurantInFirebase(Restaurant restaurant)
-    {
-        if (restaurantsListFromFirebase.contains(restaurant))
-        {
-            User UserPushOnFirebase = new User(currentUser.getEmail(),currentUser.getName(), currentUser.getIllustration());
+    ////////////////////////////////////////// UPDATE AND CONFIG ///////////////////////////////////////////
 
-            int index = restaurantsListFromFirebase.indexOf(restaurant);
-            List<User> tempListWorkmates = restaurantsListFromFirebase.get(index).getUserList();
-            tempListWorkmates.remove(UserPushOnFirebase);
-            this.viewModelGo4Lunch.updateRestaurantUserList(restaurant.getPlaceId(), tempListWorkmates);
-        }
-    }
-
-    private void configButton()
-    {
-        if (!this.currentUser.isChooseRestaurant() || !this.currentUser.getRestaurantChoose().equals(this.restaurantFinal))
-        {
-            this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
-        }
-        else
-        {
-            this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
-        }
-    }
-
+    /**
+     * Update the restaurant when we have all info from Firebase and Places
+     * @param restaurant : RestaurantFinal
+     */
     private void updateRestaurant(Restaurant restaurant)
     {
         name.setText(restaurant.getName());
@@ -344,7 +313,9 @@ public class DetailsFragment extends Fragment {
         this.floatingActionButton.setVisibility(View.VISIBLE);
     }
 
-
+    /**
+     * Update the star with ListRestaurantFavorites of the User
+     */
     private void updateLike()
     {
         boolean favorite = false;
@@ -367,14 +338,45 @@ public class DetailsFragment extends Fragment {
         }
     }
 
+    /**
+     * Update an other restaurant in Firebase, if the User has choose it before
+     * @param restaurant was choose before
+     */
+    private void updateOtherRestaurantInFirebase(Restaurant restaurant)
+    {
+        if (restaurantsListFromFirebase.contains(restaurant))
+        {
+            User UserPushOnFirebase = new User(currentUser.getEmail(),currentUser.getName(), currentUser.getIllustration());
+            int index = restaurantsListFromFirebase.indexOf(restaurant);
+            List<User> tempListWorkmates = restaurantsListFromFirebase.get(index).getUserList();
+            tempListWorkmates.remove(UserPushOnFirebase);
+            this.viewModelGo4Lunch.updateRestaurantUserList(restaurant.getPlaceId(), tempListWorkmates);
+        }
+    }
+
+    /**
+     * Config the Button with chooseRestaurant of the User
+     */
+    private void configButton()
+    {
+        if (!this.currentUser.isChooseRestaurant() || !this.currentUser.getRestaurantChoose().equals(this.restaurantFinal))
+        {
+            this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
+        }
+        else
+        {
+            this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
+        }
+    }
+
     private void configRecyclerView()
     {
-
         this.adapter = new ListWorkmatesDetailsFragmentAdapter(workmatesList, Glide.with(this), getActivity());
         this.workmatesRecyclerView.setAdapter(adapter);
         this.workmatesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
     }
+
+    /////////////////////////////////// DESTROY METHODS ///////////////////////////////////
 
     /**
      * Unsubscribe of the HTTP Request
@@ -388,7 +390,8 @@ public class DetailsFragment extends Fragment {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
         this.unsubscribe();
     }

@@ -20,6 +20,7 @@ import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.UtilsListRestaurant;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
+import com.example.go4lunch.view.adapters.OnClickListenerItemList;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
@@ -36,20 +37,21 @@ import io.reactivex.observers.DisposableObserver;
 
 public class ListRestaurantsFragment extends Fragment implements OnClickListenerItemList {
 
+    //FOR DESIGN
+    @BindView(R.id.fragment_list_restaurants_recycler_view)
+    RecyclerView recyclerView;
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
+    @BindView(R.id.fragment_list_restaurants_menu_fab)
+    FloatingActionMenu floatingActionButton;
+
+    //FOR DATA
     private List<Restaurant> restaurantListFromPlaces;
     private ListRestaurantsAdapter adapter;
     private Location currentLocation;
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private Disposable disposable;
     private int radius;
-
-    @BindView(R.id.fragment_list_restaurants_recycler_view)
-    RecyclerView recyclerView;
-
-    @BindView(R.id.progress_bar_layout)
-    ConstraintLayout progressBarLayout;
-    @BindView(R.id.fragment_list_restaurants_menu_fab)
-    FloatingActionMenu floatingActionButton;
 
     public ListRestaurantsFragment() {}
 
@@ -71,8 +73,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
@@ -173,8 +175,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     /**
      * Unsubscribe of the HTTP Request
      */
-    private void unsubscribe() {
-        if (this.disposable != null && !this.disposable.isDisposed()) {
+    private void unsubscribe()
+    {
+        if (this.disposable != null && !this.disposable.isDisposed())
+        {
             this.disposable.dispose();
         }
     }
@@ -182,13 +186,15 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     ////////////////////////////////////////// OVERRIDE METHODS ///////////////////////////////////////////
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
         this.unsubscribe();
     }
 
     @Override
-    public void onClickListener(int position) {
+    public void onClickListener(int position)
+    {
         Intent intent = new Intent(getContext(), DetailsActivity.class);
         intent.putExtra("placeId", restaurantListFromPlaces.get(position).getPlaceId());
         startActivity(intent);

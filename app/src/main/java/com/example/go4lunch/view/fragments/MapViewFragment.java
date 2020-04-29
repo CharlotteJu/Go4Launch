@@ -44,6 +44,11 @@ import io.reactivex.observers.DisposableObserver;
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
+    //FOR DESIGN
+    @BindView(R.id.progress_bar_layout)
+    ConstraintLayout progressBarLayout;
+
+    //FOR DATA
     private Location currentLocation;
     private List<Restaurant> restaurantListFromPlaces;
     private Disposable disposable;
@@ -51,9 +56,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private GoogleMap googleMap;
     private int radius;
     private float zoom;
-
-    @BindView(R.id.progress_bar_layout)
-    ConstraintLayout progressBarLayout;
+    private String key;
 
     public MapViewFragment() {}
 
@@ -71,7 +74,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        String key = getResources().getString(R.string.google_maps_key);
+        this.key = getResources().getString(R.string.google_maps_key);
         Places.initialize(Objects.requireNonNull(getContext()), key);
         this.radius = 500;
         this.zoom = 0;
@@ -79,8 +82,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
@@ -93,7 +96,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public void onResume() {
+    public void onResume()
+    {
         super.onResume();
         this.configViewModel();
     }
@@ -112,10 +116,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         this.getRestaurantListFromPlaces();
     }
 
-
     private void getRestaurantListFromPlaces()
     {
-        String key = getResources().getString(R.string.google_maps_key);
         this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), radius, key)
                 .observe(this, listObservable -> disposable = listObservable
                         .subscribeWith(new DisposableObserver<List<Restaurant>>()
@@ -167,6 +169,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         this.googleMap.setMapStyle(mapStyleOptions);
     }
 
+    /**
+     * Lunch Details Activity when we click on a Restaurant Marker
+     * @param marker from the Google Map
+     */
     private void lunchDetailsActivity(Marker marker)
     {
         String placeId = (String) marker.getTag();
@@ -208,6 +214,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             markerFinal.setTag(restaurantTemp.getPlaceId());
             this.googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
+
         LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
         if (this.zoom == 0)
@@ -215,7 +222,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             this.zoom = 16;
             this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
         }
-
         this.googleMap.addMarker(markerOptions);
         this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
     }
@@ -232,73 +238,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
         int oldRadius = radius;
 
-        radius = calculateRadiusSinceCurrentLocation(latLngRight, latLngLeft);
+        radius = (int) UtilsCalcul.calculateRadiusAccordingToCurrentLocation(latLngRight, latLngLeft, currentLocation);
 
         if (radius <= oldRadius - 100 || radius >= oldRadius + 100)
         {
             this.getRestaurantListFromPlaces();
         }
-
     }
 
-    //////////// TODO : TEST UNITAIRES ?
-    private int calculateRadiusSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft)
-    {
-        double test = UtilsCalcul.calculateRadiusSinceCurrentLocation(latLngRight, latLngLeft, currentLocation);
-        return (int) test;
-
-        /*
-        // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran
-
-        // ------------------------------------------------------------------------------------------------------------------
-        // on se sert des formules suivantes :
-        // convertion degree vers radian : 360 degrees = 2 PI radian => 1 degree = 2 PI / 360.
-        final float DEG_EN_RADIAN = 2.0f * (float)Math.PI / 360.0f;
-
-        // 1 degree en latitude = 111,32 km (111320 m)
-        final float OUVERTURE_LAT_EN_METRES = 111320.0f;
-
-        // 1 degree en longitude = 111,32 km * cos(latitude)    /!\ dans un fonction sinus, cosinu ou tangeante, la latitude doit etre exprimée en radian (et non pas en degree)
-        // ici on utilise la latitude de la position courante car les points sont très - TRES - proches les uns des autres (c'est une approximation acceptable)
-        final float OUVERTURE_LONG_EN_METRES = 111320.0f * (float)Math.cos(currentLocation.getLatitude() * DEG_EN_RADIAN);
-
-        // theoreme de pythagore pour un triangle rectangle : c (hypothenuse) = √(a² + b²)
-
-        // ------------------------------------------------------------------------------------------------------------------
-        // Distance position actuelle <=> Coin haut-gauche
-        float a_gauche, b_gauche;
-        // ouverture de la latitude en degree ET convertion de l'ouverture en metres
-        a_gauche = Math.abs((float)(latLngLeft.latitude - currentLocation.getLatitude())) * OUVERTURE_LAT_EN_METRES;
-
-        // meme chose en longitude
-        b_gauche = Math.abs((float)(latLngLeft.longitude - currentLocation.getLongitude())) * OUVERTURE_LONG_EN_METRES;
-
-        // Math.sqrt() = fonction racine carree
-        float dist_PositionCourante_CoinHautGauche = (float)Math.sqrt((a_gauche * a_gauche) + (b_gauche * b_gauche));
-
-        // ------------------------------------------------------------------------------------------------------------------
-        // Distance position actuelle <=> Coin haut-droit
-        float a_droit, b_droit;
-        a_droit = Math.abs((float)(latLngRight.latitude - currentLocation.getLatitude())) * OUVERTURE_LAT_EN_METRES;
-        b_droit = Math.abs((float)(latLngRight.longitude - currentLocation.getLongitude())) * OUVERTURE_LONG_EN_METRES;
-        float dist_PositionCourante_CoinHautDroit = (float)Math.sqrt((a_droit * a_droit) + (b_droit * b_droit));
-
-        if (dist_PositionCourante_CoinHautDroit > 10000 || dist_PositionCourante_CoinHautGauche > 10000)
-        {
-            return 10000;
-        }
-        else if (dist_PositionCourante_CoinHautDroit >= dist_PositionCourante_CoinHautGauche)
-        {
-            return (int) dist_PositionCourante_CoinHautDroit;
-        }
-        else
-        {
-            return (int) dist_PositionCourante_CoinHautGauche;
-        }*/
-
-    }
-
-    ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
+    /////////////////////////////////// DESTROY METHODS ///////////////////////////////////
 
     /**
      * Unsubscribe of the HTTP Request
@@ -312,11 +260,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
         this.unsubscribe();
     }
-
-
-
 }

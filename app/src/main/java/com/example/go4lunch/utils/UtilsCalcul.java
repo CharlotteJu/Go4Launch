@@ -2,7 +2,6 @@ package com.example.go4lunch.utils;
 
 import android.location.Location;
 
-import com.example.go4lunch.model.RestaurantPOJO;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -10,65 +9,76 @@ import java.util.List;
 
 public abstract class UtilsCalcul
 {
-    public static double calculateRadiusSinceCurrentLocation(LatLng latLngRight, LatLng latLngLeft, Location currentLocation)
+
+    /**
+     * Calculate the Radius from the CurrentLocation taking into account the VisibleRegion of Map
+     * @param latLngRight from the VisibleRegion of Map
+     * @param latLngLeft from the VisibleRegion of Map
+     * @param currentLocation of the currentUser
+     * @return radius
+     */
+    public static double calculateRadiusAccordingToCurrentLocation(LatLng latLngRight, LatLng latLngLeft, Location currentLocation)
     {
-        // L'objectif est de calculer la distance entre la position actuelle et les coins haut-gauche et haut-droit de l'ecran
+        // Conversion degree into radian : 360 degrees = 2 PI radian => 1 degree = 2 PI / 360.
+        final float DEG_IN_RADIAN = 2.0f * (float)Math.PI / 360.0f;
+
+        // 1 degree in latitude = 111,32 km (111320 m)
+        final float OPENING_LAT_METERS = 111320.0f;
+
+        // 1 degree in longitude = 111,32 km * cos(latitude)    /!\ in a function sinus, cosine or tangent, the latitude has to be in radian (not degree)
+        // Here we use the latitude of the currentLocation because the points are next to each other (approximation)
+        final float OPENING_LNG_METERS = 111320.0f * (float)Math.cos(currentLocation.getLatitude() * DEG_IN_RADIAN);
+
+        // Pythagore for a right triangle : c (hypotenuse) = √(a² + b²)
+        // ------------------------------------------------------------------------------------------------------------------
+        // Distance currentLocation <=> latLngLeft
+        float a_left;
+        float b_left;
+        // Opening of the latitude in degree and conversion at the opening in meters
+        a_left = Math.abs((float)(latLngLeft.latitude - currentLocation.getLatitude())) * OPENING_LAT_METERS;
+
+        // Same in longitude
+        b_left = Math.abs((float)(latLngLeft.longitude - currentLocation.getLongitude())) * OPENING_LNG_METERS;
+
+        // Math.sqrt() = function square root
+        float dist_currentLocation_latLngLeft = (float)Math.sqrt((a_left * a_left) + (b_left * b_left));
 
         // ------------------------------------------------------------------------------------------------------------------
-        // on se sert des formules suivantes :
-        // convertion degree vers radian : 360 degrees = 2 PI radian => 1 degree = 2 PI / 360.
-        final float DEG_EN_RADIAN = 2.0f * (float)Math.PI / 360.0f;
+        //  Distance currentLocation <=> latLngRight
+        float a_right;
+        float b_right;
+        a_right = Math.abs((float)(latLngRight.latitude - currentLocation.getLatitude())) * OPENING_LAT_METERS;
+        b_right = Math.abs((float)(latLngRight.longitude - currentLocation.getLongitude())) * OPENING_LNG_METERS;
+        float dist_currentLocation_latLngRight = (float)Math.sqrt((a_right * a_right) + (b_right * b_right));
 
-        // 1 degree en latitude = 111,32 km (111320 m)
-        final float OUVERTURE_LAT_EN_METRES = 111320.0f;
-
-        // 1 degree en longitude = 111,32 km * cos(latitude)    /!\ dans un fonction sinus, cosinu ou tangeante, la latitude doit etre exprimée en radian (et non pas en degree)
-        // ici on utilise la latitude de la position courante car les points sont très - TRES - proches les uns des autres (c'est une approximation acceptable)
-        final float OUVERTURE_LONG_EN_METRES = 111320.0f * (float)Math.cos(currentLocation.getLatitude() * DEG_EN_RADIAN);
-
-        // theoreme de pythagore pour un triangle rectangle : c (hypothenuse) = √(a² + b²)
-
-        // ------------------------------------------------------------------------------------------------------------------
-        // Distance position actuelle <=> Coin haut-gauche
-        float a_gauche, b_gauche;
-        // ouverture de la latitude en degree ET convertion de l'ouverture en metres
-        a_gauche = Math.abs((float)(latLngLeft.latitude - currentLocation.getLatitude())) * OUVERTURE_LAT_EN_METRES;
-
-        // meme chose en longitude
-        b_gauche = Math.abs((float)(latLngLeft.longitude - currentLocation.getLongitude())) * OUVERTURE_LONG_EN_METRES;
-
-        // Math.sqrt() = fonction racine carree
-        float dist_PositionCourante_CoinHautGauche = (float)Math.sqrt((a_gauche * a_gauche) + (b_gauche * b_gauche));
-
-        // ------------------------------------------------------------------------------------------------------------------
-        // Distance position actuelle <=> Coin haut-droit
-        float a_droit, b_droit;
-        a_droit = Math.abs((float)(latLngRight.latitude - currentLocation.getLatitude())) * OUVERTURE_LAT_EN_METRES;
-        b_droit = Math.abs((float)(latLngRight.longitude - currentLocation.getLongitude())) * OUVERTURE_LONG_EN_METRES;
-        float dist_PositionCourante_CoinHautDroit = (float)Math.sqrt((a_droit * a_droit) + (b_droit * b_droit));
-
-        if (dist_PositionCourante_CoinHautDroit > 10000 || dist_PositionCourante_CoinHautGauche > 10000)
+        // If the distance > 10000, return 10000
+        if (dist_currentLocation_latLngRight > 10000 || dist_currentLocation_latLngLeft > 10000)
         {
             return 10000;
         }
         else
-            return Math.max(dist_PositionCourante_CoinHautDroit, dist_PositionCourante_CoinHautGauche);
-
+        {
+            return Math.max(dist_currentLocation_latLngRight, dist_currentLocation_latLngLeft);
+        }
     }
 
-    public static List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius, Location currentLocation)
+    /**
+     * Calculate the RectangularBounds for Autocomplete Search from the CurrentLocation according to the radius
+     * @param radius from the PlacesRequest
+     * @param currentLocation of the CurrentUser
+     * @return a List with 2 LatLng
+     */
+    public static List<LatLng> calculateRectangularBoundsAccordingToCurrentLocation(double radius, Location currentLocation)
     {
         List<LatLng> list = new ArrayList<>();
 
-        double latA = currentLocation.getLatitude() - (radius/111);
-        double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
+        double latA = currentLocation.getLatitude() - (float) (radius/111);
+        double lngA = currentLocation.getLongitude() - (float) (radius/(111 * Math.cos(latA * (Math.PI/180.0f))));
         LatLng pointA = new LatLng(latA, lngA);
         list.add(pointA);
 
-
-        double latB = currentLocation.getLatitude() + radius/111 ;
-        double lngB = currentLocation.getLongitude() + radius/(111 * Math.cos(latB * (Math.PI/180.0f)));
-
+        double latB = currentLocation.getLatitude() + (float) (radius/111) ;
+        double lngB = currentLocation.getLongitude() + (float) (radius/(111 * Math.cos(latB * (Math.PI/180.0f))));
         LatLng pointB = new LatLng(latB, lngB);
         list.add(pointB);
 

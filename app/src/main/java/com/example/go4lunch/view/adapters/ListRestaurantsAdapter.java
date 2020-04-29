@@ -17,7 +17,6 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.UtilsListRestaurant;
-import com.example.go4lunch.view.fragments.OnClickListenerItemList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,6 @@ import butterknife.OnClick;
 
 public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurantsAdapter.ListRestaurantsViewHolder>
 {
-
     // FOR DATA
     private OnClickListenerItemList onClickListenerItemList;
     private List<Restaurant> restaurantsFromPlaces;

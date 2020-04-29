@@ -39,7 +39,7 @@
     <string name="details_fragment_no_restaurant">OUPS, IL SEMBLERAIT QUE CE NE SOIT PAS UN RESTAURANT</string>
 
     <!-- MAP VIEW FRAGMENT -->
-    <string name="map_view_fragment_my_position">My position</string>
+    <string name="map_view_fragment_my_position">Ma position</string>
 
 
     <!-- NAVIGATION HEADER -->

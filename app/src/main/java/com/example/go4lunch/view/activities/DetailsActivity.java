@@ -24,10 +24,9 @@ import butterknife.OnClick;
 public class DetailsActivity extends AppCompatActivity {
 
     private String placeId;
+    private DetailsFragment detailsFragment;
 
-    DetailsFragment detailsFragment;
-
-   @BindView(R.id.details_activity_toolbar)
+    @BindView(R.id.details_activity_toolbar)
     Toolbar toolbar;
 
     @Override
@@ -39,9 +38,6 @@ public class DetailsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         placeId = intent.getStringExtra("placeId");
         displayFragment(displayDetailsFragment());
-
-        // TODO : Vérifier ici si c'est un restaurant ??
-
     }
 
     /**

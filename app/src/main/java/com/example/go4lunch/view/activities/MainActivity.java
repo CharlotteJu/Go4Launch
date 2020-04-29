@@ -58,7 +58,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -78,11 +77,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     @BindView(R.id.navigation_drawer_nav_view)
     NavigationView navigationView;
+
+    //FOR DATA
     private MapViewFragment mapViewFragment;
     private ListRestaurantsFragment listRestaurantsFragment;
     private ListWorkmatesFragment listWorkmatesFragment;
 
-    //FOR DATA
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
     private ViewModelGo4Lunch viewModelGo4Lunch;
@@ -94,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -105,6 +106,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.configureDrawerLayout();
         this.configureNavigationView();
         this.getSharedPreferences();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        this.configViewModel();
     }
 
     ///////////////////////////////////VIEW MODEL///////////////////////////////////
@@ -248,42 +256,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
 
-        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(radius);
+        List<LatLng> latLngForRectangularBounds = UtilsCalcul.calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLocation);
         RectangularBounds rectangularBounds = RectangularBounds.newInstance
-                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
-
-
+                (latLngForRectangularBounds.get(0), latLngForRectangularBounds.get(1));
 
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                 .setLocationRestriction(rectangularBounds)
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .build(getApplicationContext());
         startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-    }
-
-
-    //TODO : TESTS UNITAIRES ?
-    private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
-    {
-        List<LatLng> test = UtilsCalcul.calculateRectangularBoundsSinceCurrentLocation(radius, currentLocation);
-        return test;
-
-
-        /*List<LatLng> list = new ArrayList<>();
-
-        double latA = currentLocation.getLatitude() - (radius/111);
-        double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
-        LatLng pointA = new LatLng(latA, lngA);
-        list.add(pointA);
-
-
-        double latB = currentLocation.getLatitude() + radius/111 ;
-        double lngB = currentLocation.getLongitude() + radius/(111 * Math.cos(latB * (Math.PI/180.0f)));
-
-        LatLng pointB = new LatLng(latB, lngB);
-        list.add(pointB);
-
-        return list;*/
     }
 
     /**
@@ -328,7 +309,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
             }
         });
-
     }
 
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
@@ -362,7 +342,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setMessage(getResources().getString(R.string.main_activity_pop_up_log_out_message));
         builder.setPositiveButton(getResources().getString(R.string.main_activity_pop_up_yes), (dialogInterface, i) -> logOut());
         builder.setNegativeButton(getResources().getString(R.string.main_activity_pop_up_no), null);
-
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -399,7 +378,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alertDialog.show();
     }
 
-
     /**
      * Update SharedPreferences for notifications {@link SharedPreferences}
      */
@@ -409,15 +387,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
         editor.apply();
-
         this.getSharedPreferences();
     }
 
+    /**
+     * Get SharedPreferences for notifications {@link SharedPreferences} {@link WorkerNotificationController}
+     */
     private void getSharedPreferences()
     {
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         boolean isAuthorized = sharedPreferences.getBoolean(NOTIFICATIONS_BOOLEAN, true);
-
         if (isAuthorized)
         {
             WorkerNotificationController.startWorkRequest(getApplicationContext());
@@ -429,13 +408,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     ///////////////////////////////////OVERRIDE METHODS///////////////////////////////////
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        this.configViewModel();
-    }
 
     @Override
     public void onBackPressed()

@@ -11,7 +11,6 @@ import org.mockito.Spy;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class UtilsCalculTest
@@ -37,7 +36,7 @@ public class UtilsCalculTest
     @Test
     public void calculateRadiusSinceCurrentLocation_0_Success()
     {
-        when(UtilsCalcul.calculateRadiusSinceCurrentLocation(latLngRight, latLngLeft, currentLocation)).thenReturn(0.0);
+        when(UtilsCalcul.calculateRadiusAccordingToCurrentLocation(latLngRight, latLngLeft, currentLocation)).thenReturn(0.0);
     }
 
     @Test
@@ -48,7 +47,13 @@ public class UtilsCalculTest
         list.add(latLngRight);
         list.add(latLngLeft);
 
-        when(UtilsCalcul.calculateRectangularBoundsSinceCurrentLocation(radius, currentLocation)).thenReturn(list);
+       //UtilsCalcul utilsCalcul = mock(UtilsCalcul.class);
+
+        //doReturn(list).when(UtilsCalcul.class).calculateRectangularBoundsSinceCurrentLocation(radius, currentLocation));
+
+       //doReturn(list).when(utilsCalcul).calculateRectangularBoundsSinceCurrentLocation(radius, currentLocation);
+
+        when(UtilsCalcul.calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLocation)).thenReturn(list);
     }
 
 

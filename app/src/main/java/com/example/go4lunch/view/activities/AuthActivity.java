@@ -21,6 +21,7 @@ import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Arrays;
 import java.util.List;
@@ -36,18 +37,19 @@ import butterknife.OnClick;
  */
 public class AuthActivity extends AppCompatActivity {
 
-    private final static int FIREBASE_UI = 100;
-    private Boolean userExists = false;
-
-    private ViewModelGo4Lunch viewModelGo4Lunch;
-    private List<User> usersList;
-
+   //FOR DESIGN
     @BindView(R.id.progress_bar_layout)
     ConstraintLayout progressBarLayout;
     @BindView(R.id.auth_activity_facebook_button)
     Button facebookButton;
     @BindView(R.id.auth_activity_google_button)
     Button googleButton;
+
+    //FOR DATA
+    private final static int FIREBASE_UI = 100;
+    private Boolean userExists = false;
+    private ViewModelGo4Lunch viewModelGo4Lunch;
+    private List<User> usersList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -129,6 +131,9 @@ public class AuthActivity extends AppCompatActivity {
 
     ///////////////////////////////////UI///////////////////////////////////
 
+    /**
+     * If currentUser is not null, show the Progress Bar during data loading
+     */
     private void showProgressBar()
     {
         if(FirebaseAuth.getInstance().getCurrentUser() != null)
@@ -189,6 +194,9 @@ public class AuthActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Use it for the Response of SignIn
+     */
     private void responseSignIn(int requestCode, int resultCode, Intent data)
     {
         IdpResponse response = IdpResponse.fromResultIntent(data);
