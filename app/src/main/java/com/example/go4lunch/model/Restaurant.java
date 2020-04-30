@@ -8,13 +8,11 @@ import java.util.Objects;
 
 public class Restaurant
 {
-
     private String name;
     private String address;
     private double rating;
     private String illustration;
     private String placeId;
-
     private List<User> userList;
     private String phoneNumber;
     private String website;

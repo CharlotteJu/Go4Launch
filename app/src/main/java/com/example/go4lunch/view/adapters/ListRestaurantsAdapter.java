@@ -146,32 +146,19 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            }
         }
 
-        //TODO : Pas moyen de faire 1 ELSE pour les 2 ?
         /**
          * Update the workmate's number with documentSnapshot from Firebase
          */
         private void updateNumberWorkmates (Restaurant restaurant)
         {
-            if (restaurant.getUserList() != null)
+            numberWorkmates = 0;
+            if (restaurant.getUserList() != null && restaurant.getUserList().size() > 0)
             {
-                if (restaurant.getUserList().size() > 0)
-                {
-                    numberWorkmates = restaurant.getUserList().size();
-                    String numberWorkmatesString = "(" + numberWorkmates + ")";
-                    numberWorkmatesTxt.setText(numberWorkmatesString);
-                    displayWorkmates();
-                }
-                else
-                {
-                    numberWorkmates = 0;
-                    displayWorkmates();
-                }
+                numberWorkmates = restaurant.getUserList().size();
+                String numberWorkmatesString = "(" + numberWorkmates + ")";
+                numberWorkmatesTxt.setText(numberWorkmatesString);
             }
-            else
-            {
-                numberWorkmates = 0;
-                displayWorkmates();
-            }
+            displayWorkmates();
         }
 
         /**

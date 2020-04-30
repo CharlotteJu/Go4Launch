@@ -34,7 +34,7 @@ public class NotificationWorkerTest
     @Test
     public void buildMessageForNotification_WithoutWorkmates_Success()
     {
-        // TODO : Tester une méthode privée ?
+        // TODO : PASSER EN PUBLIC
     }
 
 }

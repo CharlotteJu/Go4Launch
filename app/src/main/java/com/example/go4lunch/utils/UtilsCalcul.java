@@ -84,4 +84,5 @@ public abstract class UtilsCalcul
 
         return list;
     }
+
 }

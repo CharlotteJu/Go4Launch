@@ -255,11 +255,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureAutocompleteSearchToolbar(double radius)
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
-
-        List<LatLng> latLngForRectangularBounds = UtilsCalcul.calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLocation);
+        List<LatLng> latLngForRectangularBounds = UtilsCalcul.
+                calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLocation);
         RectangularBounds rectangularBounds = RectangularBounds.newInstance
                 (latLngForRectangularBounds.get(0), latLngForRectangularBounds.get(1));
-
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                 .setLocationRestriction(rectangularBounds)
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
@@ -274,41 +273,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * We can display 1st fragment when we have the location
      */
     private void fetchLocation() {
-        while (ActivityCompat.checkSelfPermission(
+
+        if (ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
         }
-        Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(location -> {
-            if (location != null)
-            {
-                currentLocation = location;
-                displayFragment(displayMapViewFragment());
-            }
-            else
-            {
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location)
-                    {
-                        currentLocation = location;
-                        if (mapViewFragment == null)
+        else
+        {
+            Task<Location> task = fusedLocationProviderClient.getLastLocation();
+            task.addOnSuccessListener(location -> {
+                if (location != null)
+                {
+                    currentLocation = location;
+                    displayFragment(displayMapViewFragment());
+                }
+                else
+                {
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                        @Override
+                        public void onLocationChanged(Location location)
                         {
-                            displayFragment(displayMapViewFragment());
+                            currentLocation = location;
+                            if (mapViewFragment == null)
+                            {
+                                displayFragment(displayMapViewFragment());
+                            }
                         }
-                    }
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {}
-                    @Override
-                    public void onProviderEnabled(String provider) {}
-                    @Override
-                    public void onProviderDisabled(String provider) {}
-                });
-            }
-        });
+                        @Override
+                        public void onStatusChanged(String provider, int status, Bundle extras) {}
+                        @Override
+                        public void onProviderEnabled(String provider) {}
+                        @Override
+                        public void onProviderDisabled(String provider) {}
+                    });
+                }
+            });
+        }
+
     }
 
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
@@ -473,13 +477,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     startActivity(intent);
                 }
             }
-            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
-            {
-                assert data != null;
-                //TODO : FAIRE QUELQUE CHOSE ?
-                Status status = Autocomplete.getStatusFromIntent(data);
-            }
+
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        this.fetchLocation();
     }
 }

@@ -23,7 +23,10 @@ public interface RestaurantPlacesApi
      */
     @GET("nearbysearch/json?")
     Observable<RestaurantPOJO> getNearbyRestaurants (@Query("location") String location,
-                                                           @Query("radius") int radius, @Query ("type") String type, @Query("opening_hours") Boolean openingHours, @Query("key") String key);
+                                                     @Query("radius") int radius,
+                                                     @Query ("type") String type,
+                                                     @Query("opening_hours") Boolean openingHours,
+                                                     @Query("key") String key);
 
 
     /**
@@ -33,7 +36,8 @@ public interface RestaurantPlacesApi
      * @return an Observable<DetailPOJO>
      */
     @GET("details/json?")
-    Observable<DetailPOJO> getDetailRestaurants (@Query("place_id") String placeId, @Query("key") String key);
+    Observable<DetailPOJO> getDetailRestaurants (@Query("place_id") String placeId,
+                                                 @Query("key") String key);
 
 
     /**

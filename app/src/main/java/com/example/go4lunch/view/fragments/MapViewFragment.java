@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.UtilsCalcul;
@@ -43,10 +44,6 @@ import io.reactivex.observers.DisposableObserver;
 
 
 public class MapViewFragment extends Fragment implements OnMapReadyCallback {
-
-    //FOR DESIGN
-    @BindView(R.id.progress_bar_layout)
-    ConstraintLayout progressBarLayout;
 
     //FOR DATA
     private Location currentLocation;
@@ -86,7 +83,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
         ButterKnife.bind(this, v);
-        this.progressBarLayout.setVisibility(View.VISIBLE);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (supportMapFragment != null)
         {
@@ -154,7 +150,6 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     }
                 }
             }
-            this.progressBarLayout.setVisibility(View.INVISIBLE);
             setMarker();
         });
     }
@@ -165,7 +160,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap)
     {
         this.googleMap = googleMap;
-        MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle(Objects.requireNonNull(getContext()), R.raw.google_style);
+        MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle
+                (Objects.requireNonNull(getContext()), R.raw.google_style);
         this.googleMap.setMapStyle(mapStyleOptions);
     }
 

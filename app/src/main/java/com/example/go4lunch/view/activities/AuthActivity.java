@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -72,9 +73,9 @@ public class AuthActivity extends AppCompatActivity {
 
     private void getUsersList()
     {
-        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList -> {
+        this.viewModelGo4Lunch.getUsersListMutableLiveData().observe(this, userList ->
+        {
             usersList = userList;
-
             connectUser();
         });
     }
@@ -103,11 +104,9 @@ public class AuthActivity extends AppCompatActivity {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
-                        .setAvailableProviders(
-                                Arrays.asList(
+                        .setAvailableProviders(Collections.singletonList(
                                         new AuthUI.IdpConfig.GoogleBuilder().build()))
                         .setIsSmartLockEnabled(false, true)
-
                         .build(),FIREBASE_UI);
         this.getUsersList();
     }
@@ -120,11 +119,9 @@ public class AuthActivity extends AppCompatActivity {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
-                        .setAvailableProviders(
-                                Arrays.asList(
+                        .setAvailableProviders(Collections.singletonList(
                                         new AuthUI.IdpConfig.FacebookBuilder().build()))
                         .setIsSmartLockEnabled(false, true)
-
                         .build(),FIREBASE_UI);
         this.getUsersList();
     }
@@ -199,8 +196,6 @@ public class AuthActivity extends AppCompatActivity {
      */
     private void responseSignIn(int requestCode, int resultCode, Intent data)
     {
-        IdpResponse response = IdpResponse.fromResultIntent(data);
-        //TODO : FAIRE UN TRUC DE RESPONSE ?
         if (requestCode == FIREBASE_UI)
         {
             if (resultCode == RESULT_OK)

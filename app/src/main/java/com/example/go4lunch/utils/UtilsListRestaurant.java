@@ -98,12 +98,9 @@ public abstract class UtilsListRestaurant
      */
     public static void updateDistanceToCurrentLocation(Location currentLocation, List<Restaurant> restaurantList)
     {
-        //Location restaurantLocation = new Location("fusedLocationProvider");
         int size = restaurantList.size();
         for (int i = 0; i < size; i++)
         {
-           //TODO : Obligé de passer par une méthode en dessous ? Pas plus de travail ?
-
             int distanceLocation = (int) updateDistanceForOneRestaurant(currentLocation, restaurantList.get(i));
             restaurantList.get(i).setDistanceCurrentUser(distanceLocation);
 
@@ -117,7 +114,7 @@ public abstract class UtilsListRestaurant
         }
     }
 
-    public static float updateDistanceForOneRestaurant (Location currentLocation, Restaurant restaurant)
+    static float updateDistanceForOneRestaurant(Location currentLocation, Restaurant restaurant)
     {
         Location restaurantLocation = new Location("fusedLocationProvider");
         //Get the restaurant's location

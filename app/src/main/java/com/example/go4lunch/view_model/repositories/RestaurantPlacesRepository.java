@@ -38,7 +38,6 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
     @Override
     public Observable<DetailPOJO> streamDetailRestaurant(String placeId, String key) {
         RestaurantPlacesApi restaurantPlacesApi = RestaurantPlacesApi.retrofit.create(RestaurantPlacesApi.class);
-
         return restaurantPlacesApi.getDetailRestaurants(placeId, key)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -69,7 +68,6 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
 
                     // If it's a restaurant, configure an Object Restaurant
                     String placeId1 = detailPOJO.getResult().getPlaceId();
-
                     String name = (detailPOJO.getResult().getName() != null ? detailPOJO.getResult().getName() : "");
                     String address = (detailPOJO.getResult().getVicinity() != null ? detailPOJO.getResult().getVicinity() : "");
                     double rating = (detailPOJO.getResult().getRating() != null ? detailPOJO.getResult().getRating() : 0);

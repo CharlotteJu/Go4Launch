@@ -107,7 +107,6 @@ public class NotificationWorker extends Worker
         return stringForNotification;
     }
 
-    //TODO : TESTS UNITAIRES ?
 
     /**
      * Create the Message with information of RestaurantChoose

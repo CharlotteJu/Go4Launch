@@ -3,6 +3,9 @@ package com.example.go4lunch.view.fragments;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
@@ -10,11 +13,8 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.bumptech.glide.Glide;
+import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.UtilsListRestaurant;
@@ -53,15 +53,14 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private Disposable disposable;
     private int radius;
 
-    public ListRestaurantsFragment() {}
+    public ListRestaurantsFragment() {
+    }
 
-    private ListRestaurantsFragment(Location location)
-    {
+    private ListRestaurantsFragment(Location location) {
         this.currentLocation = location;
     }
 
-    public static ListRestaurantsFragment newInstance(Location location)
-    {
+    public static ListRestaurantsFragment newInstance(Location location) {
         return new ListRestaurantsFragment(location);
     }
 
@@ -73,8 +72,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
@@ -91,15 +89,13 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
-    private void configViewModel()
-    {
+    private void configViewModel() {
         ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
         viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
         this.getRestaurantListFromPlaces();
     }
 
-    private void getRestaurantListFromPlaces()
-    {
+    private void getRestaurantListFromPlaces() {
         String key = getResources().getString(R.string.google_maps_key);
         this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), radius, key)
                 .observe(this, listObservable -> disposable = listObservable
@@ -110,26 +106,26 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                                 UtilsListRestaurant.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
                                 getRestaurantListFromFirebase();
                             }
+
                             @Override
-                            public void onError(Throwable e) {}
+                            public void onError(Throwable e) {
+                            }
+
                             @Override
-                            public void onComplete() {}
+                            public void onComplete() {
+                            }
                         }));
 
     }
 
-    private void getRestaurantListFromFirebase()
-    {
+    private void getRestaurantListFromFirebase() {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList -> {
 
             int size = restaurantList.size();
-            for (int i = 0; i < size; i++)
-            {
+            for (int i = 0; i < size; i++) {
                 Restaurant restaurant = restaurantList.get(i);
-                if (restaurant.getUserList().size() > 0)
-                {
-                    if (restaurantListFromPlaces.contains(restaurant))
-                    {
+                if (restaurant.getUserList().size() > 0) {
+                    if (restaurantListFromPlaces.contains(restaurant)) {
                         int index = restaurantListFromPlaces.indexOf(restaurant);
                         restaurantListFromPlaces.get(index).setUserList(restaurant.getUserList());
                     }
@@ -163,6 +159,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     }
 
     ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
+
     /**
      * Configure the RecyclerView
      */
@@ -175,10 +172,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     /**
      * Unsubscribe of the HTTP Request
      */
-    private void unsubscribe()
-    {
-        if (this.disposable != null && !this.disposable.isDisposed())
-        {
+    private void unsubscribe() {
+        if (this.disposable != null && !this.disposable.isDisposed()) {
             this.disposable.dispose();
         }
     }
@@ -186,15 +181,13 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     ////////////////////////////////////////// OVERRIDE METHODS ///////////////////////////////////////////
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
         this.unsubscribe();
     }
 
     @Override
-    public void onClickListener(int position)
-    {
+    public void onClickListener(int position) {
         Intent intent = new Intent(getContext(), DetailsActivity.class);
         intent.putExtra("placeId", restaurantListFromPlaces.get(position).getPlaceId());
         startActivity(intent);
