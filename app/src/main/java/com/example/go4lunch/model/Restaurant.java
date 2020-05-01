@@ -41,9 +41,21 @@ public class Restaurant
      */
     public Restaurant () {}
 
+    /**
+     * Constructor for Detail when it's not a Restaurant
+     */
     public Restaurant (String name)
     {
         this.name = name;
+    }
+
+    /**
+     * Constructor for Notification tests
+     */
+    public Restaurant(String name, String address)
+    {
+        this.name = name;
+        this.address = address;
     }
 
     /**

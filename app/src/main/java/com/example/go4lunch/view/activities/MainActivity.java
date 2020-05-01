@@ -255,8 +255,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureAutocompleteSearchToolbar(double radius)
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         List<LatLng> latLngForRectangularBounds = UtilsCalcul.
-                calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLocation);
+                calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLatLng);
         RectangularBounds rectangularBounds = RectangularBounds.newInstance
                 (latLngForRectangularBounds.get(0), latLngForRectangularBounds.get(1));
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)

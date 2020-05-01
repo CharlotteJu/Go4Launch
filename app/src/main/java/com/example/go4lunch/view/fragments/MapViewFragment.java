@@ -233,8 +233,9 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         LatLng latLngLeft = visibleRegion.farLeft;
 
         int oldRadius = radius;
+        LatLng currentLatLng= new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
 
-        radius = (int) UtilsCalcul.calculateRadiusAccordingToCurrentLocation(latLngRight, latLngLeft, currentLocation);
+        radius = UtilsCalcul.calculateRadiusAccordingToCurrentLocation(latLngRight, latLngLeft, currentLatLng);
 
         if (radius <= oldRadius - 100 || radius >= oldRadius + 100)
         {
