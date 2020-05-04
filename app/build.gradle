@@ -32,6 +32,9 @@ android {
         }
 
     }
+    dexOptions{
+        javaMaxHeapSize"4G"
+    }
     testOptions {
         unitTests.returnDefaultValues = true
     }

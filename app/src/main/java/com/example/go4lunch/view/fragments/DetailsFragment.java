@@ -279,13 +279,13 @@ public class DetailsFragment extends Fragment {
             }
             this.currentUser.setRestaurantChoose(this.restaurantFinal);
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_restaurant);
-            workmatesList.add(UserPushOnFirebase);
+            this.workmatesList.add(UserPushOnFirebase);
         }
         else
         {
             this.currentUser.unSetRestaurantChoose();
             this.floatingActionButton.setImageResource(R.drawable.ic_choose_not_restaurant);
-            workmatesList.remove(UserPushOnFirebase);
+            this.workmatesList.remove(UserPushOnFirebase);
         }
         this.viewModelGo4Lunch.updateRestaurantUserList(restaurantFinal.getPlaceId(), workmatesList);
         this.viewModelGo4Lunch.updateUserRestaurant(uidUser, currentUser.getRestaurantChoose());
@@ -344,11 +344,13 @@ public class DetailsFragment extends Fragment {
     {
         if (restaurantsListFromFirebase.contains(restaurant))
         {
-            User UserPushOnFirebase = new User(currentUser.getEmail(),currentUser.getName(), currentUser.getIllustration());
+            User UserPushOnFirebase = new User(currentUser.getEmail(),currentUser.getName(),
+                    currentUser.getIllustration());
             int index = restaurantsListFromFirebase.indexOf(restaurant);
             List<User> tempListWorkmates = restaurantsListFromFirebase.get(index).getUserList();
             tempListWorkmates.remove(UserPushOnFirebase);
-            this.viewModelGo4Lunch.updateRestaurantUserList(restaurant.getPlaceId(), tempListWorkmates);
+            this.viewModelGo4Lunch.updateRestaurantUserList(restaurant.getPlaceId(),
+                    tempListWorkmates);
         }
     }
 
