@@ -1,12 +1,10 @@
 package com.example.go4lunch.view_model.repositories;
 
 
-
+import com.example.go4lunch.api.RestaurantPlacesApi;
 import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
-import com.example.go4lunch.api.RestaurantPlacesApi;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +12,6 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-
 import io.reactivex.schedulers.Schedulers;
 
 public class RestaurantPlacesRepository implements RestaurantPlacesInterface{

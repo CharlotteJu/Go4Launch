@@ -23,6 +23,7 @@ public class ViewModelFactoryGo4Lunch implements ViewModelProvider.Factory {
         this.restaurantPlacesRepository = restaurantPlacesRepository;
     }
 
+    @SuppressWarnings("unchecked")
     @NonNull
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass)

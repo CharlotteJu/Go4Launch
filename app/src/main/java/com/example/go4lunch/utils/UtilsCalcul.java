@@ -1,7 +1,5 @@
 package com.example.go4lunch.utils;
 
-import android.location.Location;
-
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;

@@ -3,7 +3,6 @@ package com.example.go4lunch.api;
 import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.RestaurantPOJO;
 
-
 import io.reactivex.Observable;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;

@@ -9,7 +9,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.List;
-import java.util.Observable;
 
 public class UserFirebaseRepository implements UserFirebaseInterface
 {

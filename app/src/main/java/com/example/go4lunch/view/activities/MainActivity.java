@@ -1,5 +1,24 @@
 package com.example.go4lunch.view.activities;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -12,38 +31,19 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.notifications.WorkerNotificationController;
 import com.example.go4lunch.utils.UtilsCalcul;
+import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
+import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
+import com.example.go4lunch.view.fragments.MapViewFragment;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
 import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
-import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
-import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
-import com.example.go4lunch.view.fragments.MapViewFragment;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -52,7 +52,6 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
@@ -63,7 +62,6 @@ import java.util.List;
 import java.util.Objects;
 
 import butterknife.BindView;
-
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
@@ -293,28 +291,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 else
                 {
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
-                        @Override
-                        public void onLocationChanged(Location location)
-                        {
-                            currentLocation = location;
-                            if (mapViewFragment == null)
+                    if (!Objects.requireNonNull(locationManager).isProviderEnabled(LocationManager.GPS_PROVIDER))
+                    {
+                        //If location is not activate in Settings, open Settings
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        this.fetchLocation();
+                    }
+                    else
+                    {
+                        Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                            @Override
+                            public void onLocationChanged(Location location)
                             {
-                                displayFragment(displayMapViewFragment());
+                                currentLocation = location;
+                                if (mapViewFragment == null)
+                                {
+                                    displayFragment(displayMapViewFragment());
+                                }
                             }
-                        }
-                        @Override
-                        public void onStatusChanged(String provider, int status, Bundle extras) {}
-                        @Override
-                        public void onProviderEnabled(String provider) {}
-                        @Override
-                        public void onProviderDisabled(String provider) {}
-                    });
+                            @Override
+                            public void onStatusChanged(String provider, int status, Bundle extras) {}
+                            @Override
+                            public void onProviderEnabled(String provider) {}
+                            @Override
+                            public void onProviderDisabled(String provider) {}
+                        });
+                    }
                 }
             });
         }
 
     }
+
 
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
 
@@ -478,7 +486,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     startActivity(intent);
                 }
             }
-
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

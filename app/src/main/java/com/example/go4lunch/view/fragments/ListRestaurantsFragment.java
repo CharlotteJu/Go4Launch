@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.go4lunch.BuildConfig;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.UtilsListRestaurant;
@@ -106,14 +105,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
                                 UtilsListRestaurant.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
                                 getRestaurantListFromFirebase();
                             }
-
                             @Override
-                            public void onError(Throwable e) {
-                            }
-
+                            public void onError(Throwable e) {}
                             @Override
-                            public void onComplete() {
-                            }
+                            public void onComplete() {}
                         }));
 
     }

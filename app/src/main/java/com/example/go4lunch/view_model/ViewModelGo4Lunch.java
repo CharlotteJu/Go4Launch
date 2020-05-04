@@ -8,7 +8,6 @@ import com.example.go4lunch.model.User;
 import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
 import com.example.go4lunch.view_model.repositories.RestaurantPlacesRepository;
 import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;

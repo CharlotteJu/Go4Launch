@@ -5,7 +5,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class RestaurantTest
 {
@@ -14,7 +15,7 @@ public class RestaurantTest
     private String nameTest = "NameTest";
     private String addressTest = "123 Street";
 
-    Restaurant restaurantForTest = new Restaurant(placeIdTest, listTest, nameTest, addressTest);
+    private Restaurant restaurantForTest = new Restaurant(placeIdTest, listTest, nameTest, addressTest);
 
     @Test
     public void RestaurantEquals_False()

@@ -3,16 +3,13 @@ package com.example.go4lunch.view.fragments;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.go4lunch.BuildConfig;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.utils.UtilsCalcul;
@@ -37,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
@@ -73,7 +69,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         this.key = getResources().getString(R.string.google_maps_key);
         Places.initialize(Objects.requireNonNull(getContext()), key);
-        this.radius = 500;
+        this.radius = 637;
         this.zoom = 0;
         restaurantListFromPlaces = new ArrayList<>();
     }
@@ -194,14 +190,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             LatLng tempLatLng = new LatLng(restaurantTemp.getLocation().getLat(), restaurantTemp.getLocation().getLng());
             MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng).title(restaurantTemp.getName());
 
-            if (restaurantTemp.getUserList() != null)
+            if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
             {
-                if (restaurantTemp.getUserList().size() > 0)
-                {
-                    tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
-                }
+                tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
             }
-            if (tempMarker.getIcon() == null)
+            else
             {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_orange));
             }
