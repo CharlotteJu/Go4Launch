@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 29
@@ -9,7 +10,7 @@ android {
         targetCompatibility = "8"
         sourceCompatibility = "8"
     }
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "com.example.go4lunch"
         minSdkVersion 19
@@ -19,20 +20,20 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
 
-        // Google API Keys
-        //resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
+        // API Key
+        resValue "string", "google_maps_key", (project.findProperty("GOOGLE_MAPS_API_KEY") ?: "")
+
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            buildConfigField("String", "google_maps_key", GOOGLE_MAPS_API_KEY)
-            resValue("string", "google_maps_key", GOOGLE_MAPS_API_KEY)
+
         }
-        debug {
-            buildConfigField("String", "google_maps_key", GOOGLE_MAPS_API_KEY)
-            resValue("string", "google_maps_key", GOOGLE_MAPS_API_KEY)
-        }
+
+    }
+    testOptions {
+        unitTests.returnDefaultValues = true
     }
 }
 
@@ -51,13 +52,17 @@ dependencies {
     implementation 'com.google.android.material:material:1.1.0'
 
     /// FIREBASE
-    implementation 'com.google.firebase:firebase-analytics:17.2.3'
-    implementation 'com.firebaseui:firebase-ui-auth:5.0.0'
+    implementation 'com.google.firebase:firebase-analytics:17.4.0'
+    implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
     implementation 'com.firebaseui:firebase-ui-firestore:5.0.0'
-    implementation 'com.google.firebase:firebase-messaging:20.1.4'
+
+    // CRASHLYTICS
+    implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
+        transitive = true
+    }
 
     /// FACEBOOK
-    implementation 'com.facebook.android:facebook-android-sdk:[4,5)'
+    implementation 'com.facebook.android:facebook-android-sdk:5.15.3'
 
     /// GOOGLE MAPS
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
@@ -65,14 +70,14 @@ dependencies {
     implementation 'com.google.android.libraries.places:places:2.2.0'
 
     // GLIDE
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.10.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     // RETROFIT
-    implementation 'com.squareup.retrofit2:retrofit:2.7.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.8.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.7.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.8.1'
 
     // GSON
     implementation 'com.google.code.gson:gson:2.8.6'
@@ -88,12 +93,13 @@ dependencies {
     implementation 'com.github.clans:fab:1.6.2'
 
     /// TESTS
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
+    testImplementation 'org.mockito:mockito-core:2.28.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
 
-    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'androidx.multidex:multidex:2.0.1'
 
 
 }

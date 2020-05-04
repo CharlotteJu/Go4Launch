@@ -34,14 +34,6 @@ public class User
         this.restaurantListFavorites = new ArrayList<>();
     }
 
-    /**
-     * Constructor to add or remove an User in the Restaurant's WorkmatesList
-     */
-    public User (String name, String illustration)
-    {
-        this.name = name;
-        this.illustration = illustration;
-    }
 
     //////// GETTERS ////////
 
@@ -74,6 +66,10 @@ public class User
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setIllustration(String illustration) {
+        this.illustration = illustration;
     }
 
     public void setRestaurantChoose(Restaurant restaurantChoose) {

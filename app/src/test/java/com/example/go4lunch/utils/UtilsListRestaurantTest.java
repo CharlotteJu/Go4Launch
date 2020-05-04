@@ -1,9 +1,6 @@
 package com.example.go4lunch.utils;
 
-import android.location.Location;
-
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.User;
 
 import org.junit.BeforeClass;
@@ -13,16 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-public class UtilsTest
-{
+public class UtilsListRestaurantTest {
     private static List<Restaurant> restaurantList = new ArrayList<>();
     private static final String placeIdTest = "placeId";
     private static final String addressTest = "Address";
     private static final List<User> userList = new ArrayList<>();
-    private static Location currentLocation = new Location("My location");
 
     private static final String name1Test = "Name 1";
     private static final String name2Test = "Name 2";
@@ -45,10 +38,8 @@ public class UtilsTest
     private static Restaurant restaurant4;
 
 
-
     @BeforeClass
-    public static void configTest()
-    {
+    public static void configTest() {
         restaurant1 = new Restaurant(placeIdTest, userList, name1Test, addressTest);
         restaurant1.setDistanceCurrentUser(distance3Test);
         restaurant1.setRating(rating4Test);
@@ -68,14 +59,11 @@ public class UtilsTest
         restaurant4.setDistanceCurrentUser(distance4Test);
         restaurant4.setRating(rating1Test);
         restaurantList.add(restaurant4);
-
-
     }
 
     @Test
-    public void triProximity_Success()
-    {
-        Utils.sortProximity(restaurantList);
+    public void triProximity_Success() {
+        UtilsListRestaurant.sortProximity(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant2.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant3.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant1.getName());
@@ -83,9 +71,8 @@ public class UtilsTest
     }
 
     @Test
-    public void triName_Success()
-    {
-        Utils.sortName(restaurantList);
+    public void triName_Success() {
+        UtilsListRestaurant.sortName(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant1.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant4.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant2.getName());
@@ -93,29 +80,12 @@ public class UtilsTest
     }
 
     @Test
-    public void triRatingReverse_Success()
-    {
-        Utils.sortRatingReverse(restaurantList);
+    public void triRatingReverse_Success() {
+        UtilsListRestaurant.sortRatingReverse(restaurantList);
         assertEquals(restaurantList.get(0).getName(), restaurant1.getName());
         assertEquals(restaurantList.get(1).getName(), restaurant3.getName());
         assertEquals(restaurantList.get(2).getName(), restaurant2.getName());
         assertEquals(restaurantList.get(3).getName(), restaurant4.getName());
-    }
-
-    @Test
-    public void updateDistanceToCurrentLocation_Success()
-    {
-        currentLocation.setLatitude(48.8376158);
-        currentLocation.setLongitude(2.2303507);
-
-        RestaurantPOJO.Location locationTest = new RestaurantPOJO.Location();
-        locationTest.setLat(48.8376158);
-        locationTest.setLng(2.230350);
-        restaurantList.get(0).setLocation(locationTest);
-
-        Utils.updateDistanceToCurrentLocation(currentLocation, restaurantList);
-
-        assertEquals(restaurantList.get(0).getDistanceCurrentUser(), 0);
     }
 
 }

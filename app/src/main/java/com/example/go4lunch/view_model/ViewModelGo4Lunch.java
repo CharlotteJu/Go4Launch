@@ -8,7 +8,6 @@ import com.example.go4lunch.model.User;
 import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
 import com.example.go4lunch.view_model.repositories.RestaurantPlacesRepository;
 import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
@@ -30,15 +29,14 @@ public class ViewModelGo4Lunch extends ViewModel
         this.restaurantPlacesRepository = restaurantPlacesRepository;
     }
 
-
     private MutableLiveData<User> userCurrentMutableLiveData = new MutableLiveData<>();
     private MutableLiveData<List<User>> usersListMutableLiveData = new MutableLiveData<>();
 
-    private MutableLiveData<Restaurant> restaurantFirebaseMutableLiveData= new MutableLiveData<>();
-    private MutableLiveData<List<Restaurant>> restaurantsListFirebaseMutableLiveData= new MutableLiveData<>();
+    private MutableLiveData<Restaurant> restaurantFirebaseMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<Restaurant>> restaurantsListFirebaseMutableLiveData = new MutableLiveData<>();
 
-    private MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesMutableLiveData= new MutableLiveData<>();
-    private MutableLiveData<Observable<Restaurant>> restaurantDetailPlacesMutableLiveData= new MutableLiveData<>();
+    private MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<Observable<Restaurant>> restaurantDetailPlacesMutableLiveData = new MutableLiveData<>();
 
     /////////////////////// USER FIREBASE ///////////////////////
 
@@ -95,8 +93,6 @@ public class ViewModelGo4Lunch extends ViewModel
         });
     }
 
-
-    // PEUT-ON RECUPERER ONSUCCESS OU ONFAILURE ? --> CALLBACK (comme RCV)
     public void createUser (String uid, String email, String username, String urlPicture)
     {
         this.userFirebaseRepository.createUser(uid, email, username, urlPicture);

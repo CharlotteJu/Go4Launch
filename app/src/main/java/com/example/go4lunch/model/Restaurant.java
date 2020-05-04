@@ -8,13 +8,11 @@ import java.util.Objects;
 
 public class Restaurant
 {
-
     private String name;
     private String address;
     private double rating;
     private String illustration;
     private String placeId;
-    private DetailPOJO.OpeningHours openingHours;
     private List<User> userList;
     private String phoneNumber;
     private String website;
@@ -25,14 +23,13 @@ public class Restaurant
     //////// CONSTRUCTORS ////////
 
     public Restaurant(String name, String address, String illustration, String placeId, double rating,
-                      DetailPOJO.OpeningHours openingHours, String phoneNumber, String website) {
+                      String phoneNumber, String website) {
 
         this.name = name;
         this.address = address;
         this.illustration = illustration;
         this.placeId = placeId;
         this.rating = rating;
-        this.openingHours = openingHours;
         this.phoneNumber = phoneNumber;
         this.website = website;
 
@@ -43,6 +40,23 @@ public class Restaurant
      * Empty constructor for Firebase
      */
     public Restaurant () {}
+
+    /**
+     * Constructor for Detail when it's not a Restaurant
+     */
+    public Restaurant (String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Constructor for Notification tests
+     */
+    public Restaurant(String name, String address)
+    {
+        this.name = name;
+        this.address = address;
+    }
 
     /**
      * Constructor for Places' Request
@@ -90,10 +104,6 @@ public class Restaurant
 
     public String getPlaceId() {
         return placeId;
-    }
-
-    public DetailPOJO.OpeningHours getOpeningHours() {
-        return openingHours;
     }
 
     public List<User> getUserList() {

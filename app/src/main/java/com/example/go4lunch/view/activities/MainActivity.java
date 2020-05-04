@@ -1,5 +1,24 @@
 package com.example.go4lunch.view.activities;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -12,37 +31,19 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.notifications.WorkerNotificationController;
+import com.example.go4lunch.utils.UtilsCalcul;
+import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
+import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
+import com.example.go4lunch.view.fragments.MapViewFragment;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
 import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
-import com.example.go4lunch.view.fragments.ListRestaurantsFragment;
-import com.example.go4lunch.view.fragments.ListWorkmatesFragment;
-import com.example.go4lunch.view.fragments.MapViewFragment;
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
@@ -51,21 +52,17 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
 import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import butterknife.BindView;
-
 import butterknife.ButterKnife;
-import io.reactivex.disposables.Disposable;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
 
@@ -78,11 +75,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     @BindView(R.id.navigation_drawer_nav_view)
     NavigationView navigationView;
+
+    //FOR DATA
     private MapViewFragment mapViewFragment;
     private ListRestaurantsFragment listRestaurantsFragment;
     private ListWorkmatesFragment listWorkmatesFragment;
 
-    //FOR DATA
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location currentLocation;
     private ViewModelGo4Lunch viewModelGo4Lunch;
@@ -94,18 +92,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getApplicationContext());
         this.fetchLocation();
-        this.configViewModel();
         this.configureBottomView();
         this.configureToolbar();
         this.configureDrawerLayout();
         this.configureNavigationView();
         this.getSharedPreferences();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        this.configViewModel();
     }
 
     ///////////////////////////////////VIEW MODEL///////////////////////////////////
@@ -245,41 +250,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     /**
      * Configure the toolbar search with {@link Autocomplete}
      */
-    private void configureAutocompleteSearchToolbar()
+    private void configureAutocompleteSearchToolbar(double radius)
     {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
-
-        List<LatLng> latlngForRectangularBounds = calculateRectangularBoundsSinceCurrentLocation(0.5);
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        List<LatLng> latLngForRectangularBounds = UtilsCalcul.
+                calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLatLng);
         RectangularBounds rectangularBounds = RectangularBounds.newInstance
-                (latlngForRectangularBounds.get(0), latlngForRectangularBounds.get(1));
-
+                (latLngForRectangularBounds.get(0), latLngForRectangularBounds.get(1));
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
                 .setLocationRestriction(rectangularBounds)
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .build(getApplicationContext());
         startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-    }
-
-
-    //// A VOIR SI UTILE
-    //TODO : TESTS UNITAIRES ?
-    private List<LatLng> calculateRectangularBoundsSinceCurrentLocation(double radius)
-    {
-        List<LatLng> list = new ArrayList<>();
-
-        double latA = currentLocation.getLatitude() - (radius/111);
-        double lngA =  currentLocation.getLongitude() - (radius/(111 * Math.cos(latA * (Math.PI/180.0f)))) ;
-        LatLng pointA = new LatLng(latA, lngA);
-        list.add(pointA);
-
-
-        double latB = currentLocation.getLatitude() + radius/111 ;
-        double lngB = currentLocation.getLongitude() + radius/(111 * Math.cos(latB * (Math.PI/180.0f)));
-
-        LatLng pointB = new LatLng(latB, lngB);
-        list.add(pointB);
-
-        return list;
     }
 
     /**
@@ -289,43 +272,57 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * We can display 1st fragment when we have the location
      */
     private void fetchLocation() {
+
         if (ActivityCompat.checkSelfPermission(
                 getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
-            return;
         }
-        Task<Location> task = fusedLocationProviderClient.getLastLocation();
-        task.addOnSuccessListener(location -> {
-            if (location != null)
-            {
-                currentLocation = location;
-                displayFragment(displayMapViewFragment());
-            }
-            else
-            {
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location)
+        else
+        {
+            Task<Location> task = fusedLocationProviderClient.getLastLocation();
+            task.addOnSuccessListener(location -> {
+                if (location != null)
+                {
+                    currentLocation = location;
+                    displayFragment(displayMapViewFragment());
+                }
+                else
+                {
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    if (!Objects.requireNonNull(locationManager).isProviderEnabled(LocationManager.GPS_PROVIDER))
                     {
-                        currentLocation = location;
-                        if (mapViewFragment == null)
-                        {
-                            displayFragment(displayMapViewFragment());
-                        }
+                        //If location is not activate in Settings, open Settings
+                        startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                        this.fetchLocation();
                     }
-                    @Override
-                    public void onStatusChanged(String provider, int status, Bundle extras) {}
-                    @Override
-                    public void onProviderEnabled(String provider) {}
-                    @Override
-                    public void onProviderDisabled(String provider) {}
-                });
-            }
-        });
+                    else
+                    {
+                        Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, new LocationListener() {
+                            @Override
+                            public void onLocationChanged(Location location)
+                            {
+                                currentLocation = location;
+                                if (mapViewFragment == null)
+                                {
+                                    displayFragment(displayMapViewFragment());
+                                }
+                            }
+                            @Override
+                            public void onStatusChanged(String provider, int status, Bundle extras) {}
+                            @Override
+                            public void onProviderEnabled(String provider) {}
+                            @Override
+                            public void onProviderDisabled(String provider) {}
+                        });
+                    }
+                }
+            });
+        }
 
     }
+
 
     /////////////////////////////////// METHODS FOR MENU'S NAVIGATION VIEW ONCLICK ///////////////////////////////////
 
@@ -358,7 +355,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         builder.setMessage(getResources().getString(R.string.main_activity_pop_up_log_out_message));
         builder.setPositiveButton(getResources().getString(R.string.main_activity_pop_up_yes), (dialogInterface, i) -> logOut());
         builder.setNegativeButton(getResources().getString(R.string.main_activity_pop_up_no), null);
-
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
@@ -372,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         {
             if (FirebaseAuth.getInstance().getCurrentUser() == null)
             {
-                Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_success_sign_out), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getResources().getString(R.string.main_activity_success_log_out), Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, AuthActivity.class);
                 startActivity(intent);
             }
@@ -395,7 +391,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alertDialog.show();
     }
 
-
     /**
      * Update SharedPreferences for notifications {@link SharedPreferences}
      */
@@ -404,16 +399,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(NOTIFICATIONS_BOOLEAN, notificationsAuthorized);
-        editor.commit();
-
+        editor.apply();
         this.getSharedPreferences();
     }
 
+    /**
+     * Get SharedPreferences for notifications {@link SharedPreferences} {@link WorkerNotificationController}
+     */
     private void getSharedPreferences()
     {
         SharedPreferences sharedPreferences = getApplicationContext().getSharedPreferences(NOTIFICATIONS_SHARED_PREFERENCES, Context.MODE_PRIVATE);
         boolean isAuthorized = sharedPreferences.getBoolean(NOTIFICATIONS_BOOLEAN, true);
-
         if (isAuthorized)
         {
             WorkerNotificationController.startWorkRequest(getApplicationContext());
@@ -468,7 +464,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (item.getItemId() == R.id.toolbar_menu_search)
         {
-            configureAutocompleteSearchToolbar();
+            double radius = mapViewFragment.getRadius()/1000.00;
+            configureAutocompleteSearchToolbar(radius);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -489,13 +486,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     startActivity(intent);
                 }
             }
-            else if (resultCode == AutocompleteActivity.RESULT_ERROR)
-            {
-                assert data != null;
-                //TODO : FAIRE QUELQUE CHOSE ?
-                Status status = Autocomplete.getStatusFromIntent(data);
-            }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        this.fetchLocation();
     }
 }

@@ -16,8 +16,7 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.utils.Utils;
-import com.example.go4lunch.view.fragments.OnClickListenerItemList;
+import com.example.go4lunch.utils.UtilsListRestaurant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,6 @@ import butterknife.OnClick;
 
 public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurantsAdapter.ListRestaurantsViewHolder>
 {
-
     // FOR DATA
     private OnClickListenerItemList onClickListenerItemList;
     private List<Restaurant> restaurantsFromPlaces;
@@ -114,7 +112,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
             this.updateHours(restaurant);
             this.updateNumberWorkmates(restaurant);
             this.updateDistance(restaurant);
-            Utils.updateRating(star1, star2, star3, restaurant);
+            UtilsListRestaurant.updateRating(star1, star2, star3, restaurant);
         }
 
         private void updateDistance(Restaurant restaurant)
@@ -148,32 +146,19 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
            }
         }
 
-        //TODO : Pas moyen de faire 1 ELSE pour les 2 ?
         /**
          * Update the workmate's number with documentSnapshot from Firebase
          */
         private void updateNumberWorkmates (Restaurant restaurant)
         {
-            if (restaurant.getUserList() != null)
+            numberWorkmates = 0;
+            if (restaurant.getUserList() != null && restaurant.getUserList().size() > 0)
             {
-                if (restaurant.getUserList().size() > 0)
-                {
-                    numberWorkmates = restaurant.getUserList().size();
-                    String numberWorkmatesString = "(" + numberWorkmates + ")";
-                    numberWorkmatesTxt.setText(numberWorkmatesString);
-                    displayWorkmates();
-                }
-                else
-                {
-                    numberWorkmates = 0;
-                    displayWorkmates();
-                }
+                numberWorkmates = restaurant.getUserList().size();
+                String numberWorkmatesString = "(" + numberWorkmates + ")";
+                numberWorkmatesTxt.setText(numberWorkmatesString);
             }
-            else
-            {
-                numberWorkmates = 0;
-                displayWorkmates();
-            }
+            displayWorkmates();
         }
 
         /**

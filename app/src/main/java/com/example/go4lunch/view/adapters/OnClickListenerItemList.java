@@ -1,7 +1,7 @@
-package com.example.go4lunch.view.fragments;
+package com.example.go4lunch.view.adapters;
 
 /**
- * Interface for the click on Restaurant List
+ * Interface for the click on an item of Lists
  */
 public interface OnClickListenerItemList
 {

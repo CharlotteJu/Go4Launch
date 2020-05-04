@@ -9,7 +9,7 @@ import com.example.go4lunch.model.Restaurant;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class Utils
+public abstract class UtilsListRestaurant
 {
 
     /**
@@ -56,7 +56,6 @@ public abstract class Utils
         Collections.sort(restaurantList, (o1, o2) -> {
             Integer o1DistanceCurrentUser = o1.getDistanceCurrentUser();
             Integer o2DistanceCurrentUser = o2.getDistanceCurrentUser();
-
             return o1DistanceCurrentUser.compareTo(o2DistanceCurrentUser);
         });
     }
@@ -69,10 +68,8 @@ public abstract class Utils
         Collections.sort(restaurantList, (o1, o2) -> {
             Double o1Rating = o1.getRating();
             Double o2Rating = o2.getRating();
-
             return o1Rating.compareTo(o2Rating);
         });
-
         Collections.reverse(restaurantList);
     }
 
@@ -84,7 +81,6 @@ public abstract class Utils
         Collections.sort(restaurantList, (o1, o2) -> {
             String o1Name = o1.getName();
             String o2Name = o2.getName();
-
             return o1Name.compareTo(o2Name);
         });
     }
@@ -103,10 +99,10 @@ public abstract class Utils
             restaurantLocation.setLongitude(restaurantList.get(i).getLocation().getLng());
             //Get the distance between currentLocation and restaurantLocation
             int distanceLocation = (int) currentLocation.distanceTo(restaurantLocation);
-
             restaurantList.get(i).setDistanceCurrentUser(distanceLocation);
         }
     }
+
 
 
 }

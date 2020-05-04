@@ -68,16 +68,11 @@ public class NotificationWorker extends Worker
     {
         this.restaurantFirebaseRepository.getRestaurant(placeId).addOnSuccessListener(documentSnapshot -> {
             currentRestaurant = documentSnapshot.toObject(Restaurant.class);
-            createMessageWithRestaurantChoose();
+            sendNotification();
         });
     }
 
-    //TODO : TESTS UNITAIRES ?
-
-    /**
-     * Create the Message with information of RestaurantChoose
-     */
-    private void createMessageWithRestaurantChoose()
+    private List<String> buildMessageForNotification(Restaurant currentRestaurant, User currentUser)
     {
         List<String> stringForNotification = new ArrayList<>();
         StringBuilder workmatesListString = new StringBuilder();
@@ -108,7 +103,82 @@ public class NotificationWorker extends Worker
 
             stringForNotification.add(workmatesListString.toString());
         }
-        showNotification(stringForNotification);
+
+        return stringForNotification;
+    }
+
+
+    /**
+     * Create the Message with information of RestaurantChoose
+     */
+    private void sendNotification()
+    {
+        /*List<String> stringForNotification = new ArrayList<>();
+        StringBuilder workmatesListString = new StringBuilder();
+
+        String name = currentRestaurant.getName();
+        String address = currentRestaurant.getAddress();
+        stringForNotification.add(name);
+        stringForNotification.add(address);
+
+        List<User> listWorkmates = currentRestaurant.getUserList();
+
+        if (listWorkmates.size() > 1)
+        {
+            workmatesListString.append(context.getResources().getString(R.string.notification_workmates_with));
+            int size = listWorkmates.size();
+            for (int i = 0; i < size; i ++)
+            {
+                User userToCompare = listWorkmates.get(i);
+                //Remove current user from the list of workmates in Notification
+                if (!userToCompare.getIllustration().equals(currentUser.getIllustration()) || !userToCompare.getName().equals(currentUser.getName()))
+                {
+                    String nameWorkmate = userToCompare.getName();
+                    workmatesListString.append(" ").append(nameWorkmate).append(",");
+                }
+            }
+            //Remove the last ","
+            workmatesListString.deleteCharAt(workmatesListString.length()-1);
+
+            stringForNotification.add(workmatesListString.toString());
+        }*/
+        String with = (context.getResources().getString(R.string.notification_workmates_with));
+        showNotification(createMessage(currentRestaurant, currentUser, with));
+    }
+
+    public static List<String> createMessage (Restaurant currentRestaurant, User currentUser, String with)
+    {
+        List<String> stringForNotification = new ArrayList<>();
+        StringBuilder workmatesListString = new StringBuilder();
+
+        String name = currentRestaurant.getName();
+        String address = currentRestaurant.getAddress();
+        stringForNotification.add(name);
+        stringForNotification.add(address);
+
+        List<User> listWorkmates = currentRestaurant.getUserList();
+
+        if (listWorkmates.size() > 1)
+        {
+            workmatesListString.append(with);
+            int size = listWorkmates.size();
+            for (int i = 0; i < size; i ++)
+            {
+                User userToCompare = listWorkmates.get(i);
+                //Remove current user from the list of workmates in Notification
+                if (!userToCompare.getIllustration().equals(currentUser.getIllustration()) || !userToCompare.getName().equals(currentUser.getName()))
+                {
+                    String nameWorkmate = userToCompare.getName();
+                    workmatesListString.append(" ").append(nameWorkmate).append(",");
+                }
+            }
+            //Remove the last ","
+            workmatesListString.deleteCharAt(workmatesListString.length()-1);
+
+            stringForNotification.add(workmatesListString.toString());
+        }
+
+        return stringForNotification;
     }
 
     /**

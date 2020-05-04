@@ -16,7 +16,6 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.User;
-import com.example.go4lunch.view.fragments.OnClickListenerItemList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,8 +124,6 @@ public class ListWorkmatesAdapter extends RecyclerView.Adapter<ListWorkmatesAdap
                     textView.setTextAppearance(R.style.item_list_workmates_no_choose_txt);
                 }
             }
-
-
         }
 
         @OnClick(R.id.item_list_workmates_card_view)
