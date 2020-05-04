@@ -23,7 +23,8 @@ public abstract class WorkerNotificationController
     public static void startWorkRequest(Context context)
     {
         PeriodicWorkRequest workRequest = configureWorkRequest();
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_REQUEST_NAME, ExistingPeriodicWorkPolicy.REPLACE, workRequest);
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_REQUEST_NAME,
+                ExistingPeriodicWorkPolicy.REPLACE, workRequest);
     }
 
     public static void stopWorkRequest(Context context)

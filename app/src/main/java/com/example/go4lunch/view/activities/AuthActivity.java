@@ -53,6 +53,7 @@ public class AuthActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
         ButterKnife.bind(this);
+        this.progressBarLayout.setVisibility(View.INVISIBLE);
         this.showProgressBar();
         this.configViewModel();
     }
@@ -103,7 +104,6 @@ public class AuthActivity extends AppCompatActivity {
                                         new AuthUI.IdpConfig.GoogleBuilder().build()))
                         .setIsSmartLockEnabled(false, true)
                         .build(),FIREBASE_UI);
-        this.getUsersList();
     }
 
     /**
@@ -118,7 +118,6 @@ public class AuthActivity extends AppCompatActivity {
                                         new AuthUI.IdpConfig.FacebookBuilder().build()))
                         .setIsSmartLockEnabled(false, true)
                         .build(),FIREBASE_UI);
-        this.getUsersList();
     }
 
     ///////////////////////////////////UI///////////////////////////////////
@@ -196,7 +195,7 @@ public class AuthActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK)
             {
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.response_sign_in_success),Toast.LENGTH_SHORT ).show();
-                this.connectUser();
+                this.getUsersList();
             }
             else
             {
