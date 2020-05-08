@@ -33,6 +33,8 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.notifications.WorkerNotificationController;
 import com.example.go4lunch.utils.UtilsCalcul;
@@ -48,9 +50,12 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Task;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -90,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int AUTOCOMPLETE_REQUEST_CODE = 15;
     private static final String NOTIFICATIONS_SHARED_PREFERENCES = "PREF_NOTIF";
     private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
+
+    Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -209,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void displayFragment(Fragment fragment)
     {
         getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).addToBackStack("backstack").commit();
+        currentFragment = fragment;
     }
 
     /**
@@ -252,7 +260,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void configureAutocompleteSearchToolbar(double radius)
     {
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME,
+                Place.Field.LAT_LNG, Place.Field.RATING, Place.Field.ADDRESS,
+                Place.Field.OPENING_HOURS, Place.Field.PHOTO_METADATAS);
         LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         List<LatLng> latLngForRectangularBounds = UtilsCalcul.
                 calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLatLng);
@@ -479,11 +489,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             {
                 if (data != null)
                 {
-                    Place place = Autocomplete.getPlaceFromIntent(data);
-                    String placeId = place.getId();
-                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                    currentFragment.onActivityResult(requestCode, resultCode, data);
+                    /*Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
                     intent.putExtra("placeId", placeId);
-                    startActivity(intent);
+                    startActivity(intent);*/
                 }
             }
         }

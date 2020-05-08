@@ -71,8 +71,15 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
                     String photo = (detailPOJO.getResult().getPhotos() != null ? getPhoto(detailPOJO.getResult().getPhotos().get(0).getPhotoReference(), 400, key) : "") ;
                     String phoneNumber = (detailPOJO.getResult().getInternationalPhoneNumber() != null ? detailPOJO.getResult().getInternationalPhoneNumber() : "");
                     String website = (detailPOJO.getResult().getWebsite() != null ? detailPOJO.getResult().getWebsite() : "");
+                    RestaurantPOJO.Location location = new RestaurantPOJO.Location();
 
-                    return new Restaurant(name, address, photo, placeId1, rating, phoneNumber, website);
+                    if (detailPOJO.getResult().getGeometry().getLocation() != null)
+                    {
+                        DetailPOJO.Location detailLocation = detailPOJO.getResult().getGeometry().getLocation();
+                        location.setLat(detailLocation.getLat());
+                        location.setLng(detailLocation.getLng());
+                    }
+                    return new Restaurant(name, address, photo, placeId1, rating, phoneNumber, website, location);
                 });
     }
 

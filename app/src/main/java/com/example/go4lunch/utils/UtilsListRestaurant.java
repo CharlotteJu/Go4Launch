@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.example.go4lunch.model.Restaurant;
+import com.google.android.libraries.places.api.model.OpeningHours;
 
 import java.util.Collections;
 import java.util.List;
@@ -102,6 +103,7 @@ public abstract class UtilsListRestaurant
             restaurantList.get(i).setDistanceCurrentUser(distanceLocation);
         }
     }
+
 
 
 

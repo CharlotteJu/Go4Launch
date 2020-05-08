@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.utils.UtilsListRestaurant;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view.adapters.ListRestaurantsAdapter;
@@ -24,9 +26,14 @@ import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -42,7 +49,9 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     @BindView(R.id.progress_bar_layout)
     ConstraintLayout progressBarLayout;
     @BindView(R.id.fragment_list_restaurants_menu_fab)
-    FloatingActionMenu floatingActionButton;
+    FloatingActionMenu floatingActionButtonSort;
+    @BindView(R.id.fragment_list_restaurants_refresh_fab)
+    FloatingActionButton floatingActionButtonRefresh;
 
     //FOR DATA
     private List<Restaurant> restaurantListFromPlaces;
@@ -75,7 +84,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         View v = inflater.inflate(R.layout.fragment_list_restaurants, container, false);
         ButterKnife.bind(this, v);
         this.progressBarLayout.setVisibility(View.VISIBLE);
-        this.floatingActionButton.setVisibility(View.INVISIBLE);
+        this.floatingActionButtonSort.setVisibility(View.INVISIBLE);
+        this.floatingActionButtonRefresh.setVisibility(View.INVISIBLE);
         this.configRecyclerView();
         return v;
     }
@@ -83,7 +93,10 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     @Override
     public void onResume() {
         super.onResume();
-        this.configViewModel();
+        if (viewModelGo4Lunch == null)
+        {
+            this.configViewModel();
+        }
     }
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
@@ -128,7 +141,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
             }
             adapter.updateList(restaurantListFromPlaces);
             this.progressBarLayout.setVisibility(View.INVISIBLE);
-            this.floatingActionButton.setVisibility(View.VISIBLE);
+            this.floatingActionButtonSort.setVisibility(View.VISIBLE);
         });
     }
 
@@ -151,6 +164,14 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     void triName() {
         UtilsListRestaurant.sortName(restaurantListFromPlaces);
         this.adapter.notifyDataSetChanged();
+    }
+
+    @OnClick (R.id.fragment_list_restaurants_refresh_fab)
+    void refresh()
+    {
+        this.viewModelGo4Lunch = null;
+        this.onResume();
+        this.floatingActionButtonRefresh.setVisibility(View.INVISIBLE);
     }
 
     ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
@@ -176,9 +197,18 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     ////////////////////////////////////////// OVERRIDE METHODS ///////////////////////////////////////////
 
     @Override
-    public void onDestroy() {
+    public void onDestroy()
+    {
         super.onDestroy();
         this.unsubscribe();
+    }
+
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        this.viewModelGo4Lunch = null;
     }
 
     @Override
@@ -188,4 +218,33 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         startActivity(intent);
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        if (data != null)
+        {
+            // Take info from data
+            Place place = Autocomplete.getPlaceFromIntent(data);
+            String placeId = place.getId();
+            LatLng latLng = place.getLatLng();
+            String name = place.getName();
+            RestaurantPOJO.Location location= new RestaurantPOJO.Location();
+            location.setLat(Objects.requireNonNull(latLng).latitude);
+            location.setLng(latLng.longitude);
+            String illustration = Objects.requireNonNull(place.getPhotoMetadatas()).get(0).getAttributions();
+            double rating = Objects.requireNonNull(place.getRating());
+            String address = Objects.requireNonNull(place.getAddress());
+
+            // Create a Restaurant with this info
+            Restaurant restaurantAutocomplete = new Restaurant(name, address, illustration, placeId, rating, false,location);
+            restaurantListFromPlaces = new ArrayList<>();
+            restaurantListFromPlaces.add(restaurantAutocomplete);
+            UtilsListRestaurant.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
+            this.getRestaurantListFromFirebase();
+            this.floatingActionButtonSort.setVisibility(View.INVISIBLE);
+            this.floatingActionButtonRefresh.setVisibility(View.VISIBLE);
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 }

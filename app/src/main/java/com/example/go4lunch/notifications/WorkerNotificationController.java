@@ -15,8 +15,8 @@ public abstract class WorkerNotificationController
 {
     private static final String WORK_REQUEST_NAME = "WORK_REQUEST_NAME_Go4Lunch";
     private static final String WORK_REQUEST_TAG = "WORK_REQUEST_TAG_Go4Lunch";
-    private static final int NOTIFICATION_HOUR = 12;
-    private static final int NOTIFICATION_MINUTE = 0;
+    private static final int NOTIFICATION_HOUR = 17;
+    private static final int NOTIFICATION_MINUTE = 18;
     private static final int NOTIFICATION_FREQUENCY_DAY = 1;
 
 

@@ -7,11 +7,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.go4lunch.R;
+import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.utils.UtilsCalcul;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
@@ -29,12 +33,15 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 
@@ -91,7 +98,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     public void onResume()
     {
         super.onResume();
-        this.configViewModel();
+        if (viewModelGo4Lunch == null)
+        {
+            this.configViewModel();
+        }
+
     }
 
     public int getRadius()
@@ -118,7 +129,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                             public void onNext(List<Restaurant> restaurantList)
                             {
                                 restaurantListFromPlaces = restaurantList;
-                                getRestaurantListFromFirebase();
+                                getRestaurantListFromFirebase(false);
 
                             }
                             @Override
@@ -128,7 +139,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                         }));
     }
 
-    private void getRestaurantListFromFirebase()
+    private void getRestaurantListFromFirebase(boolean isAutocomplete)
     {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList ->
         {
@@ -146,7 +157,8 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
                     }
                 }
             }
-            setMarker();
+            setMarker(isAutocomplete);
+
         });
     }
 
@@ -176,12 +188,12 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     /**
      * Set the markers on GoogleMap
      */
-    private void setMarker()
+    private void setMarker(boolean isAutocomplete)
     {
-        if (this.googleMap != null)
+        /*if (this.googleMap != null)
         {
-            this.googleMap.clear();
-        }
+            //this.googleMap.clear();
+        }*/
 
         int size = restaurantListFromPlaces.size();
         for (int i = 0; i < size; i ++)
@@ -204,15 +216,24 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             this.googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
 
-        LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
-        if (this.zoom == 0)
+        if (!isAutocomplete)
         {
-            this.zoom = 16;
-            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+            LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+            MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
+            if (this.zoom == 0)
+            {
+                this.zoom = 16;
+                this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
+            }
+            this.googleMap.addMarker(markerOptions);
+            //this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
         }
-        this.googleMap.addMarker(markerOptions);
-        this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
+        else
+        {
+            LatLng tempLatLng = new LatLng(restaurantListFromPlaces.get(0).getLocation().getLat(), restaurantListFromPlaces.get(0).getLocation().getLng());
+            this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(tempLatLng, 20));
+        }
+
     }
 
     /**
@@ -254,5 +275,34 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     {
         super.onDestroy();
         this.unsubscribe();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
+        if (data != null)
+        {
+            // Take info from data
+            Place place = Autocomplete.getPlaceFromIntent(data);
+            String placeId = place.getId();
+            LatLng latLng = place.getLatLng();
+            String name = place.getName();
+            RestaurantPOJO.Location location= new RestaurantPOJO.Location();
+            location.setLat(latLng.latitude);
+            location.setLng(latLng.longitude);
+
+            // Create a Restaurant with this info
+            Restaurant restaurantAutocomplete = new Restaurant();
+            restaurantAutocomplete.setPlaceId(placeId);
+            restaurantAutocomplete.setLocation(location);
+            restaurantAutocomplete.setName(name);
+            restaurantListFromPlaces = new ArrayList<>();
+            restaurantListFromPlaces.add(restaurantAutocomplete);
+
+            // Load the request in Firebase
+            this.getRestaurantListFromFirebase(true);
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
