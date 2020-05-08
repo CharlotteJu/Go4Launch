@@ -88,6 +88,10 @@
     <string name="notification_message">"You've a lunch scheduled"</string>
     <string name="notification_workmates_with">"With"</string>
 
+    <!-- AUTOCOMPLETE -->
+    <string name="autocomplete_toast">"No Restaurant Found"</string>
+    <string name="autocomplete_hint">"Restaurant"</string>
+
 
 
 

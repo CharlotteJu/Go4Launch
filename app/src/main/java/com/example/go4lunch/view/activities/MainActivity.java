@@ -2,7 +2,6 @@ package com.example.go4lunch.view.activities;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,10 +10,15 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     @BindView(R.id.navigation_drawer_nav_view)
     NavigationView navigationView;
+    @BindView(R.id.toolbar_edit_txt)
+    EditText editTextToolbar;
 
     //FOR DATA
     private MapViewFragment mapViewFragment;
@@ -91,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final String NOTIFICATIONS_SHARED_PREFERENCES = "PREF_NOTIF";
     private static final String NOTIFICATIONS_BOOLEAN = "NOTIFICATIONS_BOOLEAN";
 
+    Fragment currentFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -104,6 +112,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.configureDrawerLayout();
         this.configureNavigationView();
         this.getSharedPreferences();
+
+        this.editTextToolbar.setVisibility(View.VISIBLE);
+
+        //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+        this.editTextToolbar.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE)
+            {
+                if (currentFragment == listRestaurantsFragment)
+                {
+                    String input = editTextToolbar.getText().toString();
+                    listRestaurantsFragment.autocompleteSearch(input);
+                }
+                else if (currentFragment == mapViewFragment)
+                {
+                    mapViewFragment.displayToast();
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        });
+
+        //----------------- V1 WITH WIDGET IN LIST TODO
+        this.editTextToolbar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                if (currentFragment == mapViewFragment)
+                {
+                    String input = s.toString();
+                    mapViewFragment.autocompleteSearch(input);
+                }
+            }
+        });
     }
 
     @Override
@@ -171,14 +220,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 case R.id.action_mapview :
                     displayFragment(displayMapViewFragment());
                     this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(true);
+                    this.editTextToolbar.setVisibility(View.VISIBLE);
+                    this.editTextToolbar.setText("");
                     return true;
                 case R.id.action_listview :
                     displayFragment(displayListRestaurantsFragment());
                     this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(true);
+                    this.editTextToolbar.setVisibility(View.VISIBLE);
+                    this.editTextToolbar.setText("");
                     return true;
                 case R.id.action_workmates :
                     displayFragment(displayListWorkmatesFragment());
                     this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(false);
+                    this.editTextToolbar.setVisibility(View.INVISIBLE);
                     return true;
                 default:
                     return false;
@@ -209,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void displayFragment(Fragment fragment)
     {
         getSupportFragmentManager().beginTransaction().replace(R.id.navigation_drawer_frame_layout, fragment).addToBackStack("backstack").commit();
+        currentFragment = fragment;
     }
 
     /**
@@ -247,12 +302,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return listWorkmatesFragment;
     }
 
+
     /**
      * Configure the toolbar search with {@link Autocomplete}
      */
     private void configureAutocompleteSearchToolbar(double radius)
     {
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME);
+        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME,
+                Place.Field.LAT_LNG, Place.Field.RATING, Place.Field.ADDRESS,
+                Place.Field.OPENING_HOURS, Place.Field.PHOTO_METADATAS);
         LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         List<LatLng> latLngForRectangularBounds = UtilsCalcul.
                 calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLatLng);
@@ -464,7 +522,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (item.getItemId() == R.id.toolbar_menu_search)
         {
-            double radius = mapViewFragment.getRadius()/1000.00;
+            //----------------- V3 WITH WIDGET TODO
+            int radius = mapViewFragment.getRadius()/100;
             configureAutocompleteSearchToolbar(radius);
         }
         return super.onOptionsItemSelected(item);
@@ -479,11 +538,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             {
                 if (data != null)
                 {
-                    Place place = Autocomplete.getPlaceFromIntent(data);
-                    String placeId = place.getId();
-                    Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                    intent.putExtra("placeId", placeId);
-                    startActivity(intent);
+                    currentFragment.onActivityResult(requestCode, resultCode, data);
                 }
             }
         }

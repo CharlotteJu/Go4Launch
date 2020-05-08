@@ -40,6 +40,18 @@ public interface RestaurantPlacesApi
 
 
     /**
+     * Request HTTP in Json to have nearby Restaurants
+     * @param key String API key
+     * @param input String from EditText
+     * @return an Observable<RestaurantPOJO>
+     */
+    @GET("queryautocomplete/json?")
+    Observable<RestaurantPOJO> getAutocompleteRestaurants (@Query("key") String key,
+                                                           @Query("input") String input,
+                                                           @Query("location") String location,
+                                                           @Query("radius") int radius);
+
+    /**
      * Create an instance of Retrofit with the base url of API Google
      */
     Retrofit retrofit = new Retrofit.Builder()

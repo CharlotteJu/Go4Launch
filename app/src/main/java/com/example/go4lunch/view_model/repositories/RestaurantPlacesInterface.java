@@ -28,6 +28,10 @@ public interface RestaurantPlacesInterface
      */
     Observable<DetailPOJO> streamDetailRestaurant(String placeId, String key);
 
+    Observable<RestaurantPOJO> streamAutocompleteRestaurants(String key, String input, String location, int radius);
+
+    Observable<List<Restaurant>> streamAutocompleteRestaurantsToRestaurantList(String key, String input, String location, int radius);
+
     /**
      * Transform first Observable<DetailPOJO> in Observable<Restaurant>
      * @param key String API key

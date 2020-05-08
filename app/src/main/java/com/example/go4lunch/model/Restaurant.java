@@ -23,7 +23,7 @@ public class Restaurant
     //////// CONSTRUCTORS ////////
 
     public Restaurant(String name, String address, String illustration, String placeId, double rating,
-                      String phoneNumber, String website) {
+                      String phoneNumber, String website, RestaurantPOJO.Location location) {
 
         this.name = name;
         this.address = address;
@@ -32,6 +32,7 @@ public class Restaurant
         this.rating = rating;
         this.phoneNumber = phoneNumber;
         this.website = website;
+        this.location = location;
 
 
     }
