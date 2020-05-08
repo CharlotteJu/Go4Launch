@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -32,8 +33,17 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 
 import java.util.ArrayList;
@@ -282,7 +292,11 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     {
         if (data != null)
         {
-            // Take info from data
+
+
+
+
+            /*// Take info from data
             Place place = Autocomplete.getPlaceFromIntent(data);
             String placeId = place.getId();
             LatLng latLng = place.getLatLng();
@@ -300,9 +314,44 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             restaurantListFromPlaces.add(restaurantAutocomplete);
 
             // Load the request in Firebase
-            this.getRestaurantListFromFirebase(true);
+            this.getRestaurantListFromFirebase(true);*/
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void testAutocomplete(String input)
+    {
+        PlacesClient placesClient = Places.createClient(Objects.requireNonNull(getContext()));
+        AutocompleteSessionToken sessionToken = AutocompleteSessionToken.newInstance();
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        List<LatLng> latLngForRectangularBounds = UtilsCalcul.
+                calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLatLng);
+        RectangularBounds rectangularBounds = RectangularBounds.newInstance
+                (latLngForRectangularBounds.get(0), latLngForRectangularBounds.get(1));
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setLocationBias(rectangularBounds)
+                .setOrigin(currentLatLng)
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .setSessionToken(sessionToken)
+                .setQuery("https://maps.googleapis.com/maps/api/place/queryautocomplete/json?"+"&key="+key + "&input=" + input)
+                .build();
+
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener(new OnSuccessListener<FindAutocompletePredictionsResponse>() {
+            @Override
+            public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
+
+                String test1;
+                for (AutocompletePrediction prediction : findAutocompletePredictionsResponse.getAutocompletePredictions())
+                {
+                        String test;
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                String test;
+            }
+        });
     }
 }

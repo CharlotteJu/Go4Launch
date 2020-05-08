@@ -11,10 +11,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -80,6 +83,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     DrawerLayout drawerLayout;
     @BindView(R.id.navigation_drawer_nav_view)
     NavigationView navigationView;
+    @BindView(R.id.toolbar_edit_txt)
+    EditText editTextToolbar;
 
     //FOR DATA
     private MapViewFragment mapViewFragment;
@@ -146,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
+        this.editTextToolbar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -475,7 +481,28 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (item.getItemId() == R.id.toolbar_menu_search)
         {
             double radius = mapViewFragment.getRadius()/1000.00;
-            configureAutocompleteSearchToolbar(radius);
+            this.editTextToolbar.setVisibility(View.VISIBLE);
+            this.editTextToolbar.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count)
+                {
+                    String input = s.toString();
+                    mapViewFragment.testAutocomplete(input);
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+
+                }
+            });
+            //String input = editTextToolbar.getText().toString();
+            //mapViewFragment.testAutocomplete(input);
+            //configureAutocompleteSearchToolbar(radius);
         }
         return super.onOptionsItemSelected(item);
     }

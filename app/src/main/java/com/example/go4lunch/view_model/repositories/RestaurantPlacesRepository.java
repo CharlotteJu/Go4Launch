@@ -42,6 +42,45 @@ public class RestaurantPlacesRepository implements RestaurantPlacesInterface{
     }
 
     @Override
+    public Observable<RestaurantPOJO> streamAutocompleteRestaurants(String key, String input, String location, int radius) {
+        RestaurantPlacesApi restaurantPlacesApi = RestaurantPlacesApi.retrofit.create(RestaurantPlacesApi.class);
+        return restaurantPlacesApi.getAutocompleteRestaurants(key, input, location, radius)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .timeout(10, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public Observable<List<Restaurant>> streamAutocompleteRestaurantsToRestaurantList(String key, String input, String location, int radius) {
+        return streamAutocompleteRestaurants(key, input, location, radius)
+                .map(restaurantPOJO ->
+                {
+                    restaurants = new ArrayList<>();
+                    List<RestaurantPOJO.Result> res = restaurantPOJO.getResults();
+                    int size = res.size();
+                    for (int i = 0; i < size; i ++)
+                    {
+                        String placeId = res.get(i).getPlaceId();
+
+                        String name = (res.get(i).getName() != null ? res.get(i).getName() : "");
+                        String address = (res.get(i).getVicinity() != null ? res.get(i).getVicinity() : "");
+                        String photo = (res.get(i).getPhotos() != null ? getPhoto(res.get(i).getPhotos().get(0).getPhotoReference(), 400, key) : "") ;
+                        double rating = (res.get(i).getRating() != null ? res.get(i).getRating() : 0);
+                        Boolean openNow = (res.get(i).getOpeningHours() != null ? res.get(i).getOpeningHours().getOpenNow() : false);
+
+                        if (res.get(i).getGeometry().getLocation() != null)
+                        {
+                            RestaurantPOJO.Location locationRestaurant = res.get(i).getGeometry().getLocation();
+                            Restaurant restaurant = new Restaurant(name, address, photo, placeId, rating, openNow, locationRestaurant);
+                            restaurants.add(restaurant);
+                        }
+                    }
+
+                    return restaurants;
+                });
+    }
+
+    @Override
     public Observable<Restaurant> streamDetailRestaurantToRestaurant(String placeId, String key) {
         return streamDetailRestaurant(placeId, key)
                 .map(detailPOJO ->

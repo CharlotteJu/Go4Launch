@@ -1,19 +1,25 @@
 package com.example.go4lunch.view_model;
 
+import android.location.Location;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.go4lunch.model.Restaurant;
+import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.view_model.repositories.RestaurantFirebaseRepository;
 import com.example.go4lunch.view_model.repositories.RestaurantPlacesRepository;
 import com.example.go4lunch.view_model.repositories.UserFirebaseRepository;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import retrofit2.Call;
 
 public class ViewModelGo4Lunch extends ViewModel
 {
@@ -37,6 +43,7 @@ public class ViewModelGo4Lunch extends ViewModel
 
     private MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesMutableLiveData = new MutableLiveData<>();
     private MutableLiveData<Observable<Restaurant>> restaurantDetailPlacesMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<Observable<List<Restaurant>>> restaurantsListPlacesAutocompleteMutableLiveData = new MutableLiveData<>();
 
     /////////////////////// USER FIREBASE ///////////////////////
 
@@ -210,5 +217,14 @@ public class ViewModelGo4Lunch extends ViewModel
     {
         this.restaurantDetailPlacesMutableLiveData.setValue(this.restaurantPlacesRepository.streamDetailRestaurantToRestaurant(placeId, key));
     }
+
+    public MutableLiveData<Observable<List<Restaurant>>> getRestaurantsListPlacesAutocompleteMutableLiveData(String key, String input, Location location, int radius)
+    {
+        String locationToString = location.getLatitude() + "," + location.getLongitude();
+        this.restaurantsListPlacesAutocompleteMutableLiveData.setValue(this.restaurantPlacesRepository.streamAutocompleteRestaurantsToRestaurantList(key, input, locationToString, radius));
+        return this.restaurantsListPlacesAutocompleteMutableLiveData;
+    }
+
+
 
 }

@@ -12,4 +12,14 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     >
 
+    <EditText
+        android:id="@+id/toolbar_edit_txt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginHorizontal="48dp"
+        android:autofillHints="TXT"
+        android:hint="TXT"
+        android:labelFor="@id/toolbar"
+        android:inputType="textNoSuggestions" />
+
 </androidx.appcompat.widget.Toolbar>
