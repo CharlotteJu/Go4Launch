@@ -2,7 +2,6 @@ package com.example.go4lunch.view.activities;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,10 +12,12 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,8 +37,6 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.bumptech.glide.Glide;
 import com.example.go4lunch.R;
-import com.example.go4lunch.model.Restaurant;
-import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.model.User;
 import com.example.go4lunch.notifications.WorkerNotificationController;
 import com.example.go4lunch.utils.UtilsCalcul;
@@ -53,12 +52,9 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.Task;
-import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
-import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
-import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -116,6 +112,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.configureDrawerLayout();
         this.configureNavigationView();
         this.getSharedPreferences();
+
+        this.editTextToolbar.setVisibility(View.VISIBLE);
+
+        //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+        this.editTextToolbar.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE)
+            {
+                if (currentFragment == listRestaurantsFragment)
+                {
+                    String input = editTextToolbar.getText().toString();
+                    listRestaurantsFragment.autocompleteSearch(input);
+                }
+                else if (currentFragment == mapViewFragment)
+                {
+                    mapViewFragment.displayToast();
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        });
+
+        //----------------- V1 WITH WIDGET IN LIST TODO
+        this.editTextToolbar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+                if (currentFragment == mapViewFragment)
+                {
+                    String input = s.toString();
+                    mapViewFragment.autocompleteSearch(input);
+                }
+            }
+        });
     }
 
     @Override
@@ -151,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void configureToolbar()
     {
         setSupportActionBar(toolbar);
-        this.editTextToolbar.setVisibility(View.INVISIBLE);
     }
 
     /**
@@ -184,14 +220,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 case R.id.action_mapview :
                     displayFragment(displayMapViewFragment());
                     this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(true);
+                    this.editTextToolbar.setVisibility(View.VISIBLE);
+                    this.editTextToolbar.setText("");
                     return true;
                 case R.id.action_listview :
                     displayFragment(displayListRestaurantsFragment());
                     this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(true);
+                    this.editTextToolbar.setVisibility(View.VISIBLE);
+                    this.editTextToolbar.setText("");
                     return true;
                 case R.id.action_workmates :
                     displayFragment(displayListWorkmatesFragment());
                     this.toolbar.getMenu().findItem(R.id.toolbar_menu_search).setVisible(false);
+                    this.editTextToolbar.setVisibility(View.INVISIBLE);
                     return true;
                 default:
                     return false;
@@ -260,6 +301,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         return listWorkmatesFragment;
     }
+
 
     /**
      * Configure the toolbar search with {@link Autocomplete}
@@ -480,29 +522,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     {
         if (item.getItemId() == R.id.toolbar_menu_search)
         {
-            double radius = mapViewFragment.getRadius()/1000.00;
-            this.editTextToolbar.setVisibility(View.VISIBLE);
-            this.editTextToolbar.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count)
-                {
-                    String input = s.toString();
-                    mapViewFragment.testAutocomplete(input);
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            });
-            //String input = editTextToolbar.getText().toString();
-            //mapViewFragment.testAutocomplete(input);
-            //configureAutocompleteSearchToolbar(radius);
+            //----------------- V3 WITH WIDGET TODO
+            int radius = mapViewFragment.getRadius()/100;
+            configureAutocompleteSearchToolbar(radius);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -517,9 +539,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (data != null)
                 {
                     currentFragment.onActivityResult(requestCode, resultCode, data);
-                    /*Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                    intent.putExtra("placeId", placeId);
-                    startActivity(intent);*/
                 }
             }
         }

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
@@ -27,7 +28,16 @@ import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
 import com.example.go4lunch.view_model.injection.Injection;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
+import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.api.model.RectangularBounds;
+import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
+import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -60,6 +70,8 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
     private ViewModelGo4Lunch viewModelGo4Lunch;
     private Disposable disposable;
     private int radius;
+    private List<Restaurant> restaurantListAutocomplete = new ArrayList<>();
+    private List<String> placeIdList = new ArrayList<>();
 
     public ListRestaurantsFragment() {
     }
@@ -218,6 +230,7 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         startActivity(intent);
     }
 
+    //----------------- V3 WITH WIDGET TODO
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
     {
@@ -246,5 +259,90 @@ public class ListRestaurantsFragment extends Fragment implements OnClickListener
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    //----------------- V1 + V2 WITHOUT WIDGET TODO
+    private RectangularBounds getRectangularBounds(LatLng currentLatLng)
+    {
+        double temp = 0.01;
+        LatLng latLng1 = new LatLng(currentLatLng.latitude-temp, currentLatLng.longitude-temp);
+        LatLng latLng2 = new LatLng(currentLatLng.latitude+temp, currentLatLng.longitude+temp);
+        return RectangularBounds.newInstance(latLng1, latLng2);
+    }
+
+
+    //----------------- V1 + V2 WITHOUT WIDGET TODO
+    public void autocompleteSearch(String input) {
+        PlacesClient placesClient = Places.createClient(Objects.requireNonNull(getContext()));
+        AutocompleteSessionToken sessionToken = AutocompleteSessionToken.newInstance();
+        LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setLocationRestriction(getRectangularBounds(currentLatLng))
+                .setOrigin(currentLatLng)
+                .setTypeFilter(TypeFilter.ESTABLISHMENT)
+                .setSessionToken(sessionToken)
+                .setQuery(input)
+                .build();
+
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener(findAutocompletePredictionsResponse ->
+        {
+            int size = findAutocompletePredictionsResponse.getAutocompletePredictions().size();
+            for (int i = 0; i < size; i ++)
+            {
+                String placeId = findAutocompletePredictionsResponse.getAutocompletePredictions().get(i).getPlaceId();
+                //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+                placeIdList.add(placeId);
+
+                //----------------- V1 WITH WIDGET IN LIST TODO
+                /*Restaurant toCompare = new Restaurant();
+                toCompare.setPlaceId(placeId);
+                if (restaurantListFromPlaces.contains(toCompare))
+                {
+                    int index = restaurantListFromPlaces.indexOf(toCompare);
+                    restaurantListAutocomplete.add(restaurantListFromPlaces.get(index));
+                }*/
+            }
+            getRestaurantFromPlaces();
+
+            //----------------- V1 WITH WIDGET IN LIST TODO
+            /*restaurantListFromPlaces = restaurantListAutocomplete;
+            adapter.updateList(restaurantListFromPlaces);*/
+        });
+    }
+
+    //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+    private void getRestaurantFromPlaces()
+    {
+        String key = getResources().getString(R.string.google_maps_key);
+
+        for (int i = 0; i < placeIdList.size(); i ++)
+        {
+            String placeId = placeIdList.get(i);
+            this.viewModelGo4Lunch.getRestaurantDetailPlacesMutableLiveData(placeId, key)
+                    .observe(this, restaurantObservable -> {
+                        disposable = restaurantObservable.subscribeWith(new DisposableObserver<Restaurant>() {
+                            @Override
+                            public void onNext(Restaurant restaurant)
+                            {
+                                if (!restaurant.getName().equals("NO_RESTAURANT"))
+                                {
+                                    if (!restaurantListAutocomplete.contains(restaurant))
+                                    {
+                                        restaurantListAutocomplete.add(restaurant);
+                                        restaurantListFromPlaces = restaurantListAutocomplete;
+                                        getRestaurantListFromFirebase();
+                                        UtilsListRestaurant.updateDistanceToCurrentLocation(currentLocation, restaurantListFromPlaces);
+                                    }
+                                }
+                            }
+                            @Override
+                            public void onError(Throwable e) {}
+                            @Override
+                            public void onComplete() {}
+                        });
+                    });
+        }
+
     }
 }

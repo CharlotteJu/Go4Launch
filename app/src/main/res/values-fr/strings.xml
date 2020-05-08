@@ -84,4 +84,10 @@
     <!-- NOTIFICATION SERVICE -->
     <string name="notification_title">"Déjeûner : "</string>
     <string name="notification_message">"Vous avez une déjeûner de prévu"</string>
-    <string name="notification_workmates_with">"Avec"</string></resources>
+    <string name="notification_workmates_with">"Avec"</string>
+
+    <!-- AUTOCOMPLETE -->
+    <string name="autocomplete_toast">"Aucun restaurant trouvé"</string>
+    <string name="autocomplete_hint">"Restaurant"</string>
+
+</resources>

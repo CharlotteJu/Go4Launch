@@ -126,7 +126,7 @@ public class ListRestaurantsAdapter extends RecyclerView.Adapter<ListRestaurants
          */
         private void updateHours(Restaurant restaurant)
         {
-           if (restaurant.getOpenNow())
+           if (restaurant.getOpenNow() != null && restaurant.getOpenNow())
            {
                hours.setText(activity.getResources().getString(R.string.list_restaurants_adapter_open_now));
                if (Build.VERSION.SDK_INT < 23) {

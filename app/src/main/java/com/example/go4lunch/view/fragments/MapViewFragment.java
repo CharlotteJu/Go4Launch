@@ -3,9 +3,11 @@ package com.example.go4lunch.view.fragments;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +20,7 @@ import com.example.go4lunch.model.DetailPOJO;
 import com.example.go4lunch.model.Restaurant;
 import com.example.go4lunch.model.RestaurantPOJO;
 import com.example.go4lunch.utils.UtilsCalcul;
+import com.example.go4lunch.utils.UtilsListRestaurant;
 import com.example.go4lunch.view.activities.DetailsActivity;
 import com.example.go4lunch.view_model.ViewModelGo4Lunch;
 import com.example.go4lunch.view_model.factory.ViewModelFactoryGo4Lunch;
@@ -33,22 +36,32 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.VisibleRegion;
+import com.google.android.gms.tasks.CancellationToken;
+import com.google.android.gms.tasks.OnCanceledListener;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.AutocompletePrediction;
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.RectangularBounds;
 import com.google.android.libraries.places.api.model.TypeFilter;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsResponse;
+import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import butterknife.ButterKnife;
 import io.reactivex.Observable;
@@ -67,22 +80,22 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     private int radius;
     private float zoom;
     private String key;
+    private List<Restaurant> restaurantListAutocomplete = new ArrayList<>();
+    private List<String> placeIdList = new ArrayList<>();
 
-    public MapViewFragment() {}
+    public MapViewFragment() {
+    }
 
-    private MapViewFragment (Location location)
-    {
+    private MapViewFragment(Location location) {
         this.currentLocation = location;
     }
 
-    public static MapViewFragment newInstance(Location location)
-    {
+    public static MapViewFragment newInstance(Location location) {
         return new MapViewFragment(location);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.key = getResources().getString(R.string.google_maps_key);
         Places.initialize(Objects.requireNonNull(getContext()), key);
@@ -92,76 +105,67 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map_view, container, false);
         ButterKnife.bind(this, v);
         SupportMapFragment supportMapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        if (supportMapFragment != null)
-        {
+        if (supportMapFragment != null) {
             supportMapFragment.getMapAsync(MapViewFragment.this);
         }
         return v;
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
-        if (viewModelGo4Lunch == null)
-        {
+        if (viewModelGo4Lunch == null) {
             this.configViewModel();
         }
 
     }
 
-    public int getRadius()
-    {
+    public int getRadius() {
         return this.radius;
     }
 
     ////////////////////////////////////////// VIEW MODEL ///////////////////////////////////////////
 
-    private void configViewModel()
-    {
+    private void configViewModel() {
         ViewModelFactoryGo4Lunch viewModelFactoryGo4Lunch = Injection.viewModelFactoryGo4Lunch();
         viewModelGo4Lunch = ViewModelProviders.of(this, viewModelFactoryGo4Lunch).get(ViewModelGo4Lunch.class);
         this.getRestaurantListFromPlaces();
     }
 
-    private void getRestaurantListFromPlaces()
-    {
+    private void getRestaurantListFromPlaces() {
         this.viewModelGo4Lunch.getRestaurantsListPlacesMutableLiveData(currentLocation.getLatitude(), currentLocation.getLongitude(), radius, key)
                 .observe(this, listObservable -> disposable = listObservable
-                        .subscribeWith(new DisposableObserver<List<Restaurant>>()
-                        {
+                        .subscribeWith(new DisposableObserver<List<Restaurant>>() {
                             @Override
-                            public void onNext(List<Restaurant> restaurantList)
-                            {
+                            public void onNext(List<Restaurant> restaurantList) {
                                 restaurantListFromPlaces = restaurantList;
                                 getRestaurantListFromFirebase(false);
 
                             }
+
                             @Override
-                            public void onError(Throwable e) {}
+                            public void onError(Throwable e) {
+                            }
+
                             @Override
-                            public void onComplete() {}
+                            public void onComplete() {
+                            }
                         }));
     }
 
-    private void getRestaurantListFromFirebase(boolean isAutocomplete)
-    {
+    private void getRestaurantListFromFirebase(boolean isAutocomplete) {
         this.viewModelGo4Lunch.getRestaurantsListFirebaseMutableLiveData().observe(this, restaurantList ->
         {
             int size = restaurantList.size();
-            for (int i = 0; i < size; i++)
-            {
+            for (int i = 0; i < size; i++) {
                 Restaurant restaurant = restaurantList.get(i);
 
-                if (restaurant.getUserList().size() > 0)
-                {
-                    if (restaurantListFromPlaces.contains(restaurant))
-                    {
+                if (restaurant.getUserList().size() > 0) {
+                    if (restaurantListFromPlaces.contains(restaurant)) {
                         int index = restaurantListFromPlaces.indexOf(restaurant);
                         restaurantListFromPlaces.get(index).setUserList(restaurant.getUserList());
                     }
@@ -175,8 +179,7 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
     ////////////////////////////////////////// CONFIGURE ///////////////////////////////////////////
 
     @Override
-    public void onMapReady(GoogleMap googleMap)
-    {
+    public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
         MapStyleOptions mapStyleOptions = MapStyleOptions.loadRawResourceStyle
                 (Objects.requireNonNull(getContext()), R.raw.google_style);
@@ -185,10 +188,10 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
 
     /**
      * Lunch Details Activity when we click on a Restaurant Marker
+     *
      * @param marker from the Google Map
      */
-    private void lunchDetailsActivity(Marker marker)
-    {
+    private void lunchDetailsActivity(Marker marker) {
         String placeId = (String) marker.getTag();
         Intent intent = new Intent(getContext(), DetailsActivity.class);
         intent.putExtra("placeId", placeId);
@@ -200,24 +203,15 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
      */
     private void setMarker(boolean isAutocomplete)
     {
-        /*if (this.googleMap != null)
-        {
-            //this.googleMap.clear();
-        }*/
-
         int size = restaurantListFromPlaces.size();
-        for (int i = 0; i < size; i ++)
-        {
+        for (int i = 0; i < size; i++) {
             Restaurant restaurantTemp = restaurantListFromPlaces.get(i);
             LatLng tempLatLng = new LatLng(restaurantTemp.getLocation().getLat(), restaurantTemp.getLocation().getLng());
             MarkerOptions tempMarker = new MarkerOptions().position(tempLatLng).title(restaurantTemp.getName());
 
-            if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0)
-            {
+            if (restaurantTemp.getUserList() != null && restaurantTemp.getUserList().size() > 0) {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_green));
-            }
-            else
-            {
+            } else {
                 tempMarker.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_marker_orange));
             }
 
@@ -226,84 +220,65 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             this.googleMap.setOnInfoWindowClickListener(this::lunchDetailsActivity);
         }
 
+
         if (!isAutocomplete)
         {
             LatLng latLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
             MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(getResources().getString(R.string.map_view_fragment_my_position));
-            if (this.zoom == 0)
-            {
+            if (this.zoom == 0) {
                 this.zoom = 16;
                 this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
             }
             this.googleMap.addMarker(markerOptions);
-            //this.googleMap.setOnCameraIdleListener(this::getBoundsZoom);
         }
         else
         {
+            //----------------- V3 WITH WIDGET TODO
             LatLng tempLatLng = new LatLng(restaurantListFromPlaces.get(0).getLocation().getLat(), restaurantListFromPlaces.get(0).getLocation().getLng());
             this.googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(tempLatLng, 20));
         }
 
     }
 
-    /**
-     * Get Bounds according to the currentZoom
-     */
-    private void getBoundsZoom()
-    {
-        Projection projection = googleMap.getProjection();
-        VisibleRegion visibleRegion = projection.getVisibleRegion();
-        LatLng latLngRight = visibleRegion.farRight;
-        LatLng latLngLeft = visibleRegion.farLeft;
-
-        int oldRadius = radius;
-        LatLng currentLatLng= new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-
-        radius = UtilsCalcul.calculateRadiusAccordingToCurrentLocation(latLngRight, latLngLeft, currentLatLng);
-
-        if (radius <= oldRadius - 100 || radius >= oldRadius + 100)
-        {
-            this.getRestaurantListFromPlaces();
-        }
-    }
 
     /////////////////////////////////// DESTROY METHODS ///////////////////////////////////
 
     /**
      * Unsubscribe of the HTTP Request
      */
-    private void unsubscribe()
-    {
-        if (this.disposable != null && !this.disposable.isDisposed())
-        {
+    private void unsubscribe() {
+        if (this.disposable != null && !this.disposable.isDisposed()) {
             this.disposable.dispose();
         }
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
         this.unsubscribe();
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    public void onStop()
     {
+        super.onStop();
+        this.viewModelGo4Lunch = null;
+        this.restaurantListAutocomplete = new ArrayList<>();
+    }
+
+    //----------------- V1 WITH WIDGET TODO
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (data != null)
         {
-
-
-
-
-            /*// Take info from data
+            // Take info from data
             Place place = Autocomplete.getPlaceFromIntent(data);
             String placeId = place.getId();
             LatLng latLng = place.getLatLng();
             String name = place.getName();
             RestaurantPOJO.Location location= new RestaurantPOJO.Location();
-            location.setLat(latLng.latitude);
-            location.setLng(latLng.longitude);
+            location.setLat(Objects.requireNonNull(latLng).latitude);
+            location.setLng(Objects.requireNonNull(latLng).longitude);
 
             // Create a Restaurant with this info
             Restaurant restaurantAutocomplete = new Restaurant();
@@ -314,44 +289,106 @@ public class MapViewFragment extends Fragment implements OnMapReadyCallback {
             restaurantListFromPlaces.add(restaurantAutocomplete);
 
             // Load the request in Firebase
-            this.getRestaurantListFromFirebase(true);*/
+            this.getRestaurantListFromFirebase(true);
         }
-
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void testAutocomplete(String input)
+    //----------------- V1 + V2 WITHOUT WIDGET TODO
+    private RectangularBounds getRectangularBounds(LatLng currentLatLng)
     {
+        double temp = 0.01;
+        LatLng latLng1 = new LatLng(currentLatLng.latitude-temp, currentLatLng.longitude-temp);
+        LatLng latLng2 = new LatLng(currentLatLng.latitude+temp, currentLatLng.longitude+temp);
+        return RectangularBounds.newInstance(latLng1, latLng2);
+    }
+
+    //----------------- V1 + V2 WITHOUT WIDGET TODO
+    public void autocompleteSearch(String input) {
         PlacesClient placesClient = Places.createClient(Objects.requireNonNull(getContext()));
         AutocompleteSessionToken sessionToken = AutocompleteSessionToken.newInstance();
         LatLng currentLatLng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
-        List<LatLng> latLngForRectangularBounds = UtilsCalcul.
-                calculateRectangularBoundsAccordingToCurrentLocation(radius, currentLatLng);
-        RectangularBounds rectangularBounds = RectangularBounds.newInstance
-                (latLngForRectangularBounds.get(0), latLngForRectangularBounds.get(1));
+
         FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
-                .setLocationBias(rectangularBounds)
+                .setLocationRestriction(getRectangularBounds(currentLatLng))
                 .setOrigin(currentLatLng)
                 .setTypeFilter(TypeFilter.ESTABLISHMENT)
                 .setSessionToken(sessionToken)
-                .setQuery("https://maps.googleapis.com/maps/api/place/queryautocomplete/json?"+"&key="+key + "&input=" + input)
+                .setQuery(input)
                 .build();
 
-        placesClient.findAutocompletePredictions(request).addOnSuccessListener(new OnSuccessListener<FindAutocompletePredictionsResponse>() {
-            @Override
-            public void onSuccess(FindAutocompletePredictionsResponse findAutocompletePredictionsResponse) {
+        placesClient.findAutocompletePredictions(request).addOnSuccessListener(findAutocompletePredictionsResponse ->
+        {
+            int size = findAutocompletePredictionsResponse.getAutocompletePredictions().size();
+            for (int i = 0; i < size; i ++)
+            {
+                String placeId = findAutocompletePredictionsResponse.getAutocompletePredictions().get(i).getPlaceId();
+                //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+                //placeIdList.add(placeId);
 
-                String test1;
-                for (AutocompletePrediction prediction : findAutocompletePredictionsResponse.getAutocompletePredictions())
+                //----------------- V1 WITH WIDGET IN LIST TODO
+                Restaurant toCompare = new Restaurant();
+                toCompare.setPlaceId(placeId);
+                if (restaurantListFromPlaces.contains(toCompare))
                 {
-                        String test;
+                    int index = restaurantListFromPlaces.indexOf(toCompare);
+                    restaurantListAutocomplete.add(restaurantListFromPlaces.get(index));
                 }
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                String test;
+            //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+            //getRestaurantFromPlaces();
+
+            if (restaurantListAutocomplete.size() > 0)
+            {
+                googleMap.clear();
+                restaurantListFromPlaces = restaurantListAutocomplete;
+                setMarker(false);
             }
+
         });
     }
+
+    public void displayToast()
+    {
+        if (restaurantListAutocomplete.size() == 0)
+        {
+            Toast.makeText(getContext(), getResources().getString(R.string.autocomplete_toast), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    //----------------- V2 WITHOUT WIDGET NEW REQUEST TODO
+    /*private void getRestaurantFromPlaces()
+    {
+        String key = getResources().getString(R.string.google_maps_key);
+
+        for (int i = 0; i < placeIdList.size(); i ++)
+        {
+            String placeId = placeIdList.get(i);
+            this.viewModelGo4Lunch.getRestaurantDetailPlacesMutableLiveData(placeId, key)
+                    .observe(this, restaurantObservable -> {
+                        disposable = restaurantObservable.subscribeWith(new DisposableObserver<Restaurant>() {
+                            @Override
+                            public void onNext(Restaurant restaurant)
+                            {
+                                if (!restaurant.getName().equals("NO_RESTAURANT"))
+                                {
+                                    if (!restaurantListAutocomplete.contains(restaurant))
+                                    {
+                                        restaurantListAutocomplete.add(restaurant);
+                                        restaurantListFromPlaces = restaurantListAutocomplete;
+                                        getRestaurantListFromFirebase(false);
+                                    }
+                                }
+                            }
+                            @Override
+                            public void onError(Throwable e) {}
+                            @Override
+                            public void onComplete() {}
+                        });
+                    });
+        }
+
+    }*/
+
+
 }

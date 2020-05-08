@@ -18,7 +18,7 @@
         android:layout_height="match_parent"
         android:layout_marginHorizontal="48dp"
         android:autofillHints="TXT"
-        android:hint="TXT"
+        android:hint="@string/autocomplete_hint"
         android:labelFor="@id/toolbar"
         android:inputType="textNoSuggestions" />
 
